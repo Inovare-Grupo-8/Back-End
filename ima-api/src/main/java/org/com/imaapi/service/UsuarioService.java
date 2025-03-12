@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,6 +125,11 @@ public class UsuarioService {
         usuarioResponse.setNome(usuario.getNome());
         usuarioResponse.setEmail(usuario.getEmail());
         usuarioResponse.setSenha(usuario.getSenha());
+        usuarioResponse.setCpf(usuario.getCpf());
+        usuarioResponse.setDataNascimento(usuario.getDataNascimento());
+        usuarioResponse.setRenda(usuario.getRenda());
+        usuarioResponse.setGenero(usuario.getGenero());
+        usuarioResponse.setDataCadastro(LocalDateTime.now());
         return usuarioResponse;
     }
 
@@ -132,6 +138,11 @@ public class UsuarioService {
         usuario.setNome(usuarioInput.getNome());
         usuario.setEmail(usuarioInput.getEmail());
         usuario.setSenha(usuarioInput.getSenha());
+        usuario.setCpf(usuarioInput.getCpf());
+        usuario.setDataNascimento(usuarioInput.getDataNascimento());
+        usuario.setRenda(usuarioInput.getRenda());
+        usuario.setGenero(usuarioInput.getGenero());
+        usuario.setDataCadastro(LocalDateTime.now());
         return usuario;
     }
 
