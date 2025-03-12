@@ -30,9 +30,6 @@ public class UsuarioService {
     @Autowired
     private VoluntarioService voluntarioService;
 
-    @Autowired
-    private VoluntarioRepository voluntarioRepository;
-
     public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
         try {
             logger.info("Cadastrando usuário: {}", usuarioInput);
