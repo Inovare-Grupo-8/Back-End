@@ -1,6 +1,7 @@
 package org.com.imaapi.controller;
 
 import org.com.imaapi.model.Usuario;
+import org.com.imaapi.model.input.UsuarioInput;
 import org.com.imaapi.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +18,8 @@ class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody Usuario usuario) {
-        return usuarioService.cadastrarUsuario(usuario);
+    public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
+        return usuarioService.cadastrarUsuario(usuarioInput);
     }
 
     @GetMapping
@@ -32,8 +33,8 @@ class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuario) {
-        return usuarioService.atualizarUsuario(id, usuario);
+    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody UsuarioInput usuarioInput) {
+        return usuarioService.atualizarUsuario(id, usuarioInput);
     }
 
     @DeleteMapping("/{id}")

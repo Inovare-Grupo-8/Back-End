@@ -1,15 +1,18 @@
 package org.com.imaapi.service;
 
 import org.com.imaapi.model.Usuario;
-import org.com.imaapi.model.Cargo;
+import org.com.imaapi.model.Voluntario;
+import org.com.imaapi.model.input.UsuarioInput;
+import org.com.imaapi.model.input.VoluntarioInput;
 import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.repository.CargoRepository;
+import org.com.imaapi.repository.VoluntarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,26 +26,30 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private CargoRepository cargoRepository;
+    private VoluntarioService voluntarioService;
 
-    public ResponseEntity<Usuario> cadastrarUsuario(Usuario usuario) {
+    @Autowired
+    private VoluntarioRepository voluntarioRepository;
+
+    public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
         try {
-            logger.info("Cadastrando usuário: {}", usuario);
-            Cargo cargo = usuario.getCargo();
-            if (cargo != null && cargo.getIdCargo() == null) {
-                logger.info("Salvando cargo: {}", cargo);
-                cargo = cargoRepository.save(cargo);
-                usuario.setCargo(cargo);
-            }
-            Usuario salvarUsuario = usuarioRepository.save(usuario);
+            logger.info("Cadastrando usuário: {}", usuarioInput);
+            Usuario usuarioSalvo = gerarObjetoUsuario(usuarioInput);
+            Usuario salvarUsuario = usuarioRepository.save(usuarioSalvo);
             logger.info("Usuário cadastrado com sucesso: {}", salvarUsuario);
+
+            if (Boolean.TRUE.equals(usuarioInput.getIsVoluntario())) {
+                VoluntarioInput voluntarioInput = gerarObjetoVoluntario(usuarioInput, salvarUsuario.getIdUsuario());
+                Voluntario voluntario = voluntarioService.cadastrarVoluntario(voluntarioInput).getBody();
+                logger.info("Voluntário cadastrado com sucesso: {}", voluntario);
+            }
+
             return new ResponseEntity<>(salvarUsuario, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar usuário: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     public ResponseEntity<List<Usuario>> buscarUsuarios() {
         try {
@@ -73,11 +80,12 @@ public class UsuarioService {
         }
     }
 
-    public ResponseEntity<Usuario> atualizarUsuario(Long id, Usuario usuario) {
+    public ResponseEntity<Usuario> atualizarUsuario(Long id, UsuarioInput usuarioInput) {
         try {
             logger.info("Atualizando usuário com ID: {}", id);
             if (usuarioRepository.existsById(id)) {
-                usuario.setId(id);
+                Usuario usuario = gerarObjetoUsuario(usuarioInput);
+                usuario.setIdUsuario(id);
                 Usuario atualizado = usuarioRepository.save(usuario);
                 logger.info("Usuário atualizado com sucesso: {}", atualizado);
                 return new ResponseEntity<>(atualizado, HttpStatus.OK);
@@ -104,5 +112,20 @@ public class UsuarioService {
             logger.error("Erro ao deletar usuário: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private Usuario gerarObjetoUsuario(UsuarioInput usuarioInput) {
+        Usuario usuario = new Usuario();
+        usuario.setNome(usuarioInput.getNome());
+        usuario.setEmail(usuarioInput.getEmail());
+        usuario.setSenha(usuarioInput.getSenha());
+        return usuario;
+    }
+
+    private VoluntarioInput gerarObjetoVoluntario(UsuarioInput usuarioInput, Long idUsuario) {
+        VoluntarioInput voluntario = new VoluntarioInput();
+        voluntario.setFkUsuario(idUsuario);
+        voluntario.setFuncao(usuarioInput.getFuncao());
+        return voluntario;
     }
 }

@@ -1,17 +1,19 @@
-package org.com.imaapi.model;
+package org.com.imaapi.model.input;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import org.com.imaapi.model.cargo.Funcao;
 
+import lombok.Data;
+
 @Data
-@Entity
-@Table(name = "cargo")
-public class Cargo {
+public class VoluntarioInput {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idCargo;
+    private Long idVoluntario;
 
     @Enumerated(EnumType.STRING)
     private Funcao funcao;
+
+    private Long fkUsuario;
 }
+
