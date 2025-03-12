@@ -2,6 +2,7 @@ package org.com.imaapi.controller;
 
 import org.com.imaapi.model.Usuario;
 import org.com.imaapi.model.input.UsuarioInput;
+import org.com.imaapi.model.output.UsuarioOutput;
 import org.com.imaapi.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
+    public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
         return usuarioService.cadastrarUsuario(usuarioInput);
     }
 

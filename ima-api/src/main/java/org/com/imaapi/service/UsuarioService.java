@@ -4,6 +4,7 @@ import org.com.imaapi.model.Usuario;
 import org.com.imaapi.model.Voluntario;
 import org.com.imaapi.model.input.UsuarioInput;
 import org.com.imaapi.model.input.VoluntarioInput;
+import org.com.imaapi.model.output.UsuarioOutput;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.repository.VoluntarioRepository;
 import org.slf4j.Logger;
@@ -31,20 +32,23 @@ public class UsuarioService {
     @Autowired
     private VoluntarioRepository voluntarioRepository;
 
-    public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
+    public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
         try {
             logger.info("Cadastrando usuário: {}", usuarioInput);
             Usuario usuarioSalvo = gerarObjetoUsuario(usuarioInput);
             Usuario salvarUsuario = usuarioRepository.save(usuarioSalvo);
             logger.info("Usuário cadastrado com sucesso: {}", salvarUsuario);
 
+            UsuarioOutput usuarioResponse = gerarObjetoUsuarioOutput(salvarUsuario);
+
             if (Boolean.TRUE.equals(usuarioInput.getIsVoluntario())) {
                 VoluntarioInput voluntarioInput = gerarObjetoVoluntario(usuarioInput, salvarUsuario.getIdUsuario());
                 Voluntario voluntario = voluntarioService.cadastrarVoluntario(voluntarioInput).getBody();
                 logger.info("Voluntário cadastrado com sucesso: {}", voluntario);
+                usuarioResponse.setFuncao(voluntario.getFuncao());
             }
 
-            return new ResponseEntity<>(salvarUsuario, HttpStatus.CREATED);
+            return new ResponseEntity<>(usuarioResponse, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar usuário: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -112,6 +116,15 @@ public class UsuarioService {
             logger.error("Erro ao deletar usuário: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private UsuarioOutput gerarObjetoUsuarioOutput(Usuario usuario) {
+        UsuarioOutput usuarioResponse = new UsuarioOutput();
+        usuarioResponse.setIdUsuario(usuario.getIdUsuario());
+        usuarioResponse.setNome(usuario.getNome());
+        usuarioResponse.setEmail(usuario.getEmail());
+        usuarioResponse.setSenha(usuario.getSenha());
+        return usuarioResponse;
     }
 
     private Usuario gerarObjetoUsuario(UsuarioInput usuarioInput) {
