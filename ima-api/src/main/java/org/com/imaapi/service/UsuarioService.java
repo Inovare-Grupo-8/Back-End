@@ -120,7 +120,7 @@ public class UsuarioService {
 
     private UsuarioOutput gerarObjetoUsuarioOutput(Usuario usuario) {
         UsuarioOutput usuarioResponse = new UsuarioOutput();
-        usuarioResponse.setIdUsuario(usuario.getIdUsuario());
+        usuarioResponse.setId(usuario.getIdUsuario());
         usuarioResponse.setNome(usuario.getNome());
         usuarioResponse.setEmail(usuario.getEmail());
         usuarioResponse.setSenha(usuario.getSenha());
