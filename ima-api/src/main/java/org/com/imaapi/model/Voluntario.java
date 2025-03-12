@@ -2,6 +2,7 @@ package org.com.imaapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Setter;
 import org.com.imaapi.model.cargo.Funcao;
 
 @Data
@@ -17,12 +18,8 @@ public class Voluntario {
     @Column(name = "funcao")
     private Funcao funcao;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario")
     private Usuario usuario;
-
-    public void setFkUsuario(Long fkUsuario) {
-        this.usuario = new Usuario();
-        this.usuario.setIdUsuario(fkUsuario);
-    }
 }
