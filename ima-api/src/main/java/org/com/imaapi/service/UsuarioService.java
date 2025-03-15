@@ -6,7 +6,6 @@ import org.com.imaapi.model.input.UsuarioInput;
 import org.com.imaapi.model.input.VoluntarioInput;
 import org.com.imaapi.model.output.UsuarioOutput;
 import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.repository.VoluntarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
