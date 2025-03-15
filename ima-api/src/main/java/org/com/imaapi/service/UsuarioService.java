@@ -64,7 +64,7 @@ public class UsuarioService {
         }
     }
 
-    public ResponseEntity<Optional<Usuario>> buscaUsuario(Long id) {
+    public ResponseEntity<Optional<Usuario>> buscaUsuario(Integer id) {
         try {
             logger.info("Buscando usuário com ID: {}", id);
             Optional<Usuario> usuario = usuarioRepository.findById(id);
@@ -81,7 +81,7 @@ public class UsuarioService {
         }
     }
 
-    public ResponseEntity<Usuario> atualizarUsuario(Long id, UsuarioInput usuarioInput) {
+    public ResponseEntity<Usuario> atualizarUsuario(Integer id, UsuarioInput usuarioInput) {
         try {
             logger.info("Atualizando usuário com ID: {}", id);
             if (usuarioRepository.existsById(id)) {
@@ -99,7 +99,7 @@ public class UsuarioService {
         }
     }
 
-    public ResponseEntity<Void> deletarUsuario(Long id) {
+    public ResponseEntity<Void> deletarUsuario(Integer id) {
         try {
             logger.info("Deletando usuário com ID: {}", id);
             if (usuarioRepository.existsById(id)) {
@@ -124,7 +124,8 @@ public class UsuarioService {
         usuarioResponse.setCpf(usuario.getCpf());
         usuarioResponse.setDataNascimento(usuario.getDataNascimento());
         usuarioResponse.setRenda(usuario.getRenda());
-        usuarioResponse.setDataCadastro(LocalDateTime.now());
+        usuarioResponse.setDataCadastro(usuario.getDataCadastro());
+        usuarioResponse.setGenero(usuario.getGenero());
         return usuarioResponse;
     }
 
@@ -141,7 +142,7 @@ public class UsuarioService {
         return usuario;
     }
 
-    private VoluntarioInput gerarObjetoVoluntario(UsuarioInput usuarioInput, Long idUsuario) {
+    private VoluntarioInput gerarObjetoVoluntario(UsuarioInput usuarioInput, Integer idUsuario) {
         VoluntarioInput voluntario = new VoluntarioInput();
         voluntario.setFkUsuario(idUsuario);
         voluntario.setFuncao(usuarioInput.getFuncao());

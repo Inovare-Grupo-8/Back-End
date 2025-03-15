@@ -16,7 +16,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "id_usuario")
-    private Long idUsuario;
+    private Integer idUsuario;
 
     @Column (name = "nome")
     private String nome;
@@ -41,7 +41,7 @@ public class Usuario {
     private Double renda;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "genero")
+    @Column(name = "genero", length = 1)
     private Genero genero;
 
     @Column (name = "data_cadastro")

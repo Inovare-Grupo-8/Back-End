@@ -29,17 +29,17 @@ class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<Usuario>> buscaUsuario(@PathVariable Long id) {
+    public ResponseEntity<Optional<Usuario>> buscaUsuario(@PathVariable Integer id) {
         return usuarioService.buscaUsuario(id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody UsuarioInput usuarioInput) {
+    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioInput usuarioInput) {
         return usuarioService.atualizarUsuario(id, usuarioInput);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarUsuario(@PathVariable Long id) {
+    public ResponseEntity<Void> deletarUsuario(@PathVariable Integer id) {
         return usuarioService.deletarUsuario(id);
     }
 }

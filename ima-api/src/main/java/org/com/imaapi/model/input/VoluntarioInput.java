@@ -9,6 +9,6 @@ import lombok.Data;
 public class VoluntarioInput {
     @Enumerated(EnumType.STRING)
     private Funcao funcao;
-    private Long fkUsuario;
+    private Integer fkUsuario;
 }
 

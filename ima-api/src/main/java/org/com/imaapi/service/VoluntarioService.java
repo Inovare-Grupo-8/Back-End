@@ -13,7 +13,9 @@ package org.com.imaapi.service;
         import org.springframework.web.bind.annotation.PostMapping;
         import org.springframework.web.bind.annotation.RequestBody;
 
-        @Service
+        import java.time.LocalDateTime;
+
+@Service
         public class VoluntarioService {
 
             private static final Logger logger = LoggerFactory.getLogger(VoluntarioService.class);
@@ -39,6 +41,7 @@ package org.com.imaapi.service;
             private Voluntario gerarObjetoVoluntario(VoluntarioInput voluntarioInput) {
                 Voluntario voluntario = new Voluntario();
                 voluntario.setFuncao(voluntarioInput.getFuncao());
+                voluntario.setDataCadastro(LocalDateTime.now());
                 voluntario.setUsuario(usuarioRepository.findById(voluntarioInput.getFkUsuario()).orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado")));
                 return voluntario;
             }
