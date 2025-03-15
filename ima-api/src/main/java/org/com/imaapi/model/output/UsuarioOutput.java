@@ -2,7 +2,7 @@ package org.com.imaapi.model.output;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-import org.com.imaapi.model.cargo.Funcao;
+import org.com.imaapi.model.enums.Funcao;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

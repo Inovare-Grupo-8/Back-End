@@ -3,7 +3,7 @@ package org.com.imaapi.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Setter;
-import org.com.imaapi.model.cargo.Funcao;
+import org.com.imaapi.model.enums.Funcao;
 
 @Data
 @Entity

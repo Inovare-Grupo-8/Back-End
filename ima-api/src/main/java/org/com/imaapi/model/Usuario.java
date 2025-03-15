@@ -2,6 +2,9 @@ package org.com.imaapi.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Setter;
+import org.com.imaapi.model.enums.Genero;
+import org.com.imaapi.model.enums.TipoUsuario;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,6 +24,10 @@ public class Usuario {
     @Column (name = "cpf")
     private String cpf;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo")
+    private TipoUsuario tipo;
+
     @Column (name = "email")
     private String email;
 
@@ -33,9 +40,15 @@ public class Usuario {
     @Column (name = "renda")
     private Double renda;
 
-    @Column (name = "genero")
-    private String genero;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "genero")
+    private Genero genero;
 
     @Column (name = "data_cadastro")
     private LocalDateTime dataCadastro;
+
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "fk_endereco")
+    private Endereco endereco;
 }

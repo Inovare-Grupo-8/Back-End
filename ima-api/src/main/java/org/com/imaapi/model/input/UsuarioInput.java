@@ -4,7 +4,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
-import org.com.imaapi.model.cargo.Funcao;
+import org.com.imaapi.model.enums.Funcao;
+import org.com.imaapi.model.enums.Genero;
 
 @Data
 public class UsuarioInput {
@@ -14,7 +15,7 @@ public class UsuarioInput {
     private String senha;
     private LocalDate dataNascimento;
     private Double renda;
-    private String genero;
+    private Genero genero;
     private Boolean isVoluntario;
     private Funcao funcao;
 }

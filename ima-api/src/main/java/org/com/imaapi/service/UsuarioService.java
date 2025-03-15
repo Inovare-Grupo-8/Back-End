@@ -124,7 +124,6 @@ public class UsuarioService {
         usuarioResponse.setCpf(usuario.getCpf());
         usuarioResponse.setDataNascimento(usuario.getDataNascimento());
         usuarioResponse.setRenda(usuario.getRenda());
-        usuarioResponse.setGenero(usuario.getGenero());
         usuarioResponse.setDataCadastro(LocalDateTime.now());
         return usuarioResponse;
     }
