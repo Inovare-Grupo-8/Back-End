@@ -1,4 +1,4 @@
-package org.com.imaapi.apis.calendario;
+package org.com.imaapi.service;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -26,7 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
-public class Calendario {
+public class CalendarioGoogleService {
 
     /* Nome da aplicação. */
     private static final String APPLICATION_NAME = "Google Calendar API Java Quickstart";

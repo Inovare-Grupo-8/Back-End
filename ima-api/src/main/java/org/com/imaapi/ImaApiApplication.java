@@ -1,6 +1,6 @@
 package org.com.imaapi;
 
-import org.com.imaapi.apis.calendario.Calendario;
+import org.com.imaapi.service.CalendarioGoogleService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,9 +19,9 @@ public class ImaApiApplication {
     public CommandLineRunner run() {
         return args -> {
             try {
-                var service = Calendario.getCalendarService();
-                List<Event> events = Calendario.getUpcomingEvents(service, 10);
-                Calendario.printUpcomingEvents(events);
+                var service = CalendarioGoogleService.getCalendarService();
+                List<Event> events = CalendarioGoogleService.getUpcomingEvents(service, 10);
+                CalendarioGoogleService.printUpcomingEvents(events);
             } catch (Exception e) {
                 e.printStackTrace();
             }
