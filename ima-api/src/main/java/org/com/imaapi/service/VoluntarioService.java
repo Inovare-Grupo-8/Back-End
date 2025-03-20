@@ -1,7 +1,7 @@
 package org.com.imaapi.service;
 
-        import org.com.imaapi.model.Voluntario;
-        import org.com.imaapi.model.input.VoluntarioInput;
+        import org.com.imaapi.model.Usuario.Voluntario;
+        import org.com.imaapi.model.Usuario.input.VoluntarioInput;
         import org.com.imaapi.repository.UsuarioRepository;
         import org.com.imaapi.repository.VoluntarioRepository;
         import org.slf4j.Logger;

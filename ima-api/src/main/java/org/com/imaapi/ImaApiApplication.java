@@ -14,17 +14,4 @@ public class ImaApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(ImaApiApplication.class, args);
     }
-
-    @Bean
-    public CommandLineRunner run() {
-        return args -> {
-            try {
-                var service = CalendarioGoogleService.getCalendarService();
-                List<Event> events = CalendarioGoogleService.getUpcomingEvents(service, 10);
-                CalendarioGoogleService.printUpcomingEvents(events);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        };
-    }
 }
