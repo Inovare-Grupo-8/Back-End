@@ -1,10 +1,10 @@
 package org.com.imaapi.service;
 
-import org.com.imaapi.model.Usuario;
-import org.com.imaapi.model.Voluntario;
-import org.com.imaapi.model.input.UsuarioInput;
-import org.com.imaapi.model.input.VoluntarioInput;
-import org.com.imaapi.model.output.UsuarioOutput;
+import org.com.imaapi.model.Usuario.Usuario;
+import org.com.imaapi.model.Usuario.Voluntario;
+import org.com.imaapi.model.Usuario.input.UsuarioInput;
+import org.com.imaapi.model.Usuario.input.VoluntarioInput;
+import org.com.imaapi.model.Usuario.output.UsuarioOutput;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

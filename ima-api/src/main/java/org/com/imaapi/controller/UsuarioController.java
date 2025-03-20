@@ -1,8 +1,8 @@
 package org.com.imaapi.controller;
 
-import org.com.imaapi.model.Usuario;
-import org.com.imaapi.model.input.UsuarioInput;
-import org.com.imaapi.model.output.UsuarioOutput;
+import org.com.imaapi.model.Usuario.Usuario;
+import org.com.imaapi.model.Usuario.input.UsuarioInput;
+import org.com.imaapi.model.Usuario.output.UsuarioOutput;
 import org.com.imaapi.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
