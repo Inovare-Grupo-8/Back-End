@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/evento")
-public class EventoController {
+@RequestMapping("/consulta")
+public class ConsultaController {
 
     @Autowired
     private ConsultaService consultaService;
