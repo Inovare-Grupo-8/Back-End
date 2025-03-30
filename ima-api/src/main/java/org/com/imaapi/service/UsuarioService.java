@@ -49,19 +49,13 @@ public class UsuarioService {
                 usuarioResponse.setFuncao(voluntario.getFuncao());
             }
 
+            emailService.enviarEmailCadastroFeito(usuarioInput.getEmail(), usuarioInput.getNome());
+
             return new ResponseEntity<>(usuarioResponse, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar usuário: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        // -Enviar um email para verificar a conta
-        emailService.enviarEmailTexto(usuarioInput.getEmail(),
-                "Novo usuário cadastrado",
-                "Você está recebendo um email de cadastro");
-        return new ResponseEntity<>(usuarioResponse, HttpStatus.CREATED);
-
-
     }
 
     public ResponseEntity<List<Usuario>> buscarUsuarios() {
