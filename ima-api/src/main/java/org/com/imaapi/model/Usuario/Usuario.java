@@ -3,8 +3,8 @@ package org.com.imaapi.model.Usuario;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Setter;
-import org.com.imaapi.model.Usuario.enums.Genero;
-import org.com.imaapi.model.Usuario.enums.TipoUsuario;
+import org.com.imaapi.model.enums.Genero;
+import org.com.imaapi.model.enums.TipoUsuario;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

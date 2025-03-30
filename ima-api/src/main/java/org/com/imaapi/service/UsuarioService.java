@@ -56,6 +56,10 @@ public class UsuarioService {
         try {
             logger.info("Buscando todos os usuários");
             List<Usuario> usuarios = usuarioRepository.findAll();
+            if (usuarios.isEmpty()) {
+                logger.info("Nenhum usuário encontrado");
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
             logger.info("Usuários encontrados: {}", usuarios);
             return new ResponseEntity<>(usuarios, HttpStatus.OK);
         } catch (Exception erro) {

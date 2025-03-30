@@ -3,7 +3,7 @@ package org.com.imaapi.model.Usuario;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Setter;
-import org.com.imaapi.model.Usuario.enums.Funcao;
+import org.com.imaapi.model.enums.Funcao;
 
 import java.time.LocalDateTime;
 

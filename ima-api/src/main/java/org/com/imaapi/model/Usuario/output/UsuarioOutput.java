@@ -2,8 +2,8 @@ package org.com.imaapi.model.Usuario.output;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-import org.com.imaapi.model.Usuario.enums.Funcao;
-import org.com.imaapi.model.Usuario.enums.Genero;
+import org.com.imaapi.model.enums.Funcao;
+import org.com.imaapi.model.enums.Genero;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

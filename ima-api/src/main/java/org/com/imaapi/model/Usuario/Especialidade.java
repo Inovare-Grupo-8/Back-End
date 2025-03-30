@@ -1,7 +1,9 @@
 package org.com.imaapi.model.Usuario;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "especialidade")
 public class Especialidade {

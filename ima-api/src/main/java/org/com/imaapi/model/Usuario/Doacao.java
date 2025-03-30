@@ -1,10 +1,12 @@
 package org.com.imaapi.model.Usuario;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Data
 @Entity
 @Table(name = "doacao")
 public class Doacao {

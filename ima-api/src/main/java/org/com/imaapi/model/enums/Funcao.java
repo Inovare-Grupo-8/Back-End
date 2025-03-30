@@ -1,4 +1,4 @@
-package org.com.imaapi.model.Usuario.enums;
+package org.com.imaapi.model.enums;
 
 public enum Funcao {
     JURIDICA("juridica"),
