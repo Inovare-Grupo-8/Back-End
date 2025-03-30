@@ -1,7 +1,7 @@
 package org.com.imaapi.model.Usuario.input;
 
 import jakarta.persistence.*;
-import org.com.imaapi.model.Usuario.enums.Funcao;
+import org.com.imaapi.model.enums.Funcao;
 
 import lombok.Data;
 

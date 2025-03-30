@@ -4,8 +4,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
-import org.com.imaapi.model.Usuario.enums.Funcao;
-import org.com.imaapi.model.Usuario.enums.Genero;
+import org.com.imaapi.model.enums.Funcao;
+import org.com.imaapi.model.enums.Genero;
 
 @Data
 public class UsuarioInput {
