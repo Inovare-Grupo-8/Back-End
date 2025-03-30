@@ -29,14 +29,18 @@ public class UsuarioService {
     @Autowired
     private VoluntarioService voluntarioService;
 
+    @Autowired
+    private EmailService emailService;
+
     public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
+        UsuarioOutput usuarioResponse;
         try {
             logger.info("Cadastrando usuário: {}", usuarioInput);
             Usuario usuarioSalvo = gerarObjetoUsuario(usuarioInput);
             Usuario salvarUsuario = usuarioRepository.save(usuarioSalvo);
             logger.info("Usuário cadastrado com sucesso: {}", salvarUsuario);
 
-            UsuarioOutput usuarioResponse = gerarObjetoUsuarioOutput(salvarUsuario);
+            usuarioResponse = gerarObjetoUsuarioOutput(salvarUsuario);
 
             if (Boolean.TRUE.equals(usuarioInput.getIsVoluntario())) {
                 VoluntarioInput voluntarioInput = gerarObjetoVoluntario(usuarioInput, salvarUsuario.getIdUsuario());
@@ -50,16 +54,20 @@ public class UsuarioService {
             logger.error("Erro ao cadastrar usuário: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        // -Enviar um email para verificar a conta
+        emailService.enviarEmailTexto(usuarioInput.getEmail(),
+                "Novo usuário cadastrado",
+                "Você está recebendo um email de cadastro");
+        return new ResponseEntity<>(usuarioResponse, HttpStatus.CREATED);
+
+
     }
 
     public ResponseEntity<List<Usuario>> buscarUsuarios() {
         try {
             logger.info("Buscando todos os usuários");
             List<Usuario> usuarios = usuarioRepository.findAll();
-            if (usuarios.isEmpty()) {
-                logger.info("Nenhum usuário encontrado");
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
             logger.info("Usuários encontrados: {}", usuarios);
             return new ResponseEntity<>(usuarios, HttpStatus.OK);
         } catch (Exception erro) {
