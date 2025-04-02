@@ -1,4 +1,4 @@
-package org.com.imaapi.model.Consulta.input;
+package org.com.imaapi.model.consulta.input;
 
 import lombok.Data;
 import org.com.imaapi.model.enums.ModalidadeConsulta;

@@ -1,4 +1,4 @@
-package org.com.imaapi.model.Usuario.input;
+package org.com.imaapi.model.usuario.input;
 
 import jakarta.persistence.*;
 import org.com.imaapi.model.enums.Funcao;
