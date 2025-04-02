@@ -1,4 +1,4 @@
-package org.com.imaapi.model.usuario.input;
+package org.com.imaapi.model.Usuario.input;
 
 import lombok.Data;
 
