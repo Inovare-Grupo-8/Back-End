@@ -1,4 +1,4 @@
-package org.com.imaapi.model.Usuario.output;
+package org.com.imaapi.model.usuario.output;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;

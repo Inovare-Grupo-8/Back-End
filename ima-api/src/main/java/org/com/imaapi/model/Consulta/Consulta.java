@@ -1,9 +1,9 @@
-package org.com.imaapi.model.Consulta;
+package org.com.imaapi.model.consulta;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.com.imaapi.model.Usuario.Usuario;
-import org.com.imaapi.model.Usuario.Especialidade;
+import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.model.usuario.Especialidade;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
 import org.com.imaapi.model.enums.StatusConsulta;
 
