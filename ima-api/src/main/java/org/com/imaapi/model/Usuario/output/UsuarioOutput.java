@@ -2,6 +2,7 @@ package org.com.imaapi.model.Usuario.output;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import org.com.imaapi.model.Usuario.Endereco;
 import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.model.enums.Genero;
 
@@ -21,4 +22,5 @@ public class UsuarioOutput {
     private Genero genero;
     private Funcao funcao;
     private LocalDateTime dataCadastro;
+    private Endereco endereco;
 }
