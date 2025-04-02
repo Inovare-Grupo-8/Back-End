@@ -1,4 +1,4 @@
-package org.com.imaapi.model.usuario;
+package org.com.imaapi.model.Usuario;
 
 import jakarta.persistence.*;
 import lombok.Data;
