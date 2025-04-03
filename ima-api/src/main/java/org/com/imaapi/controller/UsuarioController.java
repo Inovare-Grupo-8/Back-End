@@ -1,8 +1,8 @@
 package org.com.imaapi.controller;
 
-import org.com.imaapi.model.Usuario.Usuario;
-import org.com.imaapi.model.Usuario.input.UsuarioInput;
-import org.com.imaapi.model.Usuario.output.UsuarioOutput;
+import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +31,11 @@ class UsuarioController {
     @GetMapping("/{id}")
     public ResponseEntity<Optional<Usuario>> buscaUsuario(@PathVariable Integer id) {
         return usuarioService.buscaUsuario(id);
+    }
+
+    @GetMapping("/por-nome")
+    public ResponseEntity<List<Usuario>> buscaUsuarioPorNome(@RequestParam String nome) {
+        return usuarioService.buscaUsuarioPorNome(nome);
     }
 
     @PutMapping("/{id}")

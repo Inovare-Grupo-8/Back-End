@@ -1,6 +1,6 @@
 package org.com.imaapi.repository;
 
-import org.com.imaapi.model.Usuario.Voluntario;
+import org.com.imaapi.model.usuario.Voluntario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
