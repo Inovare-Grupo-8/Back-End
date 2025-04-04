@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: org.com.imaapi.ImaApiApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.71 s -- in org.com.imaapi.ImaApiApplicationTests
