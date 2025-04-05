@@ -1,9 +1,11 @@
 org\com\imaapi\model\usuario\output\UsuarioOutput.class
 org\com\imaapi\model\consulta\output\ConsultaOutput.class
 org\com\imaapi\repository\VoluntarioRepository.class
+org\com\imaapi\config\SecureConfig.class
 org\com\imaapi\controller\UsuarioController.class
 org\com\imaapi\service\impl\ConsultaServiceImpl.class
 org\com\imaapi\service\impl\EmailServiceImpl.class
+org\com\imaapi\controller\OauthController.class
 org\com\imaapi\model\enums\Genero.class
 org\com\imaapi\model\usuario\Telefone.class
 org\com\imaapi\service\VoluntarioService.class
