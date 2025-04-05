@@ -53,10 +53,10 @@ public class UsuarioServiceImpl implements UsuarioService {
                 Voluntario voluntario = voluntarioService.cadastrarVoluntario(voluntarioInput).getBody();
                 logger.info("Voluntário cadastrado com sucesso: {}", voluntario);
                 usuarioResponse.setFuncao(voluntario.getFuncao());
+                emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de voluntario");
+            }else {
+                emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de email");
             }
-
-            emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "");
-
             return new ResponseEntity<>(usuarioResponse, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar usuário: {}", erro.getMessage());

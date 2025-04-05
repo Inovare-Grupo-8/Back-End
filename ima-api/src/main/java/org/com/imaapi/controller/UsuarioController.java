@@ -26,6 +26,7 @@ class UsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
+        logger.info("Controller - cadastrarUsuario", usuarioInput);
         return usuarioService.cadastrarUsuario(usuarioInput);
     }
 
