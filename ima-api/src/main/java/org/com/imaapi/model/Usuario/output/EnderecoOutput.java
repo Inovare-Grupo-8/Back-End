@@ -1,10 +1,15 @@
 package org.com.imaapi.model.Usuario.output;
 
+import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
 import lombok.Data;
+import lombok.Getter;
 import lombok.Setter;
 
+
 @Data
-@Setter
+@Getter
+@Table(name = "enderecos")
 public class EnderecoOutput {
     private String cep;
     private String logradouro;

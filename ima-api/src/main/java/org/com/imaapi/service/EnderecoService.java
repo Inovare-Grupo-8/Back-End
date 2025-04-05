@@ -1,41 +1,58 @@
 package org.com.imaapi.service;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.com.imaapi.model.Usuario.output.EnderecoOutput;
 import org.com.imaapi.repository.EnderecoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class EnderecoService {
 
-    @Autowired
-    private EnderecoRepository enderecoRepository;
+    private static final String ViaCepApi = "https://viacep.com.br/ws/%s/json/";
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnderecoService.class);
 
-    public EnderecoOutput buscaEndereco(String cep){
+    private final EnderecoRepository enderecoRepository;
 
-        String api = "https://viacep.com.br/ws/"+ URLEncoder.encode(cep)+"/json/";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(api))
-                .build();
-
-        try {
-            HttpResponse<String> response = HttpClient
-                    .newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-            return new Gson().fromJson(response.body(), EnderecoOutput.class);
-        }catch (Exception erro){
-            throw new RuntimeException("Não consegui obter o endereço com esse CEP");
-        }
+    public EnderecoService(EnderecoRepository enderecoRepository) {
+        this.enderecoRepository = enderecoRepository;
     }
+
+    public EnderecoOutput buscaEndereco(String cep) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        String url = String.format(ViaCepApi, cep);
+        ResponseEntity<EnderecoOutput> response = restTemplate.getForEntity(url, EnderecoOutput.class);
+
+        EnderecoOutput enderecoOutput = response.getBody();
+
+        if (enderecoOutput == null || enderecoOutput.getCep() == null) {
+            throw new RuntimeException("Não consegui obter o endereço com esse CEP: " + cep);
+        }
+
+        LOGGER.info("CEP consultado: {}", cep);
+
+//        EnderecoOutput EnderecoCompleto = getEndereco(enderecoOutput);
+
+//        enderecoRepository.save(EnderecoCompleto);
+        return enderecoOutput;
+
+
+    }
+
+//    private static EnderecoOutput getEndereco(EnderecoOutput enderecoOutput) {
+//        EnderecoOutput EnderecoCompleto = new EnderecoOutput();
+//        EnderecoCompleto.setCep(enderecoOutput.getCep());
+//        EnderecoCompleto.setLogradouro(enderecoOutput.getLogradouro());
+//        EnderecoCompleto.setComplemento(enderecoOutput.getComplemento());
+//        EnderecoCompleto.setNumero(enderecoOutput.getNumero());
+//        EnderecoCompleto.setBairro(enderecoOutput.getBairro());
+//        EnderecoCompleto.setLocalidade(enderecoOutput.getLocalidade());
+//        EnderecoCompleto.setUf(enderecoOutput.getUf());
+//        EnderecoCompleto.setEstado(enderecoOutput.getEstado());
+//        EnderecoCompleto.setRegiao(enderecoOutput.getRegiao());
+//        return EnderecoCompleto;
+
 }
