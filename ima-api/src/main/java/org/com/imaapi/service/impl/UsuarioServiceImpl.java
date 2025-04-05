@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -36,8 +37,6 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private VoluntarioRepository voluntarioRepository;
 
     public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
         UsuarioOutput usuarioResponse;
@@ -56,7 +55,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuarioResponse.setFuncao(voluntario.getFuncao());
             }
 
-            emailService.enviarEmailCadastroFeito(usuarioInput.getEmail(), usuarioInput.getNome());
+            emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "");
 
             return new ResponseEntity<>(usuarioResponse, HttpStatus.CREATED);
         } catch (Exception erro) {
@@ -77,7 +76,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
     }
 
-    public ResponseEntity<Optional<Usuario>> buscaUsuario(Integer id) {
+    public ResponseEntity<Optional<Usuario>> buscaUsuario(@PathVariable Integer id) {
         try {
             logger.info("Buscando usuário com ID: {}", id);
             Optional<Usuario> usuario = usuarioRepository.findById(id);

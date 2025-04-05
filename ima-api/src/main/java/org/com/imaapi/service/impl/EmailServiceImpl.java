@@ -26,7 +26,7 @@ public class EmailServiceImpl implements EmailService {
     private String remetente;
 
     /* Método para enviar um e-mail de boas-vindas ao usuário. */
-    public String enviarEmailCadastroFeito(String destinatario, String nome) {
+    public String enviarEmail(String destinatario, String nome, String assunto){
         // Verifica se o destinatário é nulo ou vazio
         if (destinatario == null || destinatario.isEmpty()) {
             logger.error("O destinatário do e-mail está vazio ou nulo.");
@@ -42,11 +42,18 @@ public class EmailServiceImpl implements EmailService {
             // Configura o remetente, destinatário e assunto do e-mail
             helper.setFrom(remetente);
             helper.setTo(destinatario);
-            helper.setSubject("Bem-vindo ao IMA!");
 
+            if (assunto == "Bem-vindo ao IMA!"){
+                System.out.println("Enviando email de cadastro");
+            helper.setSubject("Bem-vindo ao IMA!");
             // Gera o conteúdo HTML do e-mail
             String htmlContent = gerarConteudoHtmlCadastro(nome);
-            helper.setText(htmlContent, true); // Define o conteúdo como HTML
+                helper.setText(htmlContent, true);
+            }else if (assunto == ""){
+                System.out.println("Assunto não encontrado");
+            }
+
+             // Define o conteúdo como HTML
 
             // Envia o e-mail
             javaMailSender.send(mimeMessage);
