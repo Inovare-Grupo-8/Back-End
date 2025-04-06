@@ -14,7 +14,14 @@ public class SecureConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/usuarios/**",       // cadastro, login normal, etc
+                                "/login-google",      // o botão que redireciona pro Google
+                                "/oauth2/**"          // rotas internas do Spring OAuth
+                        ).permitAll()
+                        .anyRequest().authenticated()  // o resto, precisa estar logado
+                )
                 .oauth2Login(Customizer.withDefaults());
 
         return http.build();
