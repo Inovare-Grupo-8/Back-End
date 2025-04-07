@@ -9,12 +9,17 @@ import org.com.imaapi.repository.ConsultaRepository;
 import org.com.imaapi.repository.EspecialidadeRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.ConsultaService;
+import org.com.imaapi.service.EmailService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
 
 @Service
 public class ConsultaServiceImpl implements ConsultaService {
@@ -29,6 +34,9 @@ public class ConsultaServiceImpl implements ConsultaService {
 
     @Autowired
     private EspecialidadeRepository especialidadeRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     public ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput) {
         try {
@@ -50,11 +58,60 @@ public class ConsultaServiceImpl implements ConsultaService {
             Consulta salvarConsulta = consultaRepository.save(consultaSalvo);
             logger.info("Evento cadastrado com sucesso: {}", salvarConsulta);
 
+            Usuario assistido = usuarioRepository.findById(consultaInput.getIdAssistido())
+                    .orElseThrow(() -> new RuntimeException("Usuário assistido não encontrado"));
+            emailService.enviarEmail(assistido.getEmail(),  assistido.getNome(), "agendamento realizado");
+
+            Usuario voluntario = usuarioRepository.findById(consultaInput.getIdVoluntario())
+                    .orElseThrow(() -> new RuntimeException("Usuário voluntario não encontrado"));
+
+            emailService.enviarEmail(voluntario.getEmail(), voluntario.getNome(), "agendamento realizado volutario");
+
             ConsultaOutput eventoResponse = gerarObjetoEventoOutput(salvarConsulta);
 
             return new ResponseEntity<>(eventoResponse, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar evento: {}", erro.getMessage());
+            if (erro.getMessage().contains("Authentication failed")) {
+                logger.error("Detalhes da falha de autenticação: ", erro);
+            }
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Consulta> buscarEventoPorId(@PathVariable Integer id) {
+        try {
+            logger.info("Buscando evento por ID: {}", id);
+            Consulta consulta = consultaRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
+            return new ResponseEntity<>(consulta, HttpStatus.OK);
+        } catch (Exception erro) {
+            logger.error("Erro ao buscar evento por ID: {}", erro.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/assistido/{idAssistido}")
+    public ResponseEntity<List<Consulta>> buscarEventosPorAssistido(@PathVariable Integer idAssistido) {
+        try {
+            logger.info("Buscando eventos por assistido ID: {}", idAssistido);
+            List<Consulta> consultas = consultaRepository.findByAssistidoId(idAssistido);
+            return new ResponseEntity<>(consultas, HttpStatus.OK);
+        } catch (Exception erro) {
+            logger.error("Erro ao buscar eventos por assistido: {}", erro.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/voluntario/{idVoluntario}")
+    public ResponseEntity<List<Consulta>> buscarEventosPorVoluntario(@PathVariable Integer idVoluntario) {
+        try {
+            logger.info("Buscando eventos por voluntário ID: {}", idVoluntario);
+            List<Consulta> consultas = consultaRepository.findByVoluntarioId(idVoluntario);
+            return new ResponseEntity<>(consultas, HttpStatus.OK);
+        } catch (Exception erro) {
+            logger.error("Erro ao buscar eventos por voluntário: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

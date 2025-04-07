@@ -20,7 +20,6 @@ class UsuarioController {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
 
-
     @Autowired
     private UsuarioService usuarioService;
 
