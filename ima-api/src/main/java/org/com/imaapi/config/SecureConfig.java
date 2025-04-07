@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -16,13 +17,17 @@ public class SecureConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/usuarios/**",       // cadastro, login normal, etc
-                                "/login-google",      // o botão que redireciona pro Google
-                                "/oauth2/**"          // rotas internas do Spring OAuth
-                        ).permitAll()
-                        .anyRequest().authenticated()  // o resto, precisa estar logado
+                                "/login-google",
+                                "/usuarios"
+                        )
+                        .permitAll()
+                        .anyRequest().authenticated()  // Requer autenticação para tudo
                 )
-                .oauth2Login(Customizer.withDefaults());
+                .oauth2Login(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults());
+
+//        http
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }

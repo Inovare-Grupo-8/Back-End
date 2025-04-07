@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/usuarios")
-class UsuarioController {
+public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
