@@ -9,3 +9,4 @@ public class ImaApiApplication {
         SpringApplication.run(ImaApiApplication.class, args);
     }
 }
+
