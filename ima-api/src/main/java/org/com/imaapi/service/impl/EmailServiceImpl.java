@@ -49,16 +49,18 @@ public class EmailServiceImpl implements EmailService {
                     htmlContent = gerarConteudoHtmlCadastro(nome, "Seja bem-vindo(a) ao Instituto Mãos Amigas Voluntário!");
                     break;
                 case "agendamento realizado":
-                    logger.info("Enviando email agendamente realizado usuario comum");
-                    helper.setSubject("Agendamento Realizado");
-                    htmlContent = gerarConteudoHtmlAgendamento(nome, "Agendamento Realizado", "Seu agendamento foi realizado!");
-                    break;
-                case "agendamento realizado " +
-                             "":
-                    logger.info("Enviando email agendamente realizado para o voluntario");
-                    helper.setSubject("Agendamento Realizado");
-                    htmlContent = gerarConteudoHtmlAgendamento(nome, "Agendamento Realizado", "Um agendamento foi realizado!");
-                    break;
+                        logger.info("Enviando email agendamento realizado para o usuário comum");
+                        helper.setSubject("Agendamento Realizado");
+                        htmlContent = gerarConteudoHtmlAgendamento(nome, "Agendamento Realizado", "Seu agendamento foi realizado!");
+                        helper.setText(htmlContent, true);
+                        javaMailSender.send(mimeMessage);
+
+                        logger.info("Enviando email agendamento realizado para o voluntário");
+                        helper.setSubject("Agendamento Realizado");
+                        htmlContent = gerarConteudoHtmlAgendamento(nome, "Agendamento Realizado", "Um agendamento foi realizado!");
+                        helper.setText(htmlContent, true);
+                        javaMailSender.send(mimeMessage);
+                        break;
                 case "agendamento cancelado":
                     logger.info("Enviando email agendamento cancelado");
                     helper.setSubject("Agendamento Cancelado");

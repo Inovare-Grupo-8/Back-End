@@ -64,8 +64,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 
             Usuario voluntario = usuarioRepository.findById(consultaInput.getIdVoluntario())
                     .orElseThrow(() -> new RuntimeException("Usuário voluntario não encontrado"));
-
-            emailService.enviarEmail(voluntario.getEmail(), voluntario.getNome(), "agendamento realizado volutario");
+            emailService.enviarEmail(voluntario.getEmail(), voluntario.getNome(), "agendamento realizado");
 
             ConsultaOutput eventoResponse = gerarObjetoEventoOutput(salvarConsulta);
 
