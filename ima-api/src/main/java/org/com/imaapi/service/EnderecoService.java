@@ -9,31 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-@Service
-public class EnderecoService {
-    private static final String ViaCepApi = "https://viacep.com.br/ws/%s/json/";
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnderecoService.class);
-
-    private final EnderecoRepository enderecoRepository;
-
-    public EnderecoService(EnderecoRepository enderecoRepository) {
-        this.enderecoRepository = enderecoRepository;
-    }
-
-    public EnderecoOutput buscaEndereco(String cep) {
-        RestTemplate restTemplate = new RestTemplate();
-        String url = String.format(ViaCepApi, cep);
-        ResponseEntity<EnderecoOutput> response = restTemplate.getForEntity(url, EnderecoOutput.class);
-        EnderecoOutput enderecoOutput = response.getBody();
-
-        if (enderecoOutput == null || enderecoOutput.getCep() == null) {
-            throw new RuntimeException("Não consegui obter o endereço com esse CEP: " + cep);
-        }
-        LOGGER.info("CEP consultado: {}", cep);
-
-        //        EnderecoOutput EnderecoCompleto = getEndereco(enderecoOutput);
-
-        //        enderecoRepository.save(EnderecoCompleto);
-        return enderecoOutput;
-    }
+public interface EnderecoService {
+    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep);
 }
