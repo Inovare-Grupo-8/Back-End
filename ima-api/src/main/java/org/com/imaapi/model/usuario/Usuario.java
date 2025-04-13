@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Setter;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.enums.TipoUsuario;
+import org.com.imaapi.model.usuario.output.EnderecoOutput;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

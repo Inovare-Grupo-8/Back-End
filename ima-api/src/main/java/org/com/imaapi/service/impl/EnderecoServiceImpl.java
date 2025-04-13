@@ -1,5 +1,6 @@
 package org.com.imaapi.service.impl;
 
+import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.service.EnderecoService;
@@ -20,7 +21,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     public EnderecoServiceImpl(EnderecoRepository enderecoRepository) {
         this.enderecoRepository = enderecoRepository;
     }
-public ResponseEntity<EnderecoOutput> buscaEndereco(String cep) {
+    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep) {
         if (cep == null || cep.trim().isEmpty()) {
             throw new IllegalArgumentException("O CEP não pode ser nulo ou vazio.");
         }

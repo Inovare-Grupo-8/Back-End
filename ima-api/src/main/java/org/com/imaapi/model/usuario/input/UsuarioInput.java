@@ -4,9 +4,11 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.model.enums.Genero;
-
+@Getter @Setter
 @Data
 public class UsuarioInput {
     private String nome;
@@ -18,4 +20,5 @@ public class UsuarioInput {
     private Genero genero;
     private Boolean isVoluntario;
     private Funcao funcao;
+    private UsuarioInput cep;
 }

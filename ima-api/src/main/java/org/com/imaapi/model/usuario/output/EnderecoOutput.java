@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Data
 @Getter
-@Table(name = "enderecos")
+@Table(name = "endereco")
 public class EnderecoOutput {
     private String cep;
     private String logradouro;
