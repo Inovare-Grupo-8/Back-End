@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.model.enums.Genero;
+import org.com.imaapi.model.enums.TipoUsuario;
 
 @Data
 public class UsuarioInput {
@@ -18,4 +19,5 @@ public class UsuarioInput {
     private Genero genero;
     private Boolean isVoluntario;
     private Funcao funcao;
+    private TipoUsuario tipo;
 }

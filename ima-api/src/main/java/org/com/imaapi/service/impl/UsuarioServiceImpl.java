@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -158,7 +159,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioInput.getNome());
         usuario.setEmail(usuarioInput.getEmail());
-        usuario.setSenha(usuarioInput.getSenha());
+        String senhaEncriptada = new BCryptPasswordEncoder().encode(usuarioInput.getSenha());
+        usuario.setSenha(senhaEncriptada);
         usuario.setCpf(usuarioInput.getCpf());
         usuario.setDataNascimento(usuarioInput.getDataNascimento());
         usuario.setRenda(usuarioInput.getRenda());
