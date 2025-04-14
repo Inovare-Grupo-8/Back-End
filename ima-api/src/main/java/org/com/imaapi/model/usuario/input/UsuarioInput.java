@@ -20,5 +20,5 @@ public class UsuarioInput {
     private Genero genero;
     private Boolean isVoluntario;
     private Funcao funcao;
-    private UsuarioInput cep;
+    private Integer enderecoId;
 }

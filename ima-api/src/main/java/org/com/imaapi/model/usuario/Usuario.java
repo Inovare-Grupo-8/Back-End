@@ -50,6 +50,6 @@ public class Usuario {
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "fk_endereco")
+    @JoinColumn(name = "fk_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;
 }
