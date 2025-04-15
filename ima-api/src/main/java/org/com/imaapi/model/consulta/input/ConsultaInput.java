@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class ConsultaInput {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime horario;
+
     @NotBlank(message="Status não pode estar em branco")
     private StatusConsulta status;
 
@@ -20,6 +21,7 @@ public class ConsultaInput {
 
     @NotBlank(message="Informe o local da consulta")
     private String local;
+
     private String observacoes;
     private Integer idEspecialidade;
     private Integer idAssistido;
