@@ -9,6 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 public interface EnderecoService {
     public ResponseEntity<EnderecoOutput> buscaEndereco(String cep);
+
+    public List<EnderecoOutput> listarEnderecos();
 }

@@ -1,10 +1,13 @@
 package org.com.imaapi.service.impl;
 
+import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.Voluntario;
 import org.com.imaapi.model.usuario.input.UsuarioInput;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
+import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
+import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.service.EmailService;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +32,9 @@ import java.util.Optional;
 public class UsuarioServiceImpl implements UsuarioService {
 
     private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
+
+    @Autowired
+    private EnderecoRepository enderecoRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -110,6 +117,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             if (usuarioRepository.existsById(id)) {
                 Usuario usuario = gerarObjetoUsuario(usuarioInput);
                 usuario.setIdUsuario(id);
+                usuario.setEndereco(usuarioRepository.findById(id).get().getEndereco());
                 Usuario atualizado = usuarioRepository.save(usuario);
                 logger.info("Usuário atualizado com sucesso: {}", atualizado);
                 return new ResponseEntity<>(atualizado, HttpStatus.OK);
@@ -163,7 +171,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setRenda(usuarioInput.getRenda());
         usuario.setGenero(usuarioInput.getGenero());
         usuario.setDataCadastro(LocalDateTime.now());
+
+        if (usuarioInput.getEnderecoId() != null) {
+            Endereco endereco = enderecoRepository.findById(usuarioInput.getEnderecoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Endereço não encontrado com o ID: " + usuarioInput.getEnderecoId()));
+            usuario.setEndereco(endereco);
+        }
+
         return usuario;
+
     }
 
     private VoluntarioInput gerarObjetoVoluntario(UsuarioInput usuarioInput, Integer idUsuario) {

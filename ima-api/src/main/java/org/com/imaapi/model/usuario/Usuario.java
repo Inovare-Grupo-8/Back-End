@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Setter;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.enums.TipoUsuario;
+import org.com.imaapi.model.usuario.output.EnderecoOutput;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,7 +49,7 @@ public class Usuario {
     private LocalDateTime dataCadastro;
 
     @Setter
-    @ManyToOne
-    @JoinColumn(name = "fk_endereco")
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "fk_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;
 }

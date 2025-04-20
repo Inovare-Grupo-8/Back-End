@@ -1,5 +1,6 @@
 package org.com.imaapi.service.impl;
 
+import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.service.EnderecoService;
@@ -9,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 @Service
 public class EnderecoServiceImpl implements EnderecoService {
@@ -20,7 +23,9 @@ public class EnderecoServiceImpl implements EnderecoService {
     public EnderecoServiceImpl(EnderecoRepository enderecoRepository) {
         this.enderecoRepository = enderecoRepository;
     }
-public ResponseEntity<EnderecoOutput> buscaEndereco(String cep) {
+
+    @Override
+    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep) {
         if (cep == null || cep.trim().isEmpty()) {
             throw new IllegalArgumentException("O CEP não pode ser nulo ou vazio.");
         }
@@ -34,7 +39,31 @@ public ResponseEntity<EnderecoOutput> buscaEndereco(String cep) {
             throw new RuntimeException("Não consegui obter o endereço com esse CEP: " + cep);
         }
 
+        Endereco endereco = new Endereco();
+        endereco.setCep(enderecoOutput.getCep());
+        endereco.setLogradouro(enderecoOutput.getLogradouro());
+        endereco.setBairro(enderecoOutput.getBairro());
+        endereco.setNumero(enderecoOutput.getNumero());
+
+        enderecoRepository.save(endereco);
+
         LOGGER.info("CEP consultado: {}", cep);
+        LOGGER.info("Endereço salvo no banco de dados: {}", endereco);
         return ResponseEntity.ok(enderecoOutput);
+    }
+
+    @Override
+    public List<EnderecoOutput> listarEnderecos() {
+        List<Endereco> enderecos = enderecoRepository.findAll();
+        return enderecos.stream()
+                .map(endereco -> {
+                    EnderecoOutput output = new EnderecoOutput();
+                    output.setCep(endereco.getCep());
+                    output.setLogradouro(endereco.getLogradouro());
+                    output.setBairro(endereco.getBairro());
+                    output.setNumero(endereco.getNumero());
+                    return output;
+                })
+                .toList();
     }
 }
