@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @Service
 public class EnderecoServiceImpl implements EnderecoService {
     private static final String ViaCepApi = "https://viacep.com.br/ws/%s/json/";
@@ -21,6 +23,8 @@ public class EnderecoServiceImpl implements EnderecoService {
     public EnderecoServiceImpl(EnderecoRepository enderecoRepository) {
         this.enderecoRepository = enderecoRepository;
     }
+
+    @Override
     public ResponseEntity<EnderecoOutput> buscaEndereco(String cep) {
         if (cep == null || cep.trim().isEmpty()) {
             throw new IllegalArgumentException("O CEP não pode ser nulo ou vazio.");
@@ -35,7 +39,31 @@ public class EnderecoServiceImpl implements EnderecoService {
             throw new RuntimeException("Não consegui obter o endereço com esse CEP: " + cep);
         }
 
+        Endereco endereco = new Endereco();
+        endereco.setCep(enderecoOutput.getCep());
+        endereco.setLogradouro(enderecoOutput.getLogradouro());
+        endereco.setBairro(enderecoOutput.getBairro());
+        endereco.setNumero(enderecoOutput.getNumero());
+
+        enderecoRepository.save(endereco);
+
         LOGGER.info("CEP consultado: {}", cep);
+        LOGGER.info("Endereço salvo no banco de dados: {}", endereco);
         return ResponseEntity.ok(enderecoOutput);
+    }
+
+    @Override
+    public List<EnderecoOutput> listarEnderecos() {
+        List<Endereco> enderecos = enderecoRepository.findAll();
+        return enderecos.stream()
+                .map(endereco -> {
+                    EnderecoOutput output = new EnderecoOutput();
+                    output.setCep(endereco.getCep());
+                    output.setLogradouro(endereco.getLogradouro());
+                    output.setBairro(endereco.getBairro());
+                    output.setNumero(endereco.getNumero());
+                    return output;
+                })
+                .toList();
     }
 }

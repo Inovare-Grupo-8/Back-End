@@ -1,5 +1,6 @@
 package org.com.imaapi.controller;
 
+import jakarta.validation.Valid;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.input.UsuarioInput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
@@ -25,7 +26,7 @@ class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
+    public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody @Valid UsuarioInput usuarioInput) {
         logger.info("Controller - cadastrarUsuario", usuarioInput);
         return usuarioService.cadastrarUsuario(usuarioInput);
     }

@@ -161,13 +161,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioResponse;
     }
 
-
-    public EnderecoOutput consumirViaCep(String cep) {
-        String url = "https://viacep.com.br/ws/" + cep + "/json/";
-        RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject(url, EnderecoOutput.class);
-    }
-
     private Usuario gerarObjetoUsuario(UsuarioInput usuarioInput) {
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioInput.getNome());
@@ -179,38 +172,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setGenero(usuarioInput.getGenero());
         usuario.setDataCadastro(LocalDateTime.now());
 
-        // 1. Buscar endereço completo a partir do CEP
-        EnderecoOutput enderecoViaCep = consumirViaCep(usuarioInput.getCep());
-
-        // 2. Criar o objeto Endereco
-        Endereco endereco = new Endereco();
-        endereco.setCep(usuarioInput.getCep());
-        endereco.setLogradouro(enderecoViaCep.getLogradouro());
-        endereco.setBairro(enderecoViaCep.getBairro());
-        endereco.setNumero(usuarioInput.getNumero()); // esse vem do front
-
-        Endereco enderecoSalvo = enderecoRepository.save(endereco);
-        usuario.setEndereco(enderecoSalvo);
+        if (usuarioInput.getEnderecoId() != null) {
+            Endereco endereco = enderecoRepository.findById(usuarioInput.getEnderecoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Endereço não encontrado com o ID: " + usuarioInput.getEnderecoId()));
+            usuario.setEndereco(endereco);
+        }
 
         return usuario;
 
     }
-
-
-
-//    public Endereco salvarEndereco(EnderecoOutput enderecoOutput) {
-//        // Converter EnderecoOutput para Endereco
-//        Endereco endereco = new Endereco();
-//        endereco.setCep(enderecoOutput.getCep());
-//        endereco.setLogradouro(enderecoOutput.getLogradouro());
-//        endereco.setBairro(enderecoOutput.getBairro());
-//        endereco.setNumero(enderecoOutput.getNumero());
-//
-//        // Salvar no banco de dados
-//        return enderecoRepository.save(endereco);
-//    }
-
-
 
     private VoluntarioInput gerarObjetoVoluntario(UsuarioInput usuarioInput, Integer idUsuario) {
         VoluntarioInput voluntario = new VoluntarioInput();

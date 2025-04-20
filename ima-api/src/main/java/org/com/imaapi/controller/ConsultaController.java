@@ -1,5 +1,6 @@
 package org.com.imaapi.controller;
 
+import jakarta.validation.Valid;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.com.imaapi.service.ConsultaService;
@@ -15,7 +16,7 @@ public class ConsultaController {
     private ConsultaService consultaService;
 
     @PostMapping
-    public ResponseEntity<ConsultaOutput> criarEvento(@RequestBody ConsultaInput consultaInput) {
+    public ResponseEntity<ConsultaOutput> criarEvento(@RequestBody @Valid ConsultaInput consultaInput) {
         return consultaService.criarEvento(consultaInput);
     }
 }
