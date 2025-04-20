@@ -34,18 +34,13 @@ public class UsuarioInput {
     @NotNull(message = "Valor nulo, insíra um valor válido")
     private Double renda;
 
-    @NotBlank(message = "O gênero deve ser informado")
+    @NotNull(message = "O gênero deve ser informado")
     private Genero genero;
 
-    @NotBlank(message="Confirme se é um voluntário")
-    @AssertTrue
-    @AssertFalse
+    @NotNull(message="Confirme se é um voluntário")
     private Boolean isVoluntario;
 
-    @NotBlank(message="Função não pode estar em branco")
     private Funcao funcao;
-
-    private Integer numero;
 
     private Integer enderecoId;
 }
