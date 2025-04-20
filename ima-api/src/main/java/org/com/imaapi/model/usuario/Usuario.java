@@ -49,7 +49,7 @@ public class Usuario {
     private LocalDateTime dataCadastro;
 
     @Setter
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "fk_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;
 }

@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.model.enums.Genero;
+import org.com.imaapi.model.usuario.output.EnderecoOutput;
+
 @Getter @Setter
 @Data
 public class UsuarioInput {

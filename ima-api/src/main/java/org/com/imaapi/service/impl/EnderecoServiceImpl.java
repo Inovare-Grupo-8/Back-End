@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @Service
 public class EnderecoServiceImpl implements EnderecoService {
     private static final String ViaCepApi = "https://viacep.com.br/ws/%s/json/";
@@ -48,5 +50,20 @@ public class EnderecoServiceImpl implements EnderecoService {
         LOGGER.info("CEP consultado: {}", cep);
         LOGGER.info("Endereço salvo no banco de dados: {}", endereco);
         return ResponseEntity.ok(enderecoOutput);
+    }
+
+    @Override
+    public List<EnderecoOutput> listarEnderecos() {
+        List<Endereco> enderecos = enderecoRepository.findAll();
+        return enderecos.stream()
+                .map(endereco -> {
+                    EnderecoOutput output = new EnderecoOutput();
+                    output.setCep(endereco.getCep());
+                    output.setLogradouro(endereco.getLogradouro());
+                    output.setBairro(endereco.getBairro());
+                    output.setNumero(endereco.getNumero());
+                    return output;
+                })
+                .toList();
     }
 }
