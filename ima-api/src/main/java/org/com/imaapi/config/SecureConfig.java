@@ -23,9 +23,6 @@ public class SecureConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/registrar").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
                         .requestMatchers("/usuarios").permitAll()
                         .anyRequest().authenticated()  // Requer autenticação para tudo
                 )
