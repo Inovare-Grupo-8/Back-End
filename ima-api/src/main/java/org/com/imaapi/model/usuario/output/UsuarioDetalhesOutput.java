@@ -2,6 +2,7 @@ package org.com.imaapi.model.usuario.output;
 
 import lombok.Getter;
 import org.com.imaapi.model.enums.TipoUsuario;
+import org.com.imaapi.model.usuario.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,11 +19,11 @@ public class UsuarioDetalhesOutput implements UserDetails {
     @Getter
     private final TipoUsuario tipo;
 
-    public UsuarioDetalhesOutput(String nome, String email, String senha, TipoUsuario tipo) {
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
-        this.tipo = tipo;
+    public UsuarioDetalhesOutput(Usuario usuario) {
+        this.nome = usuario.getNome();
+        this.email = usuario.getEmail();
+        this.senha = usuario.getSenha();
+        this.tipo = usuario.getTipo();
     }
 
     @Override

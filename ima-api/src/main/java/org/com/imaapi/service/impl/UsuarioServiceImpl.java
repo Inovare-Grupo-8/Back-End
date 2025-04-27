@@ -1,35 +1,27 @@
 package org.com.imaapi.service.impl;
 
+import org.com.imaapi.config.GerenciadorTokenJwt;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.UsuarioMapper;
-import org.com.imaapi.model.usuario.Voluntario;
 import org.com.imaapi.model.usuario.input.UsuarioInput;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
-import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.service.EmailService;
 import org.com.imaapi.service.UsuarioService;
 import org.com.imaapi.service.VoluntarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,12 +33,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-//    @Autowired
-//    private GerenciadorTokenJwt gerenciadorTokenJwt;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -57,7 +43,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     private EmailService emailService;
 
     @Autowired
-    private VoluntarioRepository voluntarioRepository;
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private GerenciadorTokenJwt gerenciadorTokenJwt;
 
     public void cadastrarUsuario(UsuarioInput usuarioInput) {
             String senhaCriptografada = passwordEncoder.encode(usuarioInput.getSenha());
@@ -77,23 +66,23 @@ public class UsuarioServiceImpl implements UsuarioService {
             emailService.enviarEmailCadastroFeito(usuarioInput.getEmail(), usuarioInput.getNome());
     }
 
-//    public UsuarioTokenOutput autenticar(Usuario usuario) {
-//        final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
-//                usuario.getEmail(), usuario.getSenha());
-//
-//        final Authentication authentication = authenticationManager.authenticate(credentials);
-//
-//        Usuario usuarioAutenticado = usuarioRepository.findByEmail(usuario.getEmail())
-//                .orElseThrow(
-//                    () -> new ResponseStatusException(404, "Email de usuário não cadastrado", null)
-//                );
-//
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//        final String token = gerenciadorTokenJwt.generateToken(authentication);
-//
-//        return UsuarioMapper.of(usuarioAutenticado, token);
-//    }
+    public UsuarioTokenOutput autenticar(Usuario usuario) {
+        final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
+                usuario.getEmail(), usuario.getSenha());
+
+        final Authentication authentication = authenticationManager.authenticate(credentials);
+
+        Usuario usuarioAutenticado = usuarioRepository.findByEmail(usuario.getEmail())
+                .orElseThrow(
+                    () -> new ResponseStatusException(404, "Email de usuário não cadastrado", null)
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        final String token = gerenciadorTokenJwt.generateToken(authentication);
+
+        return UsuarioMapper.of(usuarioAutenticado, token);
+    }
 
     public List<UsuarioListarOutput> buscarUsuarios() {
             logger.info("Buscando todos os usuários");
