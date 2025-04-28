@@ -1,35 +1,40 @@
 package org.com.imaapi.service;
-import com.mercadopago.MercadoPagoConfig;
-import com.mercadopago.exceptions.MPException;
-import com.mercadopago.resources.payment.Payment;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
-import lombok.Value;
+import org.com.imaapi.config.MercadoPagoConfig;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.client.RestTemplate;
 
 @Service
-public class PagamentoService {
+public class MercadoPagoService {
 
-    public Payment realizarPagamento(PagamentoRequest request) throws MPException {
+    private static final String BASE_URL = "https://api.mercadopago.com/v1/payments";  // URL da API de pagamentos do Mercado Pago
 
-        MercadoPago.SDK.setAccessToken("TEST-6152032977303285-040620-8db50ebf6be58147ca3aeb005eb25294-2367206344");
+    private final RestTemplate restTemplate;
 
+    public MercadoPagoService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
-        Payment payment = new Payment()
-                .setTransactionAmount(request.getValor())
-                .setToken(request.getToken())
-                .setDescription(request.getDescricao())
-                .setInstallments(request.getParcelas())
-                .setPaymentMethodId(request.getMetodoPagamento())
-                .setPayer(new Payer()
-                        .setEmail(request.getEmailComprador()));
+    public String realizarPagamento(String dadosPagamento) {
+        // Definir o cabeçalho com o token de acesso
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + MercadoPagoConfig.ACCESS_TOKEN);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
+        // Corpo da requisição (dados do pagamento)
+        String jsonBody = "{...}"; // Substitua com os dados do pagamento no formato JSON
 
-        payment.save();
-        return payment;
+        HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+        // Enviar a requisição POST para o Mercado Pago
+        ResponseEntity<String> response = restTemplate.exchange(BASE_URL, HttpMethod.POST, entity, String.class);
+
+        // Verificar a resposta
+        if (response.getStatusCode() == HttpStatus.CREATED) {
+            return response.getBody();  // Retorna a resposta do pagamento
+        } else {
+            return "Erro ao processar o pagamento";
+        }
     }
 }
-
-
