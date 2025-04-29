@@ -2,8 +2,8 @@ package org.com.imaapi.model.enums;
 
 public enum Funcao {
     JURIDICA("juridica"),
-    PSICOLOGICA("psicologica"),
-    PSICOPEDAGOGICA("psicopedagogica"),
+    PSICOLOGIA("psicologia"),
+    PSICOPEDAGOGIA("psicopedagogia"),
     CONTABIL("contabil"),
     FINANCEIRA("financeira"),
     PEDIATRIA("pediatria"),
