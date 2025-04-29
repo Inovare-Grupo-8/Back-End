@@ -43,4 +43,6 @@ public class UsuarioInput {
     private Funcao funcao;
 
     private Integer enderecoId;
+
+    // infos endereço
 }

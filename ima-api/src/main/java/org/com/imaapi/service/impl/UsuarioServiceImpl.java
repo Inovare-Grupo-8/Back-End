@@ -48,6 +48,9 @@ public class UsuarioServiceImpl implements UsuarioService {
     public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
         UsuarioOutput usuarioResponse;
         try {
+
+            //cadastrar endereço
+
             logger.info("Cadastrando usuário: {}", usuarioInput);
             Usuario usuarioSalvo = gerarObjetoUsuario(usuarioInput);
             Usuario salvarUsuario = usuarioRepository.save(usuarioSalvo);

@@ -3,10 +3,9 @@ package org.com.imaapi.controller;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.service.EnderecoService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import java.util.List;
 
@@ -21,8 +20,8 @@ public class EnderecoController {
 
         
         @GetMapping("/{cep}")
-        public ResponseEntity<EnderecoOutput> buscaEndereco(@PathVariable String cep) {
-            return enderecoService.buscaEndereco(cep);
+        public ResponseEntity<EnderecoOutput> buscaEndereco(@PathVariable String cep, @RequestParam String numero) {
+            return enderecoService.buscaEndereco(cep, numero);
         }
 
         @GetMapping

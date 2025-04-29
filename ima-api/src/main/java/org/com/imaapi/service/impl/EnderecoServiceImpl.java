@@ -4,7 +4,6 @@ import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.service.EnderecoService;
-import org.hibernate.annotations.DialectOverride;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +24,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     }
 
     @Override
-    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep) {
+    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero) {
         if (cep == null || cep.trim().isEmpty()) {
             throw new IllegalArgumentException("O CEP não pode ser nulo ou vazio.");
         }
@@ -37,6 +36,10 @@ public class EnderecoServiceImpl implements EnderecoService {
 
         if (enderecoOutput == null || enderecoOutput.getCep() == null) {
             throw new RuntimeException("Não consegui obter o endereço com esse CEP: " + cep);
+        }
+
+        if (numero != null && !numero.trim().isEmpty()) {
+            enderecoOutput.setNumero(numero);
         }
 
         Endereco endereco = new Endereco();
