@@ -7,6 +7,8 @@ import java.time.LocalDate;
 
 import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.model.enums.Genero;
+import org.com.imaapi.model.enums.TipoUsuario;
+
 @Data
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
@@ -41,6 +43,7 @@ public class UsuarioInput {
     private Boolean isVoluntario;
 
     private Funcao funcao;
+    private TipoUsuario tipo;
 
     private Integer enderecoId;
 
