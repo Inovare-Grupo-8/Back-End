@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/cep")
 public class EnderecoController {
@@ -18,7 +20,7 @@ public class EnderecoController {
 
         
         @GetMapping("/{cep}")
-        public ResponseEntity<EnderecoOutput> buscaEndereco(@PathVariable String cep, @RequestParam(required = false) String numero) {
+        public ResponseEntity<EnderecoOutput> buscaEndereco(@PathVariable String cep, @RequestParam String numero) {
             return enderecoService.buscaEndereco(cep, numero);
         }
 
