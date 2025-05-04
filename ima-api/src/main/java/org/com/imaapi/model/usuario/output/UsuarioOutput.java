@@ -21,4 +21,5 @@ public class UsuarioOutput {
     private Genero genero;
     private Funcao funcao;
     private LocalDateTime dataCadastro;
+    private EnderecoOutput endereco;
 }

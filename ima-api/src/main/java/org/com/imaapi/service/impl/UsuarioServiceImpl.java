@@ -11,6 +11,7 @@ import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.service.EmailService;
+import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.UsuarioService;
 import org.com.imaapi.service.VoluntarioService;
 import org.slf4j.Logger;
@@ -44,22 +45,31 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private EnderecoServiceImpl enderecoServiceImpl;
+    @Autowired
+    private EnderecoService enderecoService;
 
     public ResponseEntity<UsuarioOutput> cadastrarUsuario(@RequestBody UsuarioInput usuarioInput) {
         UsuarioOutput usuarioResponse;
         try {
-
-            //cadastrar endereço
-
             logger.info("Cadastrando usuário: {}", usuarioInput);
-            Usuario usuarioSalvo = gerarObjetoUsuario(usuarioInput);
-            Usuario salvarUsuario = usuarioRepository.save(usuarioSalvo);
-            logger.info("Usuário cadastrado com sucesso: {}", salvarUsuario);
 
-            usuarioResponse = gerarObjetoUsuarioOutput(salvarUsuario);
+            Endereco endereco = buscarOuSalvarEndereco(usuarioInput.getCep(), usuarioInput.getNumero());
+            if (endereco == null) {
+                logger.error("Endereço não encontrado para o CEP: {}", usuarioInput.getCep());
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            Usuario usuarioSalvo = gerarObjetoUsuario(usuarioInput);
+            usuarioSalvo.setEndereco(endereco); // Associação do endereço
+            usuarioSalvo = usuarioRepository.save(usuarioSalvo);
+            logger.info("Usuário cadastrado com sucesso: {}", usuarioSalvo);
+
+            usuarioResponse = gerarObjetoUsuarioOutput(usuarioSalvo);
 
             if (Boolean.TRUE.equals(usuarioInput.getIsVoluntario())) {
-                VoluntarioInput voluntarioInput = gerarObjetoVoluntario(usuarioInput, salvarUsuario.getIdUsuario());
+                VoluntarioInput voluntarioInput = gerarObjetoVoluntario(usuarioInput, usuarioSalvo.getIdUsuario());
                 Voluntario voluntario = voluntarioService.cadastrarVoluntario(voluntarioInput).getBody();
                 logger.info("Voluntário cadastrado com sucesso: {}", voluntario);
                 usuarioResponse.setFuncao(voluntario.getFuncao());
@@ -72,6 +82,25 @@ public class UsuarioServiceImpl implements UsuarioService {
             logger.error("Erro ao cadastrar usuário: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private Endereco buscarOuSalvarEndereco(String cep, String numero) {
+        ResponseEntity<EnderecoOutput> enderecoResponse = enderecoService.buscaEndereco(cep, numero);
+        EnderecoOutput enderecoOutput = enderecoResponse.getBody();
+
+        if (enderecoOutput == null) {
+            return null;
+        }
+
+        Endereco endereco = new Endereco();
+        endereco.setCep(enderecoOutput.getCep());
+        endereco.setLogradouro(enderecoOutput.getLogradouro());
+        endereco.setBairro(enderecoOutput.getBairro());
+        endereco.setNumero(enderecoOutput.getNumero());
+        endereco.setComplemento(enderecoOutput.getComplemento());
+        endereco.setUf(enderecoOutput.getUf());
+        endereco.setLocalidade(enderecoOutput.getLocalidade());
+        return enderecoRepository.save(endereco);
     }
 
     public ResponseEntity<List<Usuario>> buscarUsuarios() {
@@ -161,6 +190,18 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioResponse.setRenda(usuario.getRenda());
         usuarioResponse.setDataCadastro(usuario.getDataCadastro());
         usuarioResponse.setGenero(usuario.getGenero());
+
+        if (usuario.getEndereco() != null) {
+            EnderecoOutput enderecoOutput = new EnderecoOutput();
+            enderecoOutput.setCep(usuario.getEndereco().getCep());
+            enderecoOutput.setLogradouro(usuario.getEndereco().getLogradouro());
+            enderecoOutput.setComplemento(usuario.getEndereco().getComplemento());
+            enderecoOutput.setBairro(usuario.getEndereco().getBairro());
+            enderecoOutput.setNumero(usuario.getEndereco().getNumero());
+            enderecoOutput.setUf(usuario.getEndereco().getUf());
+            enderecoOutput.setLocalidade(usuario.getEndereco().getLocalidade());
+            usuarioResponse.setEndereco(enderecoOutput);
+        }
         return usuarioResponse;
     }
 
@@ -174,12 +215,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setRenda(usuarioInput.getRenda());
         usuario.setGenero(usuarioInput.getGenero());
         usuario.setDataCadastro(LocalDateTime.now());
-
-        if (usuarioInput.getEnderecoId() != null) {
-            Endereco endereco = enderecoRepository.findById(usuarioInput.getEnderecoId())
-                    .orElseThrow(() -> new IllegalArgumentException("Endereço não encontrado com o ID: " + usuarioInput.getEnderecoId()));
-            usuario.setEndereco(endereco);
-        }
 
         return usuario;
 
