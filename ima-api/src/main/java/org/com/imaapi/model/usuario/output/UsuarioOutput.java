@@ -23,4 +23,5 @@ public class UsuarioOutput {
     private TipoUsuario tipo;
     private Funcao funcao;
     private LocalDateTime dataCadastro;
+    private EnderecoOutput endereco;
 }
