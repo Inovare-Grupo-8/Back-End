@@ -48,7 +48,7 @@ public class EnderecoServiceImpl implements EnderecoService {
         endereco.setBairro(enderecoOutput.getBairro());
         endereco.setNumero(enderecoOutput.getNumero());
 
-        enderecoRepository.save(endereco);
+        //enderecoRepository.save(endereco);
 
         LOGGER.info("CEP consultado: {}", cep);
         LOGGER.info("Endereço salvo no banco de dados: {}", endereco);

@@ -45,7 +45,12 @@ public class UsuarioInput {
     private Funcao funcao;
     private TipoUsuario tipo;
 
-    private Integer enderecoId;
+    //inserindo o endereço
+    @NotBlank(message = "O CEP não pode estar em branco")
+    @Pattern(regexp = "\\d{8}|\\d{5}-\\d{3}", message = "O CEP deve estar no formato 00000000 ou 00000-000")
+    private String cep;
 
-    // infos endereço
+    private String numero;
+
+    //private String complemento;
 }

@@ -3,8 +3,16 @@ package org.com.imaapi.model.usuario;
 import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
 import org.com.imaapi.model.usuario.input.UsuarioInput;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
+import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.com.imaapi.repository.EnderecoRepository;
+import org.com.imaapi.service.EnderecoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 public class UsuarioMapper {
 
