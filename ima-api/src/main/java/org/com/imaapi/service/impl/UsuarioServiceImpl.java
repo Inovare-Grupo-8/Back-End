@@ -14,6 +14,8 @@ import org.com.imaapi.service.VoluntarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -49,21 +51,22 @@ public class UsuarioServiceImpl implements UsuarioService {
     private GerenciadorTokenJwt gerenciadorTokenJwt;
 
     public void cadastrarUsuario(UsuarioInput usuarioInput) {
-            String senhaCriptografada = passwordEncoder.encode(usuarioInput.getSenha());
-            usuarioInput.setSenha(senhaCriptografada);
-            Usuario novoUsuario = UsuarioMapper.of(usuarioInput);
+        String senhaCriptografada = passwordEncoder.encode(usuarioInput.getSenha());
+        usuarioInput.setSenha(senhaCriptografada);
+        Usuario novoUsuario = UsuarioMapper.of(usuarioInput);
 
-            logger.info("Cadastrando usuário: {}", usuarioInput);
-            Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
-            logger.info("Usuário cadastrado com sucesso: {}", usuarioInput);
+        logger.info("Cadastrando usuário: {}", usuarioInput);
+        Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
+        logger.info("Usuário cadastrado com sucesso: {}", usuarioInput);
 
-            if (usuarioInput.getIsVoluntario()) {
-                VoluntarioInput voluntarioInput = UsuarioMapper.of(usuarioInput, usuarioSalvo.getIdUsuario());
-                voluntarioService.cadastrarVoluntario(voluntarioInput);
-                logger.info("Voluntário cadastrado com sucesso: {}", usuarioInput);
-            }
-
-            emailService.enviarEmailCadastroFeito(usuarioInput.getEmail(), usuarioInput.getNome());
+        if (usuarioInput.getIsVoluntario()) {
+            VoluntarioInput voluntarioInput = UsuarioMapper.of(usuarioInput, usuarioSalvo.getIdUsuario());
+            voluntarioService.cadastrarVoluntario(voluntarioInput);
+            logger.info("Voluntário cadastrado com sucesso: {}", usuarioInput);
+            emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de voluntario");
+        }else {
+            emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de email");
+        }
     }
 
     public UsuarioTokenOutput autenticar(Usuario usuario) {
