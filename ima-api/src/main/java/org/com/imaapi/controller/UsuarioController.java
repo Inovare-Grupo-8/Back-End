@@ -25,7 +25,7 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    //@SecurityRequirement(name = "Bearer")
+    @SecurityRequirement(name = "Bearer")
     public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody @Valid UsuarioInput usuarioInput) {
         try {
             usuarioService.cadastrarUsuario(usuarioInput);

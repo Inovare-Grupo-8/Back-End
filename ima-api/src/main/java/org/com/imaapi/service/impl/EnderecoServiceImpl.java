@@ -24,7 +24,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     }
 
     @Override
-    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero) {
+    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero, String complemento) {
         if (cep == null || cep.trim().isEmpty()) {
             throw new IllegalArgumentException("O CEP não pode ser nulo ou vazio.");
         }
@@ -42,16 +42,19 @@ public class EnderecoServiceImpl implements EnderecoService {
             enderecoOutput.setNumero(numero);
         }
 
+        if (complemento != null && !complemento.trim().isEmpty()) {
+            enderecoOutput.setComplemento(complemento);
+        }
+
         Endereco endereco = new Endereco();
         endereco.setCep(enderecoOutput.getCep());
         endereco.setLogradouro(enderecoOutput.getLogradouro());
         endereco.setBairro(enderecoOutput.getBairro());
         endereco.setNumero(enderecoOutput.getNumero());
+        endereco.setUf(enderecoOutput.getUf());
+        endereco.setLocalidade(enderecoOutput.getLocalidade());
 
-        //enderecoRepository.save(endereco);
-
-        LOGGER.info("CEP consultado: {}", cep);
-        LOGGER.info("Endereço salvo no banco de dados: {}", endereco);
+        LOGGER.info("Endereço encontrado: {}", endereco);
         return ResponseEntity.ok(enderecoOutput);
     }
 

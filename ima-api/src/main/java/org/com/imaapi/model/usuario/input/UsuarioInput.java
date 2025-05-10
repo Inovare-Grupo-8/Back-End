@@ -52,5 +52,5 @@ public class UsuarioInput {
 
     private String numero;
 
-    //private String complemento;
+    private String complemento;
 }

@@ -53,8 +53,15 @@ public class Usuario{
     @Column (name = "data_cadastro")
     private LocalDateTime dataCadastro;
 
-    @Setter
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "fk_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;
+
+    //para gerar a data de cadastro no banco
+    @PrePersist
+    public void prePersist() {
+        if (this.dataCadastro == null) {
+            this.dataCadastro = LocalDateTime.now();
+        }
+    }
 }

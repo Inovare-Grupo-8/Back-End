@@ -6,7 +6,6 @@ import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.UsuarioMapper;
 import org.com.imaapi.model.usuario.input.UsuarioInput;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
-import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.repository.EnderecoRepository;
@@ -15,11 +14,10 @@ import org.com.imaapi.service.EmailService;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.UsuarioService;
 import org.com.imaapi.service.VoluntarioService;
+import org.com.imaapi.service.endereco.EnderecoHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -53,10 +51,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private GerenciadorTokenJwt gerenciadorTokenJwt;
+
     @Autowired
-    private EnderecoService enderecoService;
-    @Autowired
-    private EnderecoRepository enderecoRepository;
+    private EnderecoHandlerService enderecoHandlerService;
 
     public void cadastrarUsuario(UsuarioInput usuarioInput) {
         String senhaCriptografada = passwordEncoder.encode(usuarioInput.getSenha());
@@ -66,7 +63,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         logger.info("Cadastrando usuário: {}", usuarioInput);
 
-        Endereco endereco = buscarOuSalvarEndereco(usuarioInput.getCep(), usuarioInput.getNumero());
+        Endereco endereco = enderecoHandlerService.buscarSalvarEndereco(
+                usuarioInput.getCep(),
+                usuarioInput.getNumero(),
+                usuarioInput.getComplemento()
+        );
+
         if (endereco == null) {
             logger.error("Endereço não encontrado para o CEP: {}", usuarioInput.getCep());
             throw new IllegalArgumentException("Endereço inválido para o CEP informado.");
@@ -85,25 +87,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         }else {
             emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de email");
         }
-    }
-
-    private Endereco buscarOuSalvarEndereco(String cep, String numero) {
-        ResponseEntity<EnderecoOutput> enderecoResponse = enderecoService.buscaEndereco(cep, numero);
-        EnderecoOutput enderecoOutput = enderecoResponse.getBody();
-
-        if (enderecoOutput == null) {
-            return null;
-        }
-
-        Endereco endereco = new Endereco();
-        endereco.setCep(enderecoOutput.getCep());
-        endereco.setLogradouro(enderecoOutput.getLogradouro());
-        endereco.setBairro(enderecoOutput.getBairro());
-        endereco.setNumero(enderecoOutput.getNumero());
-        endereco.setComplemento(enderecoOutput.getComplemento());
-        endereco.setUf(enderecoOutput.getUf());
-        endereco.setLocalidade(enderecoOutput.getLocalidade());
-        return enderecoRepository.save(endereco);
     }
 
     public UsuarioTokenOutput autenticar(Usuario usuario) {

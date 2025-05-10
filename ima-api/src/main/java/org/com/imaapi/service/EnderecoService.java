@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 
 public interface EnderecoService {
-    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero);
+    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero, String complemento);
 
     public List<EnderecoOutput> listarEnderecos();
 }
