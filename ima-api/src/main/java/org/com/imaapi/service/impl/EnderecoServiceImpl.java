@@ -24,7 +24,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     }
 
     @Override
-    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero, String complemento) {
+    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero) {
         if (cep == null || cep.trim().isEmpty()) {
             throw new IllegalArgumentException("O CEP não pode ser nulo ou vazio.");
         }

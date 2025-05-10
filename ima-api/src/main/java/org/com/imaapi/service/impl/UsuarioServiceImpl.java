@@ -60,7 +60,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioInput.setSenha(senhaCriptografada);
         Usuario novoUsuario = UsuarioMapper.of(usuarioInput);
 
-
         logger.info("Cadastrando usuário: {}", usuarioInput);
 
         Endereco endereco = enderecoHandlerService.buscarSalvarEndereco(
