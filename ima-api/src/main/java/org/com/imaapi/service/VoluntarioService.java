@@ -6,6 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
 public interface VoluntarioService {
-    public ResponseEntity<Voluntario> cadastrarVoluntario(@RequestBody VoluntarioInput voluntarioInput);
-    public ResponseEntity<Void> excluirVoluntario(Integer id);
+    public void cadastrarVoluntario(VoluntarioInput voluntarioInput);
+    public void excluirVoluntario(Integer id);
 }

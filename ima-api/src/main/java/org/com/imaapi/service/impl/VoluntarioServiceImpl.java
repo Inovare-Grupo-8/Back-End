@@ -28,25 +28,21 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     private UsuarioRepository usuarioRepository;
 
     @PostMapping
-    public ResponseEntity<Voluntario> cadastrarVoluntario(@RequestBody VoluntarioInput voluntarioInput) {
+    public void cadastrarVoluntario(@RequestBody VoluntarioInput voluntarioInput) {
         try {
             Voluntario voluntario = gerarObjetoVoluntario(voluntarioInput);
             Voluntario salvarVoluntario = voluntarioRepository.save(voluntario);
-            return new ResponseEntity<>(salvarVoluntario, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar voluntário: {}", erro.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public ResponseEntity<Void> excluirVoluntario(Integer id) {
+    public void excluirVoluntario(Integer id) {
         try {
             voluntarioRepository.deleteById(id);
             logger.info("Na tabela de voluntario com ID {} foi deletado com sucesso", id);
-            return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception erro) {
             logger.error("Erro ao excluir voluntário: {}", erro.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

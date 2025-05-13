@@ -1,6 +1,8 @@
 package org.com.imaapi.model.enums;
 
 public enum TipoUsuario {
+    ADMINISTRADOR("administrador"),
+    VOLUNTARIO("voluntário"),
     VALOR_SOCIAL("valor social"),
     GRATUIDADE("gratuidade");
 

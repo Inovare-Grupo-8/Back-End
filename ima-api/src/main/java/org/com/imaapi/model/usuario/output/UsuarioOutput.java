@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.model.enums.Genero;
+import org.com.imaapi.model.enums.TipoUsuario;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +20,8 @@ public class UsuarioOutput {
     private LocalDate dataNascimento;
     private Double renda;
     private Genero genero;
+    private TipoUsuario tipo;
     private Funcao funcao;
     private LocalDateTime dataCadastro;
+    private EnderecoOutput endereco;
 }

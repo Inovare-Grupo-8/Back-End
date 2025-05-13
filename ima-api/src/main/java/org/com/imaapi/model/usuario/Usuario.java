@@ -1,19 +1,24 @@
 package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Setter;
+import lombok.*;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.enums.TipoUsuario;
-import org.com.imaapi.model.usuario.output.EnderecoOutput;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "usuario")
-public class Usuario {
+@Getter
+@Setter
+public class Usuario{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column (name = "id_usuario")
@@ -48,8 +53,15 @@ public class Usuario {
     @Column (name = "data_cadastro")
     private LocalDateTime dataCadastro;
 
-    @Setter
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "fk_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;
+
+    //para gerar a data de cadastro no banco
+    @PrePersist
+    public void prePersist() {
+        if (this.dataCadastro == null) {
+            this.dataCadastro = LocalDateTime.now();
+        }
+    }
 }

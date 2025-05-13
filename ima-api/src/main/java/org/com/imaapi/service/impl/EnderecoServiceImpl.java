@@ -4,7 +4,6 @@ import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.service.EnderecoService;
-import org.hibernate.annotations.DialectOverride;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +24,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     }
 
     @Override
-    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep) {
+    public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero, String complemento) {
         if (cep == null || cep.trim().isEmpty()) {
             throw new IllegalArgumentException("O CEP não pode ser nulo ou vazio.");
         }
@@ -39,16 +38,23 @@ public class EnderecoServiceImpl implements EnderecoService {
             throw new RuntimeException("Não consegui obter o endereço com esse CEP: " + cep);
         }
 
+        if (numero != null && !numero.trim().isEmpty()) {
+            enderecoOutput.setNumero(numero);
+        }
+
+        if (complemento != null && !complemento.trim().isEmpty()) {
+            enderecoOutput.setComplemento(complemento);
+        }
+
         Endereco endereco = new Endereco();
         endereco.setCep(enderecoOutput.getCep());
         endereco.setLogradouro(enderecoOutput.getLogradouro());
         endereco.setBairro(enderecoOutput.getBairro());
         endereco.setNumero(enderecoOutput.getNumero());
+        endereco.setUf(enderecoOutput.getUf());
+        endereco.setLocalidade(enderecoOutput.getLocalidade());
 
-        enderecoRepository.save(endereco);
-
-        LOGGER.info("CEP consultado: {}", cep);
-        LOGGER.info("Endereço salvo no banco de dados: {}", endereco);
+        LOGGER.info("Endereço encontrado: {}", endereco);
         return ResponseEntity.ok(enderecoOutput);
     }
 
