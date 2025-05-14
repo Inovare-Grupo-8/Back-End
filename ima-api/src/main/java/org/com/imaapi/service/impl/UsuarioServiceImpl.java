@@ -18,10 +18,12 @@ import org.com.imaapi.service.endereco.EnderecoHandlerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -56,54 +58,53 @@ public class UsuarioServiceImpl implements UsuarioService {
     private EnderecoHandlerService enderecoHandlerService;
 
     public void cadastrarUsuario(UsuarioInput usuarioInput) {
-        String senhaCriptografada = passwordEncoder.encode(usuarioInput.getSenha());
-        usuarioInput.setSenha(senhaCriptografada);
-        Usuario novoUsuario = UsuarioMapper.of(usuarioInput);
+            String senhaCriptografada = passwordEncoder.encode(usuarioInput.getSenha());
+            usuarioInput.setSenha(senhaCriptografada);
+            Usuario novoUsuario = UsuarioMapper.of(usuarioInput);
 
-        logger.info("Cadastrando usuário: {}", usuarioInput);
+            logger.info("Cadastrando usuário: {}", usuarioInput);
 
-        Endereco endereco = enderecoHandlerService.buscarSalvarEndereco(
-                usuarioInput.getCep(),
-                usuarioInput.getNumero(),
-                usuarioInput.getComplemento()
-        );
+            Endereco endereco = enderecoHandlerService.buscarSalvarEndereco(
+                    usuarioInput.getCep(),
+                    usuarioInput.getNumero(),
+                    usuarioInput.getComplemento()
+            );
 
-        if (endereco == null) {
-            logger.error("Endereço não encontrado para o CEP: {}", usuarioInput.getCep());
-            throw new IllegalArgumentException("Endereço inválido para o CEP informado.");
-        }
+            if (endereco == null) {
+                logger.error("Endereço não encontrado para o CEP: {}", usuarioInput.getCep());
+                throw new IllegalArgumentException("Endereço inválido para o CEP: " + usuarioInput.getCep());
+            }
 
-        novoUsuario.setEndereco(endereco);
+            novoUsuario.setEndereco(endereco);
 
-        Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
-        logger.info("Usuário cadastrado com sucesso: {}", usuarioInput);
+            Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
+            logger.info("Usuário cadastrado com sucesso: {}", usuarioInput);
 
-        if (usuarioInput.getIsVoluntario()) {
-            VoluntarioInput voluntarioInput = UsuarioMapper.of(usuarioInput, usuarioSalvo.getIdUsuario());
-            voluntarioService.cadastrarVoluntario(voluntarioInput);
-            logger.info("Voluntário cadastrado com sucesso: {}", usuarioInput);
-            emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de voluntario");
-        }else {
-            emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de email");
-        }
+            if (usuarioInput.getIsVoluntario()) {
+                VoluntarioInput voluntarioInput = UsuarioMapper.of(usuarioInput, usuarioSalvo.getIdUsuario());
+                voluntarioService.cadastrarVoluntario(voluntarioInput);
+                logger.info("Voluntário cadastrado com sucesso: {}", usuarioInput);
+                emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de voluntario");
+            }else {
+                emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de email");
+            }
+
     }
 
     public UsuarioTokenOutput autenticar(Usuario usuario) {
-        final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
-                usuario.getEmail(), usuario.getSenha());
+            final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
+                    usuario.getEmail(), usuario.getSenha());
 
-        final Authentication authentication = authenticationManager.authenticate(credentials);
+            final Authentication authentication = authenticationManager.authenticate(credentials);
 
-        Usuario usuarioAutenticado = usuarioRepository.findByEmail(usuario.getEmail())
-                .orElseThrow(
-                    () -> new ResponseStatusException(404, "Email de usuário não cadastrado", null)
-                );
+            Usuario usuarioAutenticado = usuarioRepository.findByEmail(usuario.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado"));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        final String token = gerenciadorTokenJwt.generateToken(authentication);
+            final String token = gerenciadorTokenJwt.generateToken(authentication);
 
-        return UsuarioMapper.of(usuarioAutenticado, token);
+            return UsuarioMapper.of(usuarioAutenticado, token);
     }
 
     public List<UsuarioListarOutput> buscarUsuarios() {
@@ -135,6 +136,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 logger.info("Usuário encontrado: {}", usuario1);
             }, () -> {
                 logger.error("Erro ao buscar usuário: {}", nome);
+                throw new UsernameNotFoundException(nome);
             });
 
             return usuario;
@@ -143,28 +145,30 @@ public class UsuarioServiceImpl implements UsuarioService {
     public UsuarioListarOutput atualizarUsuario(Integer id, UsuarioInput usuarioInput) {
         logger.info("Atualizando usuário com ID: {}", id);
 
-            try {
-                Usuario usuario = UsuarioMapper.of(usuarioInput);
-                usuario.setIdUsuario(id);
-                usuarioRepository.save(usuario);
-                UsuarioListarOutput usuarioListar = UsuarioMapper.of(usuario);
-                logger.info("Usuário atualizado com sucesso: {}", usuarioListar);
-                return usuarioListar;
-            } catch (Exception erro) {
-                logger.error("Erro ao atualizar usuário: {}", erro.getMessage());
-                return null;
-            }
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado"));
+
+        usuario.setEmail(usuarioInput.getEmail());
+        usuario.setNome(usuarioInput.getNome());
+        usuario.setSenha(usuarioInput.getSenha());
+        usuario.setCpf(usuarioInput.getCpf());
+        usuario.setDataNascimento(usuarioInput.getDataNascimento());
+        usuario.setGenero(usuarioInput.getGenero());
+        usuario.setRenda(usuarioInput.getRenda());
+        usuario.setTipo(usuarioInput.getTipo());
+
+        usuarioRepository.save(usuario);
+
+        UsuarioListarOutput usuarioListar = UsuarioMapper.of(usuario);
+        logger.info("Usuário atualizado: {}", usuarioListar);
+        return usuarioListar;
     }
 
     public void deletarUsuario(Integer id) {
         logger.info("Deletando usuário com ID: {}", id);
 
-        try {
-            voluntarioService.excluirVoluntario(id);
-            usuarioRepository.deleteById(id);
-            logger.info("Usuário com ID {} deletado com sucesso", id);
-        } catch (Exception erro) {
-            logger.error("Erro ao deletar usuário: {}", erro.getMessage());
-        }
+        voluntarioService.excluirVoluntario(id);
+        usuarioRepository.deleteById(id);
+        logger.info("Usuário com ID {} deletado", id);
     }
 }
