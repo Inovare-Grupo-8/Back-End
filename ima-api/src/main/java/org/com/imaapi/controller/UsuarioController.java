@@ -31,6 +31,13 @@ public class UsuarioController {
             return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @PostMapping("/voluntario")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<Void> cadastrarVoluntario(@RequestBody @Valid UsuarioInput usuarioInput) {
+        usuarioService.cadastrarVoluntario(usuarioInput);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<UsuarioTokenOutput> login(@RequestBody @Valid UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
             Usuario usuario = UsuarioMapper.of(usuarioAutenticacaoInput);
