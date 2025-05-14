@@ -25,31 +25,34 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping
-    //@SecurityRequirement(name = "Bearer")
-    public ResponseEntity<Usuario> cadastrarUsuario(@RequestBody @Valid UsuarioInput usuarioInput) {
-        try {
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<Void> cadastrarUsuario(@RequestBody @Valid UsuarioInput usuarioInput) {
             usuarioService.cadastrarUsuario(usuarioInput);
             return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (Exception erro) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    }
+
+    @PostMapping("/voluntario")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<Void> cadastrarVoluntario(@RequestBody @Valid UsuarioInput usuarioInput) {
+        usuarioService.cadastrarVoluntario(usuarioInput);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public ResponseEntity<UsuarioTokenOutput> login(@RequestBody @Valid UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
-        try {
             Usuario usuario = UsuarioMapper.of(usuarioAutenticacaoInput);
             UsuarioTokenOutput usuarioTokenOutput = usuarioService.autenticar(usuario);
+
+            if (usuarioTokenOutput == null) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+
             return new ResponseEntity<>(usuarioTokenOutput, HttpStatus.OK);
-        } catch (Exception erro) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
     }
 
     @GetMapping
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<List<UsuarioListarOutput>> buscarUsuarios() {
-        try {
             List<UsuarioListarOutput> usuarios = usuarioService.buscarUsuarios();
 
             if (usuarios.isEmpty()) {
@@ -57,9 +60,6 @@ public class UsuarioController {
             }
 
             return new ResponseEntity<>(usuarios, HttpStatus.OK);
-        } catch (Exception erro) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     @GetMapping("/{id}")
@@ -77,44 +77,26 @@ public class UsuarioController {
     @GetMapping("/por-nome")
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<Optional<Usuario>> buscaUsuarioPorNome(@RequestParam String nome) {
-        try {
             Optional<Usuario> usuario = usuarioService.buscaUsuarioPorNome(nome);
             return new ResponseEntity<>(usuario, HttpStatus.OK);
-        } catch (Exception erro) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     @PutMapping("/{id}")
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<UsuarioListarOutput> atualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioInput usuarioInput) {
+        UsuarioListarOutput usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioInput);
 
-        if (usuarioService.buscaUsuario(id).isPresent()) {
-            try {
-                UsuarioListarOutput usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioInput);
-                return new ResponseEntity<>(usuarioAtualizado, HttpStatus.ACCEPTED);
-            }
-            catch (Exception erro) {
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+        if (usuarioAtualizado == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(usuarioAtualizado, HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/{id}")
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<Void> deletarUsuario(@PathVariable Integer id) {
-
-        if (usuarioService.buscaUsuario(id).isPresent()) {
-            try {
-                usuarioService.deletarUsuario(id);
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            } catch (Exception erro) {
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        usuarioService.deletarUsuario(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
