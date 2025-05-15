@@ -52,7 +52,7 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
-            new AntPathRequestMatcher("/login-google/**"),
+            new AntPathRequestMatcher("/login-google/**")
     };
 
     @Bean

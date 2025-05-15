@@ -31,7 +31,7 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     public void cadastrarVoluntario(@RequestBody VoluntarioInput voluntarioInput) {
         try {
             Voluntario voluntario = gerarObjetoVoluntario(voluntarioInput);
-            Voluntario salvarVoluntario = voluntarioRepository.save(voluntario);
+            voluntarioRepository.save(voluntario);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar voluntário: {}", erro.getMessage());
         }

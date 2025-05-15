@@ -15,8 +15,14 @@ public class Endereco {
     private String cep;
     @Column(name = "logradouro")
     private String logradouro;
+    @Column(name = "complemento")
+    private String complemento;
     @Column(name = "bairro")
     private String bairro;
     @Column(name = "numero")
     private String numero;
+    @Column(name = "uf")
+    private String uf;
+    @Column(name = "localidade")
+    private String localidade;
 }
