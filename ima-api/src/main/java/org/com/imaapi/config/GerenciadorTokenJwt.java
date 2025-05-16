@@ -15,8 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-import static com.nimbusds.oauth2.sdk.client.ClientCredentialsParser.parseSecret;
-
 public class GerenciadorTokenJwt {
 
     @Value("${jwt.secret}")
