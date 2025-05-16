@@ -52,7 +52,12 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
-            new AntPathRequestMatcher("/login-google/**")
+            new AntPathRequestMatcher("/"),
+            new AntPathRequestMatcher("/login-google/**"),
+            new AntPathRequestMatcher("/oauth2/**"),
+            new AntPathRequestMatcher("/login/oauth2/**"),
+            new AntPathRequestMatcher("/login-google"), // Se estiver usando esse endpoint customizado
+            new AntPathRequestMatcher("/oauth2/authorization/google")
     };
 
     @Bean
@@ -66,10 +71,11 @@ public class SecurityConfiguracao {
                         .anyRequest()
                         .authenticated()  // Requer autenticação para tudo
                 )
+                .oauth2Login(Customizer.withDefaults())
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(autenticacaoEntryPoint))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .addFilterAfter(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -99,8 +105,7 @@ public class SecurityConfiguracao {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuracao = new CorsConfiguration();
-        configuracao.applyPermitDefaultValues();
-
+        configuracao.setAllowedOrigins(List.of("http://localhost:3030"));
         configuracao.setAllowedMethods(
                 Arrays.asList(
                         HttpMethod.GET.name(),
@@ -113,6 +118,9 @@ public class SecurityConfiguracao {
                         HttpMethod.TRACE.name()
                 )
         );
+        configuracao.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuracao.setAllowCredentials(false);
+
 
         configuracao.setExposedHeaders(List.of(HttpHeaders.CONTENT_DISPOSITION));
 
