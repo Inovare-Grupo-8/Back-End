@@ -1,6 +1,7 @@
 package org.com.imaapi.service.impl;
 
 import org.com.imaapi.config.GerenciadorTokenJwt;
+import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.UsuarioMapper;
@@ -25,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -81,6 +83,21 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         emailService.enviarEmail(usuarioInput.getEmail(), usuarioInput.getNome(), "cadastro de email");
 
+    }
+
+    public void cadastrarVoluntarioOAuth(OAuth2User usuario) {
+
+        String nome = usuario.getAttribute("nome");
+        String email = usuario.getAttribute("email");
+        TipoUsuario tipoUsuario = TipoUsuario.VOLUNTARIO;
+
+        UsuarioInput novoUsuario = new UsuarioInput();
+        novoUsuario.setNome(nome);
+        novoUsuario.setEmail(email);
+        novoUsuario.setTipo(tipoUsuario);
+        novoUsuario.setIsVoluntario(true);
+
+        cadastrarVoluntario(novoUsuario);
     }
 
     public void cadastrarVoluntario(UsuarioInput usuarioInput) {

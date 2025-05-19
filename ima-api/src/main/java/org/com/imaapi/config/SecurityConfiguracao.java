@@ -1,5 +1,9 @@
 package org.com.imaapi.config;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,15 +18,19 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,10 +61,8 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
             new AntPathRequestMatcher("/"),
-            new AntPathRequestMatcher("/login-google/**"),
             new AntPathRequestMatcher("/oauth2/**"),
-            new AntPathRequestMatcher("/login/oauth2/**"),
-            new AntPathRequestMatcher("/login-google"), // Se estiver usando esse endpoint customizado
+            new AntPathRequestMatcher("/login/oauth2/**"), // Se estiver usando esse endpoint customizado
             new AntPathRequestMatcher("/oauth2/authorization/google")
     };
 
@@ -71,7 +77,9 @@ public class SecurityConfiguracao {
                         .anyRequest()
                         .authenticated()  // Requer autenticação para tudo
                 )
-                .oauth2Login(Customizer.withDefaults())
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(autenticacaoSucessHandler())
+                )
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(autenticacaoEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
@@ -101,6 +109,9 @@ public class SecurityConfiguracao {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public AutenticacaoSucessHandler autenticacaoSucessHandler() {return new AutenticacaoSucessHandler(jwtAuthenticationUtilBean());}
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
