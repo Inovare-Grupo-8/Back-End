@@ -111,7 +111,7 @@ public class SecurityConfiguracao {
     }
 
     @Bean
-    public AutenticacaoSucessHandler autenticacaoSucessHandler() {return new AutenticacaoSucessHandler(jwtAuthenticationUtilBean());}
+    public AutenticacaoSucessHandler autenticacaoSucessHandler() {return new AutenticacaoSucessHandler();}
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
