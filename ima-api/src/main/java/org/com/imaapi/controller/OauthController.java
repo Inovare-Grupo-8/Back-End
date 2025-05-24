@@ -1,4 +1,4 @@
-package org.com.imaapi.controller;
+/*package org.com.imaapi.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,3 +13,4 @@ public class OauthController {
         response.sendRedirect("/oauth2/authorization/google");
     }
 }
+*/

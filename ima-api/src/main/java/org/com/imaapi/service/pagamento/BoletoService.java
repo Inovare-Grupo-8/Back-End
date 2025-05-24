@@ -11,7 +11,7 @@ import java.net.URL;
 @Service
 public class BoletoService {
     @Autowired
-        private ConfigCoraPagamento.CoraApiConfig config;
+        private ConfigCoraPagamento config;
 
         public <BoletoRequest> String gerarBoleto(BoletoRequest request, String token) throws Exception {
             URL url = new URL(config.getBaseUrl() + "/v2/boletos");

@@ -16,7 +16,7 @@ import java.net.URL;
     public class CoraService {
 
             @Autowired
-            private ConfigCoraPagamento.CoraApiConfig config;
+            private ConfigCoraPagamento config;
 
             public String obterToken() throws Exception {
                 URL url = new URL(config.getBaseUrl() + "/oauth/token");

@@ -1,7 +1,7 @@
-package org.com.imaapi.service.impl;
+/*package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.usuario.Usuario;
-import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
+//import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +17,7 @@ public class AutenticacaoServiceImpl implements UserDetailsService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Override
+  /*  @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(username);
@@ -27,5 +27,5 @@ public class AutenticacaoServiceImpl implements UserDetailsService {
         }
 
         return new UsuarioDetalhesOutput(usuarioOpt.get());
-    }
-}
+    }*/
+

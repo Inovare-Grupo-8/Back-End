@@ -1,4 +1,4 @@
-package org.com.imaapi.config;
+/*package org.com.imaapi.config;
 
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,10 +50,10 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/actuator/**"),
             new AntPathRequestMatcher("/usuarios/login/**"),
             new AntPathRequestMatcher("/h2-console/**"),
-            new AntPathRequestMatcher("/h2-console/**/**"),
+            new AntPathRequestMatcher("/h2-console/**//***"),
             new AntPathRequestMatcher("/error/**"),
             new AntPathRequestMatcher("/login-google/**")
-    };
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -121,4 +121,4 @@ public class SecurityConfiguracao {
 
         return origem;
     }
-}
+    */

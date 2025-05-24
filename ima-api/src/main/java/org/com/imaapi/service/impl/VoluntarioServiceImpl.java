@@ -1,4 +1,4 @@
-package org.com.imaapi.service.impl;
+/*package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.usuario.Voluntario;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
@@ -55,3 +55,4 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         return voluntario;
     }
 }
+*/

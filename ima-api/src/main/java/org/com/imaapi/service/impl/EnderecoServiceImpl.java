@@ -1,4 +1,4 @@
-package org.com.imaapi.service.impl;
+/*package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
@@ -73,3 +73,4 @@ public class EnderecoServiceImpl implements EnderecoService {
                 .toList();
     }
 }
+*/

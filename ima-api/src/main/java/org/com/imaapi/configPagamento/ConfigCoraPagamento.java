@@ -1,10 +1,17 @@
 package org.com.imaapi.configPagamento;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+@Data
+@Getter
+@Setter
+@Configuration
 public class ConfigCoraPagamento {
-    @Configuration
-    public class CoraApiConfig {
+
+
 
         @Value("${cora.api.base-url}")
         private String baseUrl;
@@ -33,4 +40,4 @@ public class ConfigCoraPagamento {
 
 
 
-}
+

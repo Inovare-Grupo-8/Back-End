@@ -1,5 +1,6 @@
 package org.com.imaapi.dto;
 
+
 public class Charge {
 
 

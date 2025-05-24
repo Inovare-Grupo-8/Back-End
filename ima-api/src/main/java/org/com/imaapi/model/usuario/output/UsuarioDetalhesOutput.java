@@ -1,4 +1,4 @@
-package org.com.imaapi.model.usuario.output;
+/*package org.com.imaapi.model.usuario.output;
 
 import lombok.Getter;
 import org.com.imaapi.model.enums.TipoUsuario;
@@ -61,3 +61,4 @@ public class UsuarioDetalhesOutput implements UserDetails {
         return UserDetails.super.isEnabled();
     }
 }
+*/

@@ -1,4 +1,4 @@
-package org.com.imaapi.service.impl;
+/*package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.consulta.Consulta;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
@@ -98,3 +98,5 @@ public class ConsultaServiceImpl implements ConsultaService {
         return consultaOutput;
     }
 }
+
+ */

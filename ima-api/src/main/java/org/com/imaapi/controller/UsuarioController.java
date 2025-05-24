@@ -1,4 +1,4 @@
-package org.com.imaapi.controller;
+/*package org.com.imaapi.controller;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -100,3 +100,4 @@ public class UsuarioController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
+*/

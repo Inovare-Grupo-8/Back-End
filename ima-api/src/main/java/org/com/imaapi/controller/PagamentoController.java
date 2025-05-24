@@ -1,22 +1,47 @@
 package org.com.imaapi.controller;
 
-import org.com.imaapi.service.pagamento.CoraService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.com.imaapi.dto.Charge;
 
+import org.com.imaapi.dto.TEDPaymentResponse;
+import org.com.imaapi.service.pagamento.PixService;
+import org.com.imaapi.service.pagamento.TEDService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+@Data
+@Getter
+@Setter
 @RestController
-@RequestMapping("/api/pagamento")
+@RequestMapping("/pagamento")
 public class PagamentoController {
 
+    @Autowired
+    private PixService pixService;
 
+    @Autowired
+    private TEDService tedService;
 
-        @Autowired
-        private CoraService coraApiService;
-
-        @GetMapping("/token")
-        public String pegarToken() throws Exception {
-            return coraApiService.obterToken();
+    @PostMapping("/pix")
+    public ResponseEntity<?> realizarPagamentoPix(@RequestBody Charge charge) {
+        try {
+            String pixUrl = pixService.gerarCobrancaPix(charge);
+            return ResponseEntity.ok(pixUrl);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao gerar cobrança PIX: " + e.getMessage());
         }
     }
 
+    @PostMapping("/ted")
+    public ResponseEntity<?> realizarPagamentoTed(@RequestBody TEDPaymentResponse tedRequest, Object request, String token) {
+        try {
+            String resultado =  tedService.realizarTed(request, token);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao realizar TED: " + e.getMessage());
+        }
+    }
 
+}

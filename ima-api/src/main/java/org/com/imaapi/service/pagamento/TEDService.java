@@ -4,6 +4,7 @@ package org.com.imaapi.service.pagamento;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.com.imaapi.configPagamento.ConfigCoraPagamento;
 
+import org.com.imaapi.dto.TEDPaymentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +15,12 @@ import java.net.URL;
 public class TEDService {
 
         @Autowired
-        private ConfigCoraPagamento.CoraApiConfig config;
+        private ConfigCoraPagamento config;
 
-        public <TedTransferRequest> String realizarTed(TedTransferRequest request, String token) throws Exception {
+    public TEDService(Object o, Object o1, TEDPaymentResponse tedRequest) {
+    }
+
+    public <TedTransferRequest> String realizarTed(TedTransferRequest request, String token) throws Exception {
             URL url = new URL(config.getBaseUrl() + "/v2/transfers");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 

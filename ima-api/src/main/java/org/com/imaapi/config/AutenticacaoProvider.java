@@ -1,4 +1,4 @@
-package org.com.imaapi.config;
+/*package org.com.imaapi.config;
 
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -40,3 +40,4 @@ public class AutenticacaoProvider implements AuthenticationProvider {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
 }
+*/

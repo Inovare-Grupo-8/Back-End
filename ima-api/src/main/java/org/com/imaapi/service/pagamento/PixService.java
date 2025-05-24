@@ -18,7 +18,7 @@ public class PixService {
     private CoraService coraService;
 
     @Autowired
-    private ConfigCoraPagamento.CoraApiConfig config;
+    private ConfigCoraPagamento config;
 
     public PixPaymentResponse realizarPagamentoPix(Charge charge) throws Exception {
         String accessToken = coraService.obterToken();
@@ -44,5 +44,9 @@ public class PixService {
 
         PixPaymentResponse response = mapper.readValue(conn.getInputStream(), PixPaymentResponse.class);
         return response;
+    }
+
+    public String gerarCobrancaPix(Charge charge) {
+        return "Gerando cobrança pix";
     }
 }

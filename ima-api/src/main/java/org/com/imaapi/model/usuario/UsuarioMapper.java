@@ -1,4 +1,4 @@
-package org.com.imaapi.model.usuario;
+/*package org.com.imaapi.model.usuario;
 
 import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
 import org.com.imaapi.model.usuario.input.UsuarioInput;
@@ -68,3 +68,4 @@ public class UsuarioMapper {
         return voluntario;
     }
 }
+*/

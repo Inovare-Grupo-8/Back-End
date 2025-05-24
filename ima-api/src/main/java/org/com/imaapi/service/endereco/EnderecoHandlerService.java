@@ -1,4 +1,4 @@
-package org.com.imaapi.service.endereco;
+/*package org.com.imaapi.service.endereco;
 
 import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
@@ -35,3 +35,4 @@ public class EnderecoHandlerService {
         return enderecoRepository.save(endereco);
     }
 }
+*/

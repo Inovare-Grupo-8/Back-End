@@ -1,4 +1,4 @@
-package org.com.imaapi.controller;
+/*package org.com.imaapi.controller;
 
 import jakarta.validation.Valid;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
@@ -20,3 +20,5 @@ public class ConsultaController {
         return consultaService.criarEvento(consultaInput);
     }
 }
+
+ */

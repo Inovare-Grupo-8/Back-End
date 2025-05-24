@@ -1,4 +1,4 @@
-package org.com.imaapi.service.impl;
+/*package org.com.imaapi.service.impl;
 
 import org.com.imaapi.config.GerenciadorTokenJwt;
 import org.com.imaapi.model.usuario.Endereco;
@@ -192,4 +192,4 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.deleteById(id);
         logger.info("Usuário com ID {} deletado", id);
     }
-}
+}*/

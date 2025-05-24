@@ -1,11 +1,11 @@
-package org.com.imaapi.config;
+/*package org.com.imaapi.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
+//import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -75,3 +75,4 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
         }
     }
 }
+*/
