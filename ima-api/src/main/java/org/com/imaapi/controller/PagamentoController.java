@@ -3,9 +3,9 @@ package org.com.imaapi.controller;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.com.imaapi.dto.Charge;
+import org.com.imaapi.model.pagamento.dto.Charge;
 
-import org.com.imaapi.dto.TEDPaymentResponse;
+import org.com.imaapi.model.pagamento.dto.TEDPaymentResponse;
 import org.com.imaapi.service.pagamento.PixService;
 import org.com.imaapi.service.pagamento.TEDService;
 import org.springframework.beans.factory.annotation.Autowired;

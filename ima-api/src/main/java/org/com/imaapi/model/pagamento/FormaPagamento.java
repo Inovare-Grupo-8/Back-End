@@ -1,10 +1,9 @@
 package org.com.imaapi.model.pagamento;
 
 public enum FormaPagamento {
-
-        CREDITO,
-        DEBITO,
-        PIX,
-        BOLETO,
-        TRANSFERENCIA
+    CREDITO,
+    DEBITO,
+    PIX,
+    BOLETO,
+    TRANSFERENCIA
 }
