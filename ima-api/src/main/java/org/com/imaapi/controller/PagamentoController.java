@@ -35,9 +35,9 @@ public class PagamentoController {
     }
 
     @PostMapping("/ted")
-    public ResponseEntity<?> realizarPagamentoTed(@RequestBody TEDPaymentResponse tedRequest, Object request, String token) {
+    public ResponseEntity<?> realizarPagamentoTed(@RequestBody TEDPaymentResponse tedRequest, @RequestHeader("Authorization") String token) {
         try {
-            String resultado =  tedService.realizarTed(request, token);
+            String resultado = tedService.realizarTed(tedRequest, token);
             return ResponseEntity.ok(resultado);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao realizar TED: " + e.getMessage());
