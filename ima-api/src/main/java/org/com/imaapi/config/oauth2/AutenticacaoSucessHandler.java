@@ -1,8 +1,9 @@
-package org.com.imaapi.config;
+package org.com.imaapi.config.oauth2;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.com.imaapi.config.GerenciadorTokenJwt;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

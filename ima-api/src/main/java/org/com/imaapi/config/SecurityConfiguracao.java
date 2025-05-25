@@ -1,9 +1,6 @@
 package org.com.imaapi.config;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.config.oauth2.AutenticacaoSucessHandler;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,19 +15,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -72,10 +65,11 @@ public class SecurityConfiguracao {
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .cors(Customizer.withDefaults())
                 .csrf(CsrfConfigurer<HttpSecurity>::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers(URLS_PERMITIDAS)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/usuarios/voluntario").hasRole("ADMINISTRADOR")
+                        .requestMatchers(URLS_PERMITIDAS)
                         .permitAll()
-                        .anyRequest()
-                        .authenticated()  // Requer autenticação para tudo
+                        .anyRequest().authenticated()  // Requer autenticação para tudo
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(autenticacaoSucessHandler())

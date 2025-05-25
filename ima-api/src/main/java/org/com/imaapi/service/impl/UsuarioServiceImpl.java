@@ -94,6 +94,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         UsuarioInput novoUsuario = new UsuarioInput();
         novoUsuario.setNome(nome);
         novoUsuario.setEmail(email);
+        novoUsuario.setSenha("");
         novoUsuario.setTipo(tipoUsuario);
         novoUsuario.setIsVoluntario(true);
 
