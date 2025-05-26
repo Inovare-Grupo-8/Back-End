@@ -12,8 +12,8 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 @Configuration
 public class OAuth2ClientConfig {
 
-    @Bean
-    public OAuth2AuthorizedClientManager authorizedClientManager(
+    @Bean("googleAuthorizedClientManager")
+    public OAuth2AuthorizedClientManager googleAuthorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
             OAuth2AuthorizedClientRepository authorizedClientRepository) {
 
