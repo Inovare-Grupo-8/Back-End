@@ -26,10 +26,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,20 +88,18 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     }
 
-    public void cadastrarVoluntarioOAuth(OAuth2User usuario) {
+    public void cadastrarUsuarioOAuth(OAuth2User usuario) {
 
         String nome = usuario.getAttribute("nome");
         String email = usuario.getAttribute("email");
-        TipoUsuario tipoUsuario = TipoUsuario.VOLUNTARIO;
 
-        UsuarioInput novoUsuario = new UsuarioInput();
+        Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(nome);
         novoUsuario.setEmail(email);
         novoUsuario.setSenha("");
-        novoUsuario.setTipo(tipoUsuario);
-        novoUsuario.setIsVoluntario(true);
+        novoUsuario.setDataCadastro(LocalDateTime.now());
 
-        cadastrarVoluntario(novoUsuario);
+        usuarioRepository.save(novoUsuario);
     }
 
     public void cadastrarVoluntario(UsuarioInput usuarioInput) {

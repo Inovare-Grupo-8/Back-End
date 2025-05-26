@@ -35,11 +35,11 @@ public class OauthToken {
     @Column(name = "expires_at", columnDefinition = "DATETIME(6)")
     private Instant expiresAt;
 
-    public void atualizarTokens(OAuth2AccessToken accessToken, OAuth2RefreshToken refreshToken) {
-        this.setAccessToken(accessToken.getTokenValue());
-        this.setExpiresAt(accessToken.getExpiresAt());
+    public void atualizarTokens(String accessToken, String refreshToken, Instant expiresAt) {
+        this.setAccessToken(accessToken);
+        this.setExpiresAt(expiresAt);
         if (refreshToken != null) {
-            this.setRefreshToken(refreshToken.getTokenValue());
+            this.setRefreshToken(refreshToken);
         }
     }
 }

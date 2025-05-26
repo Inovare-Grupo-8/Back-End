@@ -1,5 +1,7 @@
 package org.com.imaapi.service.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.repository.OauthTokenRepository;
@@ -70,11 +72,21 @@ public class OauthTokenServiceImpl implements OauthTokenService {
                 .orElse(new OauthToken());
 
         oauthToken.setUsuario(usuario);
-        oauthToken.atualizarTokens(accessToken, refreshToken);
+
+        oauthToken.atualizarTokens(
+                accessToken.getTokenValue(),
+                refreshToken != null ? refreshToken.getTokenValue() : null,
+                accessToken.getExpiresAt()
+        );
+
         oauthTokenRepository.save(oauthToken);
     }
 
-    public OAuth2AccessToken autorizarComEscopos(Authentication authentication, Set<String> scopos) {
+    public OAuth2AccessToken autorizarComEscopos(HttpServletRequest request,
+                                                 HttpServletResponse response,
+                                                 Authentication authentication,
+                                                 Set<String> scopos) {
+
         OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
                 .withClientRegistrationId("google")
                 .principal(authentication)
@@ -86,8 +98,6 @@ public class OauthTokenServiceImpl implements OauthTokenService {
         if(client == null) {
             throw new IllegalStateException("Falha na autorização de novos escopos");
         }
-
-
 
         return client.getAccessToken();
     }
