@@ -195,4 +195,5 @@ public class UsuarioControllerTest {
             assertEquals("Erro ao cadastrar voluntário", e.getMessage());
         }
     }
+
 }
