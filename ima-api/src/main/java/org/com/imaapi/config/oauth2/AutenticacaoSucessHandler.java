@@ -7,6 +7,7 @@ import org.com.imaapi.config.GerenciadorTokenJwt;
 import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.repository.UsuarioRepository;
+import org.com.imaapi.service.UsuarioService;
 import org.com.imaapi.service.impl.OauthTokenServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,21 +27,24 @@ import java.util.Optional;
 
 public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private GerenciadorTokenJwt gerenciadorTokenJwt;
+    private final UsuarioRepository usuarioRepository;
+    private final GerenciadorTokenJwt gerenciadorTokenJwt;
+    private final UsuarioServiceImpl usuarioService;
+    private final OAuth2AuthorizedClientManager authorizedClientManager;
+    private final OauthTokenServiceImpl oauthTokenService;
 
-    @Autowired
-    private UsuarioServiceImpl usuarioService;
-
-    @Autowired
-    @Qualifier("googleAuthorizedClientManager")
-    private OAuth2AuthorizedClientManager authorizedClientManager;
-
-    @Autowired
-    private OauthTokenServiceImpl oauthTokenService;
+    public AutenticacaoSucessHandler(UsuarioRepository usuarioRepository,
+                                     GerenciadorTokenJwt gerenciadorTokenJwt,
+                                     UsuarioServiceImpl usuarioService,
+                                     @Qualifier("googleAuthorizedClientManager") OAuth2AuthorizedClientManager authorizedClientManager,
+                                     OauthTokenServiceImpl oauthTokenService) {
+        this.usuarioRepository = usuarioRepository;
+        this.gerenciadorTokenJwt = gerenciadorTokenJwt;
+        this.usuarioService = usuarioService;
+        this.authorizedClientManager = authorizedClientManager;
+        this.oauthTokenService = oauthTokenService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -49,9 +53,17 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
         String email = usuarioOauth.getAttribute("email");
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
 
+        if (email == null) {
+            throw new ServletException("Email não encontrado para o OAuth2");
+        }
+
         if (usuarioOptional.isEmpty()) {
             usuarioService.cadastrarUsuarioOAuth(usuarioOauth);
             usuarioOptional = usuarioRepository.findByEmail(email);
+
+            if (usuarioOptional.isEmpty()) {
+                throw new ServletException("Erro ao cadastrar usuário");
+            }
         }
 
         OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
@@ -63,14 +75,19 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
         OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
 
-        if(authorizedClient != null && usuarioOptional.isPresent()) {
+        if(authorizedClient != null) {
             Usuario usuario = usuarioOptional.get();
             OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
             OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
 
-            oauthTokenService.salvarToken(usuario, accessToken, refreshToken);
-        }
+            if(refreshToken == null) {
+                throw new ServletException("Não foi recebido um refresh token");
+            }
 
+            oauthTokenService.salvarToken(usuario, accessToken, refreshToken);
+        } else {
+            throw new ServletException("Erro ao obter tokens autorizados com o google");
+        }
 
         String token = gerenciadorTokenJwt.generateToken(authentication);
         response.setHeader("Authorization", "Bearer " + token);

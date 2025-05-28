@@ -7,15 +7,19 @@ import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.repository.OauthTokenRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.OauthTokenService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
 import java.util.Set;
@@ -25,16 +29,19 @@ public class OauthTokenServiceImpl implements OauthTokenService {
 
     private final OauthTokenRepository oauthTokenRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
     @Qualifier("googleAuthorizedClientManager")
     private final OAuth2AuthorizedClientManager oauthClientManager;
 
     public OauthTokenServiceImpl(OauthTokenRepository oauthTokenRepository,
                                  @Qualifier("googleAuthorizedClientManager") OAuth2AuthorizedClientManager oauthClientManager,
-                                 UsuarioRepository usuarioRepository) {
+                                 UsuarioRepository usuarioRepository,
+                                 ClientRegistrationRepository clientRegistrationRepository) {
         this.oauthTokenRepository = oauthTokenRepository;
         this.oauthClientManager = oauthClientManager;
         this.usuarioRepository = usuarioRepository;
+        this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
     @Override
@@ -82,23 +89,20 @@ public class OauthTokenServiceImpl implements OauthTokenService {
         oauthTokenRepository.save(oauthToken);
     }
 
-    public OAuth2AccessToken autorizarComEscopos(HttpServletRequest request,
-                                                 HttpServletResponse response,
-                                                 Authentication authentication,
-                                                 Set<String> scopos) {
+    public String buildAuthorizationUrl(Set<String> escopos, String state) {
 
-        OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-                .withClientRegistrationId("google")
-                .principal(authentication)
-                .attribute(OAuth2AuthorizationContext.REQUEST_SCOPE_ATTRIBUTE_NAME, scopos)
-                .build();
+        ClientRegistration googleRegistration = clientRegistrationRepository.findByRegistrationId("google");
 
-        OAuth2AuthorizedClient client = oauthClientManager.authorize(authorizeRequest);
-
-        if(client == null) {
-            throw new IllegalStateException("Falha na autorização de novos escopos");
-        }
-
-        return client.getAccessToken();
+        return UriComponentsBuilder
+                .fromUriString(googleRegistration.getProviderDetails().getAuthorizationUri())
+                .queryParam("client_id", googleRegistration.getClientId())
+                .queryParam("redirect_uri", googleRegistration.getRedirectUri())
+                .queryParam("response_type", "code")
+                .queryParam("scope", String.join(" ", escopos))
+                .queryParam("state", state)
+                .queryParam("access_type", "offline")
+                .queryParam("prompt", "consent")
+                .build()
+                .toUriString();
     }
 }
