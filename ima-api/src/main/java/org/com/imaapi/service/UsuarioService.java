@@ -10,11 +10,18 @@ import java.util.Optional;
 
 public interface UsuarioService {
     public void cadastrarUsuario(UsuarioInput usuarioInput);
+
     public void cadastrarVoluntario(UsuarioInput usuarioInput);
+
     public UsuarioTokenOutput autenticar(Usuario usuario);
+
     public List<UsuarioListarOutput> buscarUsuarios();
+
     public Optional<Usuario> buscaUsuario(Integer id);
+
     public Optional<Usuario> buscaUsuarioPorNome(String nome);
+
     public UsuarioListarOutput atualizarUsuario(Integer id, UsuarioInput usuarioInput);
+
     public void deletarUsuario(Integer id);
 }

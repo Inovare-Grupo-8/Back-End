@@ -1,4 +1,5 @@
 package org.com.imaapi.config;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,30 +11,15 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Configuration
 public class ConfigCoraPagamento {
+    @Value("${cora.api.base-url}")
+    private String baseUrl;
 
+    @Value("${cora.api.client-id}")
+    private String clientId;
 
-
-        @Value("${cora.api.base-url}")
-        private String baseUrl;
-
-        @Value("${cora.api.client-id}")
-        private String clientId;
-
-        @Value("${cora.api.client-secret}")
-        private String clientSecret;
-
-        public String getBaseUrl() {
-            return baseUrl;
-        }
-
-        public String getClientId() {
-            return clientId;
-        }
-
-        public String getClientSecret() {
-            return clientSecret;
-        }
-    }
+    @Value("${cora.api.client-secret}")
+    private String clientSecret;
+}
 
 
 
