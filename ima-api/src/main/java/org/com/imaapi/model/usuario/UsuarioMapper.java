@@ -20,7 +20,6 @@ public class UsuarioMapper {
         usuario.setTipo(usuarioInputSegundaFase.getTipo());
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
         usuario.setDataNascimento(usuarioInputPrimeiraFase.getDataNascimento());
-        usuario.setRenda(usuarioInputSegundaFase.getRenda());
 
         return usuario;
     }

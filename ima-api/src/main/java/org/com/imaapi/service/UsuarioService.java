@@ -27,7 +27,7 @@ public interface UsuarioService {
     UsuarioListarOutput atualizarUsuario(Integer id, UsuarioInputSegundaFase usuarioInputSegundaFase);
 
     public void deletarUsuario(Integer id);
-
     
     Usuario buscarDadosPrimeiraFase(Integer idUsuario);
+    Usuario buscarDadosPrimeiraFase(String email);
 }

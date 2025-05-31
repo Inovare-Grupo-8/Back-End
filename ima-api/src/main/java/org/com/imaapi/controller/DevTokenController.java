@@ -38,9 +38,9 @@ public class DevTokenController {
         String authorities = String.join(",", input.getAuthorities());
         
         String token = Jwts.builder()
-                .subject(input.getEmail()) // Usando email como subject
+                .subject(input.getEmail())
                 .claim("authorities", authorities)
-                .claim("nome", input.getNome()) // Adicionando nome como claim adicional
+                .claim("nome", input.getNome())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + tokenValidity * 1000))
                 .signWith(key, Jwts.SIG.HS256)

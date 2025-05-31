@@ -2,6 +2,7 @@ package org.com.imaapi.service.impl;
 
 import org.com.imaapi.config.GerenciadorTokenJwt;
 import org.com.imaapi.model.enums.TipoUsuario;
+import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.UsuarioMapper;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
@@ -66,7 +67,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         novoUsuario.setCpf(usuarioInputPrimeiraFase.getCpf());
         novoUsuario.setDataNascimento(usuarioInputPrimeiraFase.getDataNascimento());
 
-        logger.info("Iniciando cadastro de usuário fase 1: {}", usuarioInputPrimeiraFase.getEmail());        Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
+        logger.info("Iniciando cadastro de usuário fase 1: {}", usuarioInputPrimeiraFase);
+        Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
         logger.info("Usuário fase 1 cadastrado com sucesso. ID: {}", usuarioSalvo.getIdUsuario());
 
         emailService.enviarEmail(usuarioSalvo.getEmail(), usuarioSalvo.getNome() + "|" + usuarioSalvo.getIdUsuario(), "continuar cadastro");
@@ -82,8 +84,20 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
-        usuario.setRenda(usuarioInputSegundaFase.getRenda());
         usuario.setTipo(usuarioInputSegundaFase.getTipo());
+        
+        // Buscar e salvar endereço
+        Endereco endereco = enderecoHandlerService.buscarSalvarEndereco(
+                usuarioInputSegundaFase.getCep(),
+                usuarioInputSegundaFase.getNumero(),
+                usuarioInputSegundaFase.getComplemento());
+
+        if (endereco == null) {
+            logger.error("Endereço não encontrado para o CEP: {}", usuarioInputSegundaFase.getCep());
+            throw new IllegalArgumentException("Endereço inválido para o CEP: " + usuarioInputSegundaFase.getCep());
+        }
+
+        usuario.setEndereco(endereco);
 
         usuarioRepository.save(usuario);
         logger.info("Usuário fase 2 atualizado com sucesso. ID: {}", idUsuario);
@@ -100,7 +114,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
-        usuario.setRenda(usuarioInputSegundaFase.getRenda());
         usuario.setTipo(TipoUsuario.VOLUNTARIO);
         
         usuarioRepository.save(usuario);
@@ -175,7 +188,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado"));
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
-        usuario.setRenda(usuarioInputSegundaFase.getRenda());
         usuario.setTipo(usuarioInputSegundaFase.getTipo());
 
         usuarioRepository.save(usuario);
@@ -198,6 +210,13 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Usuario buscarDadosPrimeiraFase(Integer idUsuario) {
         logger.info("Buscando dados da primeira fase do usuário ID: {}", idUsuario);
         return usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    }
+
+    @Override
+    public Usuario buscarDadosPrimeiraFase(String email) {
+        logger.info("Buscando dados da primeira fase do usuário por email: {}", email);
+        return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }
 
