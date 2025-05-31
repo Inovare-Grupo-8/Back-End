@@ -15,6 +15,24 @@ public class PerfilController {
     @Autowired
     private PerfilService perfilService;
 
+    @GetMapping("/voluntario/dados-pessoais")
+    public ResponseEntity<UsuarioOutput> buscarDadosPessoaisVoluntario(@RequestParam Integer voluntarioId) {
+        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(voluntarioId);
+        if (usuarioOutput == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuarioOutput);
+    }
+
+    @GetMapping("/assistido/dados-pessoais")
+    public ResponseEntity<UsuarioOutput> buscarDadosPessoaisAssistido(@RequestParam Integer assistidoId) {
+        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(assistidoId);
+        if (usuarioOutput == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuarioOutput);
+    }
+
     @PutMapping("/voluntario/endereco")
     public ResponseEntity<Void> atualizarEnderecoVoluntario(
             @RequestParam Integer voluntarioId,

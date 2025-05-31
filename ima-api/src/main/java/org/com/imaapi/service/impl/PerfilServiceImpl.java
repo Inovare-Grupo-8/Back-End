@@ -18,30 +18,37 @@ public class PerfilServiceImpl implements PerfilService {
     private UsuarioRepository usuarioRepository;
 
     @Override
+//    public UsuarioOutput buscarUsuarioComEnderecoPorId(Integer usuarioId) {
+//        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
+//        if (usuarioOptional.isEmpty()) {
+//            return null;
+//        }
+//        Usuario usuario = usuarioOptional.get();
+//        UsuarioOutput usuarioOutput = new UsuarioOutput(usuario);
+//        usuarioOutput.setNome(usuario.getNome());
+//        usuarioOutput.setCpf(usuario.getCpf());
+//        usuarioOutput.setEmail(usuario.getEmail());
+//        usuarioOutput.setSenha(usuario.getSenha());
+//        usuarioOutput.setDataNascimento(usuario.getDataNascimento());
+//        usuarioOutput.setRenda(usuario.getRenda());
+//        usuarioOutput.setGenero(usuario.getGenero());
+//        usuarioOutput.setTipo(usuario.getTipo());
+//        usuarioOutput.setDataCadastro(usuario.getDataCadastro());
+//        if (usuario.getEndereco() != null) {
+//            EnderecoOutput enderecoOutput = new EnderecoOutput();
+//            enderecoOutput.setCep(usuario.getEndereco().getCep());
+//            enderecoOutput.setNumero(usuario.getEndereco().getNumero());
+//            enderecoOutput.setComplemento(usuario.getEndereco().getComplemento());
+//            usuarioOutput.setEndereco(enderecoOutput);
+//        }
+//        return usuarioOutput;
+//    }
     public UsuarioOutput buscarUsuarioComEnderecoPorId(Integer usuarioId) {
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()) {
             return null;
         }
-        Usuario usuario = usuarioOptional.get();
-        UsuarioOutput usuarioOutput = new UsuarioOutput(usuario);
-        usuarioOutput.setNome(usuario.getNome());
-        usuarioOutput.setCpf(usuario.getCpf());
-        usuarioOutput.setEmail(usuario.getEmail());
-        usuarioOutput.setSenha(usuario.getSenha());
-        usuarioOutput.setDataNascimento(usuario.getDataNascimento());
-        usuarioOutput.setRenda(usuario.getRenda());
-        usuarioOutput.setGenero(usuario.getGenero());
-        usuarioOutput.setTipo(usuario.getTipo());
-        usuarioOutput.setDataCadastro(usuario.getDataCadastro());
-        if (usuario.getEndereco() != null) {
-            EnderecoOutput enderecoOutput = new EnderecoOutput();
-            enderecoOutput.setCep(usuario.getEndereco().getCep());
-            enderecoOutput.setNumero(usuario.getEndereco().getNumero());
-            enderecoOutput.setComplemento(usuario.getEndereco().getComplemento());
-            usuarioOutput.setEndereco(enderecoOutput);
-        }
-        return usuarioOutput;
+        return new UsuarioOutput(usuarioOptional.get());
     }
 
     @Override
