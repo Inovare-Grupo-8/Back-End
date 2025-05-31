@@ -1,32 +1,26 @@
 package org.com.imaapi.model.usuario;
 
 import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
-import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
+import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
-import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
-import org.com.imaapi.repository.EnderecoRepository;
-import org.com.imaapi.service.EnderecoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
+import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 
 public class UsuarioMapper {
 
-    public static Usuario of(UsuarioInput usuarioInput) {
+    public static Usuario of(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         Usuario usuario = new Usuario();
 
-        usuario.setNome(usuarioInput.getNome());
-        usuario.setEmail(usuarioInput.getEmail());
-        usuario.setSenha(usuarioInput.getSenha());
-        usuario.setCpf(usuarioInput.getCpf());
-        usuario.setTipo(usuarioInput.getTipo());
-        usuario.setGenero(usuarioInput.getGenero());
-        usuario.setDataNascimento(usuarioInput.getDataNascimento());
-        usuario.setRenda(usuarioInput.getRenda());
+        usuario.setNome(usuarioInputPrimeiraFase.getNome());
+        usuario.setEmail(usuarioInputPrimeiraFase.getEmail());
+        usuario.setSenha(usuarioInputPrimeiraFase.getSenha());
+        usuario.setCpf(usuarioInputPrimeiraFase.getCpf());
+        usuario.setTipo(usuarioInputSegundaFase.getTipo());
+        usuario.setGenero(usuarioInputSegundaFase.getGenero());
+        usuario.setDataNascimento(usuarioInputPrimeiraFase.getDataNascimento());
+        usuario.setRenda(usuarioInputSegundaFase.getRenda());
 
         return usuario;
     }
@@ -61,10 +55,19 @@ public class UsuarioMapper {
         return usuarioListarOutput;
     }
 
-    public static VoluntarioInput of(UsuarioInput usuarioInput, Integer idUsuario) {
+    public static VoluntarioInput of(UsuarioInputSegundaFase usuarioInputSegundaFase, Integer idUsuario) {
         VoluntarioInput voluntario = new VoluntarioInput();
         voluntario.setFkUsuario(idUsuario);
-        voluntario.setFuncao(usuarioInput.getFuncao());
+        voluntario.setFuncao(usuarioInputSegundaFase.getFuncao());
         return voluntario;
+    }
+
+    public static UsuarioPrimeiraFaseOutput ofPrimeiraFase(Usuario usuario) {
+        UsuarioPrimeiraFaseOutput output = new UsuarioPrimeiraFaseOutput();
+        output.setNome(usuario.getNome());
+        output.setEmail(usuario.getEmail());
+        output.setCpf(usuario.getCpf());
+        output.setDataNascimento(usuario.getDataNascimento());
+        return output;
     }
 }
