@@ -1,6 +1,7 @@
 package org.com.imaapi.model.consulta.input;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
 import org.com.imaapi.model.enums.StatusConsulta;
@@ -13,13 +14,13 @@ public class ConsultaInput {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime horario;
 
-    @NotBlank(message="Status não pode estar em branco")
+    @NotNull(message="Status não pode estar em branco")
     private StatusConsulta status;
 
-    @NotBlank(message="Indique como será a consulta, online ou presencial")
+    @NotNull(message="Indique como será a consulta, online ou presencial")
     private ModalidadeConsulta modalidade;
 
-    @NotBlank(message="Informe o local da consulta")
+    @NotNull(message="Informe o local da consulta")
     private String local;
 
     private String observacoes;
@@ -27,3 +28,4 @@ public class ConsultaInput {
     private Integer idAssistido;
     private Integer idVoluntario;
 }
+

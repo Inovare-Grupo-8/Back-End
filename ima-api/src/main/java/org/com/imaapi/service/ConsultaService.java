@@ -5,5 +5,17 @@ import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.springframework.http.ResponseEntity;
 
 public interface ConsultaService {
-    public ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput);
+
+    static ResponseEntity<ConsultaOutput> detalhar(Integer id) {
+        return null;
+    }
+
+    ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput);
+
+    ResponseEntity<ConsultaOutput> remarcar(Integer id, ConsultaInput consultaInput);
+
+    ResponseEntity<ConsultaOutput> cancelar(Integer id);
+
+    ResponseEntity<ConsultaOutput> buscarDetalhes(Integer id);
+
 }

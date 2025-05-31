@@ -6,6 +6,8 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import java.net.URL;
+
 @Data
 @Getter
 @Setter
@@ -19,6 +21,8 @@ public class ConfigCoraPagamento {
 
     @Value("${cora.api.client-secret}")
     private String clientSecret;
+
+
 }
 
 

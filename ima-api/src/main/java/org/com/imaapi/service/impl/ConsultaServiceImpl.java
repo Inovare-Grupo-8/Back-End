@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class ConsultaServiceImpl implements ConsultaService {
 
@@ -30,18 +32,13 @@ public class ConsultaServiceImpl implements ConsultaService {
     @Autowired
     private EspecialidadeRepository especialidadeRepository;
 
+    @Override
     public ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput) {
         try {
-            if (consultaInput.getIdEspecialidade() == null) {
-                logger.error("O campo idEspecialidade é obrigatório e não pode ser nulo.");
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-            if (consultaInput.getIdAssistido() == null) {
-                logger.error("O campo idAssistido é obrigatório e não pode ser nulo.");
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-            if (consultaInput.getIdVoluntario() == null) {
-                logger.error("O campo idVoluntario é obrigatório e não pode ser nulo.");
+            if (consultaInput.getIdEspecialidade() == null ||
+                    consultaInput.getIdAssistido() == null ||
+                    consultaInput.getIdVoluntario() == null) {
+                logger.error("Campos obrigatórios não podem ser nulos.");
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
 
@@ -51,7 +48,6 @@ public class ConsultaServiceImpl implements ConsultaService {
             logger.info("Evento cadastrado com sucesso: {}", salvarConsulta);
 
             ConsultaOutput eventoResponse = gerarObjetoEventoOutput(salvarConsulta);
-
             return new ResponseEntity<>(eventoResponse, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar evento: {}", erro.getMessage());
@@ -59,42 +55,32 @@ public class ConsultaServiceImpl implements ConsultaService {
         }
     }
 
+    private ConsultaOutput gerarObjetoEventoOutput(Consulta salvarConsulta) {
+        return null;
+    }
+
     private Consulta gerarObjetoEvento(ConsultaInput consultaInput) {
-        Consulta consulta = new Consulta();
-        consulta.setHorario(consultaInput.getHorario());
-        consulta.setStatus(consultaInput.getStatus());
-        consulta.setModalidade(consultaInput.getModalidade());
-        consulta.setLocal(consultaInput.getLocal());
-        consulta.setObservacoes(consultaInput.getObservacoes());
-
-        // Busca a especialidade pelo ID
-        Especialidade especialidade = especialidadeRepository.findById(consultaInput.getIdEspecialidade())
-                .orElseThrow(() -> new RuntimeException("Especialidade não encontrada"));
-        consulta.setEspecialidade(especialidade);
-
-        // Busca o assistido pelo ID
-        Usuario assistido = usuarioRepository.findById(consultaInput.getIdAssistido())
-                .orElseThrow(() -> new RuntimeException("Usuário assistido não encontrado"));
-        consulta.setAssistido(assistido);
-
-        // Busca o voluntário pelo ID
-        Usuario voluntario = usuarioRepository.findById(consultaInput.getIdVoluntario())
-                .orElseThrow(() -> new RuntimeException("Usuário voluntário não encontrado"));
-        consulta.setVoluntario(voluntario);
-
-        return consulta;
+        return null;
     }
 
-    private ConsultaOutput gerarObjetoEventoOutput(Consulta consulta) {
-        ConsultaOutput consultaOutput = new ConsultaOutput();
-        consultaOutput.setHorario(consulta.getHorario());
-        consultaOutput.setStatus(consulta.getStatus());
-        consultaOutput.setModalidade(consulta.getModalidade());
-        consultaOutput.setLocal(consulta.getLocal());
-        consultaOutput.setObservacoes(consulta.getObservacoes());
-        consultaOutput.setEspecialidade(consulta.getEspecialidade());
-        consultaOutput.setAssistido(consulta.getAssistido());
-        consultaOutput.setVoluntario(consulta.getVoluntario());
-        return consultaOutput;
-    }
-}
+    @Override
+    public ResponseEntity<ConsultaOutput> remarcar(Integer id, ConsultaInput consultaInput) {
+        Optional<Consulta> consultaOptional = consultaRepository.findById(id);
+        if (consultaOptional.isEmpty()) {
+            logger.error("Consulta com ID {} não encontrada para remarcar.", id);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            Consulta consulta = consultaOptional.get();
+            consulta.setHorario(consultaInput.getHorario());
+            consulta.setLocal(consultaInput.getLocal());
+            consulta.setObservacoes(consultaInput.getObservacoes());
+
+            Consulta consultaAtualizada = consultaRepository.save(consulta);
+            ConsultaOutput consultaOutput = gerarObjetoEventoOutput(consultaAtualizada);
+            return ResponseEntity.ok(consultaOutput);
+        } catch (Exception e) {
+            logger.error("Erro ao remarcar consulta com ID {}: {}", id, e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
