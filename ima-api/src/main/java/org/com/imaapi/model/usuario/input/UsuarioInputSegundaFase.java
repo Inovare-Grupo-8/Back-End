@@ -23,7 +23,7 @@ public class UsuarioInputSegundaFase {
     private Boolean isVoluntario;
 
     private Funcao funcao;
-    
+  
     private TipoUsuario tipo;
 
     @NotBlank(message = "O CEP não pode estar em branco")
