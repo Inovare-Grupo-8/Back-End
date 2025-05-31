@@ -27,14 +27,14 @@ public class Usuario{
     @Column (name = "nome")
     private String nome;
 
-    @Column (name = "cpf")
+    @Column (name = "cpf", unique = true)
     private String cpf;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo")
     private TipoUsuario tipo;
 
-    @Column (name = "email")
+    @Column (name = "email", unique = true)
     private String email;
 
     @Column (name = "senha")

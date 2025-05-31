@@ -125,4 +125,33 @@ public class UsuarioController {
         UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
         return ResponseEntity.ok(output);
     }
+
+    @GetMapping("/fase1/{idUsuario}")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> buscarDadosPrimeiraFase(@PathVariable Integer idUsuario) {
+        Usuario usuario = usuarioService.buscarDadosPrimeiraFase(idUsuario);
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return ResponseEntity.ok(output);
+    }
+
+    @GetMapping("/fase1")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> buscarDadosPrimeiraFase(@RequestParam(required = false) Integer idUsuario,
+                                                                             @RequestParam(required = false) String email) {
+        Usuario usuario;
+        if (idUsuario != null) {
+            usuario = usuarioService.buscarDadosPrimeiraFase(idUsuario);
+        } else if (email != null && !email.isEmpty()) {
+            usuario = usuarioService.buscarDadosPrimeiraFase(email);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return ResponseEntity.ok(output);
+    }
+
+    @GetMapping("/voluntario/fase1/{idUsuario}")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> buscarDadosPrimeiraFaseVoluntario(@PathVariable Integer idUsuario) {
+        Usuario usuario = usuarioService.buscarDadosPrimeiraFase(idUsuario);
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return ResponseEntity.ok(output);
+    }
 }
