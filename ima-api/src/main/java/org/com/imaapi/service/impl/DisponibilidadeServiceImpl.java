@@ -1,6 +1,7 @@
 package org.com.imaapi.service.impl;
 import org.com.imaapi.model.consulta.Consulta;
 import org.com.imaapi.repository.ConsultaRepository;
+import org.com.imaapi.service.DisponibilidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class DisponibilidadeServiceImpl {
+public class DisponibilidadeServiceImpl implements DisponibilidadeService {
 
     @Autowired
     private ConsultaRepository consultaRepository;

@@ -49,6 +49,8 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/v3/api-docs/**"),
             new AntPathRequestMatcher("/actuator/**"),
             new AntPathRequestMatcher("/usuarios/login/**"),
+            new AntPathRequestMatcher("/usuarios"),
+            new AntPathRequestMatcher("/usuarios/**"),  
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
@@ -56,26 +58,28 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/login-google/**"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/login/oauth2/**"),
-            new AntPathRequestMatcher("/login-google"), // Se estiver usando esse endpoint customizado
-            new AntPathRequestMatcher("/oauth2/authorization/google")
-    };
-
+            new AntPathRequestMatcher("/login-google"), 
+            new AntPathRequestMatcher("/oauth2/authorization/google"),
+            new AntPathRequestMatcher("/dev/token")
+    };    
+    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .cors(Customizer.withDefaults())
                 .csrf(CsrfConfigurer<HttpSecurity>::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers(URLS_PERMITIDAS)
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()  // Requer autenticação para tudo
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/dev/token").permitAll()  
+                        .requestMatchers(URLS_PERMITIDAS).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2Login(Customizer.withDefaults())
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(autenticacaoEntryPoint))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .addFilterAfter(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
