@@ -15,6 +15,7 @@ public class PerfilController {
     @Autowired
     private PerfilService perfilService;
 
+    // Endpoints relacionados ao Voluntário
     @GetMapping("/voluntario/dados-pessoais")
     public ResponseEntity<UsuarioOutput> buscarDadosPessoaisVoluntario(@RequestParam Integer voluntarioId) {
         UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(voluntarioId);
@@ -24,10 +25,21 @@ public class PerfilController {
         return ResponseEntity.ok(usuarioOutput);
     }
 
-    @GetMapping("/assistido/dados-pessoais")
-    public ResponseEntity<UsuarioOutput> buscarDadosPessoaisAssistido(@RequestParam Integer assistidoId) {
-        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(assistidoId);
+    @PatchMapping("/voluntario/dados-pessoais")
+    public ResponseEntity<UsuarioOutput> atualizarDadosPessoaisVoluntario(
+            @RequestParam Integer voluntarioId,
+            @RequestBody UsuarioInput usuarioInput) {
+        UsuarioOutput usuarioOutput = perfilService.atualizarDadosPessoaisPorId(voluntarioId, usuarioInput);
         if (usuarioOutput == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuarioOutput);
+    }
+
+    @GetMapping("/voluntario/endereco")
+    public ResponseEntity<UsuarioOutput> buscarEnderecoVoluntario(@RequestParam Integer voluntarioId) {
+        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(voluntarioId);
+        if (usuarioOutput == null || usuarioOutput.getEndereco() == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(usuarioOutput);
@@ -43,6 +55,36 @@ public class PerfilController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();
+    }
+
+    // Endpoints relacionados ao Assistido
+    @GetMapping("/assistido/dados-pessoais")
+    public ResponseEntity<UsuarioOutput> buscarDadosPessoaisAssistido(@RequestParam Integer assistidoId) {
+        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(assistidoId);
+        if (usuarioOutput == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuarioOutput);
+    }
+
+    @PatchMapping("/assistido/dados-pessoais")
+    public ResponseEntity<UsuarioOutput> atualizarDadosPessoaisAssistido(
+            @RequestParam Integer assistidoId,
+            @RequestBody UsuarioInput usuarioInput) {
+        UsuarioOutput usuarioOutput = perfilService.atualizarDadosPessoaisPorId(assistidoId, usuarioInput);
+        if (usuarioOutput == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuarioOutput);
+    }
+
+    @GetMapping("/assistido/endereco")
+    public ResponseEntity<UsuarioOutput> buscarEnderecoAssistido(@RequestParam Integer assistidoId) {
+        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(assistidoId);
+        if (usuarioOutput == null || usuarioOutput.getEndereco() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuarioOutput);
     }
 
     @PutMapping("/assistido/endereco")

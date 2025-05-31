@@ -43,35 +43,52 @@ public class PerfilServiceImpl implements PerfilService {
 //        }
 //        return usuarioOutput;
 //    }
+
     public UsuarioOutput buscarUsuarioComEnderecoPorId(Integer usuarioId) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
-        if (usuarioOptional.isEmpty()) {
+        Usuario usuario = buscarUsuarioPorId(usuarioId);
+        if (usuario == null) {
             return null;
         }
-        return new UsuarioOutput(usuarioOptional.get());
+        return converterParaUsuarioOutput(usuario);
     }
 
     @Override
     public boolean atualizarEnderecoPorUsuarioId(Integer usuarioId, String cep, String numero, String complemento) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
-        if (usuarioOptional.isEmpty()) {
+        Usuario usuario = buscarUsuarioPorId(usuarioId);
+        if (usuario == null || usuario.getEndereco() == null) {
             return false;
         }
-        Usuario usuario = usuarioOptional.get();
-        usuario.getEndereco().setCep(cep);
-        usuario.getEndereco().setNumero(numero);
-        usuario.getEndereco().setComplemento(complemento);
+        atualizarEndereco(usuario, cep, numero, complemento);
         usuarioRepository.save(usuario);
         return true;
     }
 
     @Override
     public UsuarioOutput atualizarDadosPessoaisPorId(Integer usuarioId, UsuarioInput usuarioInput) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
-        if (usuarioOptional.isEmpty()) {
+        Usuario usuario = buscarUsuarioPorId(usuarioId);
+        if (usuario == null) {
             return null;
         }
-        Usuario usuario = usuarioOptional.get();
+        atualizarDadosPessoais(usuario, usuarioInput);
+        usuarioRepository.save(usuario);
+        return converterParaUsuarioOutput(usuario);
+    }
+
+    // Método auxiliar para buscar usuário por ID
+    private Usuario buscarUsuarioPorId(Integer usuarioId) {
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
+        return usuarioOptional.orElse(null);
+    }
+
+    // Método auxiliar para atualizar endereço
+    private void atualizarEndereco(Usuario usuario, String cep, String numero, String complemento) {
+        usuario.getEndereco().setCep(cep);
+        usuario.getEndereco().setNumero(numero);
+        usuario.getEndereco().setComplemento(complemento);
+    }
+
+    // Método auxiliar para atualizar dados pessoais
+    private void atualizarDadosPessoais(Usuario usuario, UsuarioInput usuarioInput) {
         usuario.setNome(usuarioInput.getNome());
         usuario.setCpf(usuarioInput.getCpf());
         usuario.setEmail(usuarioInput.getEmail());
@@ -81,14 +98,13 @@ public class PerfilServiceImpl implements PerfilService {
         usuario.setGenero(usuarioInput.getGenero());
         usuario.setTipo(usuarioInput.getTipo());
 
-        // Atualizando o endereço
         if (usuario.getEndereco() != null) {
-            usuario.getEndereco().setCep(usuarioInput.getCep());
-            usuario.getEndereco().setNumero(usuarioInput.getNumero());
-            usuario.getEndereco().setComplemento(usuarioInput.getComplemento());
+            atualizarEndereco(usuario, usuarioInput.getCep(), usuarioInput.getNumero(), usuarioInput.getComplemento());
         }
+    }
 
-        usuarioRepository.save(usuario);
+    // Método auxiliar para converter Usuario para UsuarioOutput
+    private UsuarioOutput converterParaUsuarioOutput(Usuario usuario) {
         return new UsuarioOutput(usuario);
     }
 }
