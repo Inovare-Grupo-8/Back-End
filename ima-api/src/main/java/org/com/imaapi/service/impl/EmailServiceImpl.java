@@ -96,7 +96,7 @@ public class EmailServiceImpl implements EmailService {
                             <h1 style="color: #ED4231; font-size: 24px;">Complete seu cadastro!</h1>
                             <p style="color: #262626; font-size: 16px; line-height: 1.5;">Olá, <strong>%s</strong>,</p>
                             <p style="color: #262626; font-size: 16px; line-height: 1.5;">Estamos quase lá! Para aproveitar todos os nossos serviços, precisamos que você complete seu cadastro.</p>                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">É rápido e simples, basta clicar no botão abaixo:</p>
-                            <a href="http://localhost:3030/inscricao-anamnese?id=%d"
+                            <a href=" 
                                style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #ED4231; color: #f4f4f9; text-decoration: none; font-weight: bold; border-radius: 20px; transition: background-color 0.3s ease;">Completar Cadastro</a>
                         </div>
                         <div style="text-align: center; font-size: 12px; color: #888; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd;">
