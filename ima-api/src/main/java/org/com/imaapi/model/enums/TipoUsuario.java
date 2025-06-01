@@ -16,6 +16,10 @@ public enum TipoUsuario {
         return value;
     }
 
+    public String getPrefixed() {
+        return "ROLE_" + this.name();
+    }
+
     public static TipoUsuario fromValue(String value) {
         for (TipoUsuario tipo : TipoUsuario.values()) {
             if (tipo.value.equalsIgnoreCase(value)) {

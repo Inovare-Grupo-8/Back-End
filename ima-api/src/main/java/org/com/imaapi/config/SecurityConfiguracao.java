@@ -1,7 +1,11 @@
 package org.com.imaapi.config;
 
+import org.com.imaapi.config.oauth2.AutenticacaoSucessHandler;
+import org.com.imaapi.config.oauth2.EscopoIncrementalFilter;
+import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.com.imaapi.service.impl.OauthTokenServiceImpl;
+import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +20,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -29,12 +36,6 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguracao {
-
-    @Autowired
-    private AutenticacaoServiceImpl autenticacaoService;
-
-    @Autowired
-    private AutenticacaoEntryPoint autenticacaoEntryPoint;
 
     private static final AntPathRequestMatcher[] URLS_PERMITIDAS = {
             new AntPathRequestMatcher("/swagger-ui/**"),
@@ -53,36 +54,41 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
             new AntPathRequestMatcher("/"),
-            new AntPathRequestMatcher("/login-google/**"),
             new AntPathRequestMatcher("/oauth2/**"),
-            new AntPathRequestMatcher("/login/oauth2/**"),
-            new AntPathRequestMatcher("/login-google"), // Se estiver usando esse endpoint customizado
-            new AntPathRequestMatcher("/oauth2/authorization/google")
+            new AntPathRequestMatcher("/oauth2/authorization/google"),
+            new AntPathRequestMatcher("/dev/token")
     };
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AutenticacaoSucessHandler autenticacaoSucessHandler,
+                                                   AutenticacaoEntryPoint autenticacaoEntryPoint,
+                                                   EscopoIncrementalFilter escopoIncrementalFilter) throws Exception {
         return http
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .cors(Customizer.withDefaults())
                 .csrf(CsrfConfigurer<HttpSecurity>::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers(URLS_PERMITIDAS)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/usuarios/voluntario").hasRole("ADMINISTRADOR")
+                        .requestMatchers(URLS_PERMITIDAS)
                         .permitAll()
-                        .anyRequest()
-                        .authenticated()  // Requer autenticação para tudo
+                        .anyRequest().authenticated()  // Requer autenticação para tudo
                 )
-                .oauth2Login(Customizer.withDefaults())
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(autenticacaoSucessHandler)
+                )
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(autenticacaoEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .addFilterAfter(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(escopoIncrementalFilter, OAuth2AuthorizationRequestRedirectFilter.class)
                 .build();
     }
 
     @Bean
     public AuthenticationManager authManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.authenticationProvider(new AutenticacaoProvider(autenticacaoService, passwordEncoder()));
+        authenticationManagerBuilder.authenticationProvider(new AutenticacaoProvider(autenticacaoService(), passwordEncoder()));
         return authenticationManagerBuilder.build();
     }
 
@@ -94,8 +100,43 @@ public class SecurityConfiguracao {
 
     @Bean
     public AutenticacaoFilter jwtAuthenticationFilterBean() {
-        return new AutenticacaoFilter(autenticacaoService, jwtAuthenticationUtilBean());
+        return new AutenticacaoFilter(autenticacaoService(), jwtAuthenticationUtilBean());
     }
+
+    @Bean
+    public AutenticacaoSucessHandler autenticacaoSucessHandler(
+            UsuarioRepository usuarioRepository,
+            GerenciadorTokenJwt gerenciadorTokenJwt,
+            UsuarioServiceImpl usuarioService,
+            OAuth2AuthorizedClientManager authorizedClientManager,
+            OauthTokenServiceImpl oauthTokenService) {
+
+        return new AutenticacaoSucessHandler(
+                usuarioRepository,
+                gerenciadorTokenJwt,
+                usuarioService,
+                authorizedClientManager,
+                oauthTokenService
+        );
+    }
+
+    @Bean
+    public EscopoIncrementalFilter escopoIncrementalFilter(
+            OAuth2AuthorizedClientManager authorizedClientManager,
+            OauthTokenServiceImpl oauthTokenService,
+            UsuarioRepository usuarioRepository) {
+        return new EscopoIncrementalFilter(
+                authorizedClientManager,
+                oauthTokenService,
+                usuarioRepository
+        );
+    }
+
+    @Bean
+    public AuthenticationEntryPoint autenticacaoEntryPoint() { return new AutenticacaoEntryPoint(); }
+
+    @Bean
+    public AutenticacaoServiceImpl autenticacaoService() { return new AutenticacaoServiceImpl(); }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -118,11 +159,14 @@ public class SecurityConfiguracao {
                         HttpMethod.TRACE.name()
                 )
         );
+
         configuracao.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        configuracao.setAllowCredentials(false);
+        configuracao.setAllowCredentials(true);
 
-
-        configuracao.setExposedHeaders(List.of(HttpHeaders.CONTENT_DISPOSITION));
+        configuracao.setExposedHeaders(List.of(
+                HttpHeaders.CONTENT_DISPOSITION,
+                "Authorization"
+        ));
 
         UrlBasedCorsConfigurationSource origem = new UrlBasedCorsConfigurationSource();
         origem.registerCorsConfiguration("/**", configuracao);

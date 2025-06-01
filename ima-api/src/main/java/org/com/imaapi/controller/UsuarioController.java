@@ -5,8 +5,10 @@ import jakarta.validation.Valid;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.UsuarioMapper;
 import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
-import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
+import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
+import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +26,30 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping
-    @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<Void> cadastrarUsuario(@RequestBody @Valid UsuarioInput usuarioInput) {
-            usuarioService.cadastrarUsuario(usuarioInput);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+    @PostMapping("/fase1")
+    public ResponseEntity<Usuario> cadastrarUsuarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
+        Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
+        return new ResponseEntity<>(usuario, HttpStatus.CREATED);
     }
 
-    @PostMapping("/voluntario")
-    @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<Void> cadastrarVoluntario(@RequestBody @Valid UsuarioInput usuarioInput) {
-        usuarioService.cadastrarVoluntario(usuarioInput);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    @PatchMapping("/fase2/{idUsuario}")
+    public ResponseEntity<Usuario> completarCadastroUsuario(@PathVariable Integer idUsuario, @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
+        Usuario usuario = usuarioService.cadastrarSegundaFase(idUsuario, usuarioInputSegundaFase);
+        return ResponseEntity.ok(usuario);
+    }
+
+    @PostMapping("/voluntario/fase1")
+    public ResponseEntity<Usuario> cadastrarVoluntarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
+        Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
+        return new ResponseEntity<>(usuario, HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/voluntario/fase2/{idUsuario}")
+    public ResponseEntity<Usuario> completarCadastroVoluntario(
+            @PathVariable Integer idUsuario,
+            @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
+        Usuario usuario = usuarioService.cadastrarSegundaFaseVoluntario(idUsuario, usuarioInputSegundaFase);
+        return ResponseEntity.ok(usuario);
     }
 
     @PostMapping("/login")
@@ -83,8 +97,8 @@ public class UsuarioController {
 
     @PutMapping("/{id}")
     @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<UsuarioListarOutput> atualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioInput usuarioInput) {
-        UsuarioListarOutput usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioInput);
+    public ResponseEntity<UsuarioListarOutput> atualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioInputSegundaFase usuarioInputSegundaFase) {
+        UsuarioListarOutput usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioInputSegundaFase);
 
         if (usuarioAtualizado == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -98,5 +112,20 @@ public class UsuarioController {
     public ResponseEntity<Void> deletarUsuario(@PathVariable Integer id) {
         usuarioService.deletarUsuario(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/fase1")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> buscarDadosPrimeiraFase(@RequestParam(required = false) Integer idUsuario,
+                                                                             @RequestParam(required = false) String email) {
+        Usuario usuario;
+        if (idUsuario != null) {
+            usuario = usuarioService.buscarDadosPrimeiraFase(idUsuario);
+        } else if (email != null && !email.isEmpty()) {
+            usuario = usuarioService.buscarDadosPrimeiraFase(email);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return ResponseEntity.ok(output);
     }
 }

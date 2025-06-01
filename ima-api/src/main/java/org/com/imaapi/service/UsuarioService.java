@@ -1,7 +1,8 @@
 package org.com.imaapi.service;
 
 import org.com.imaapi.model.usuario.Usuario;
-import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
+import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 
@@ -9,19 +10,24 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioService {
-    public void cadastrarUsuario(UsuarioInput usuarioInput);
+    Usuario cadastrarPrimeiraFase(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase);
+    
+    Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
+    
+    Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
 
-    public void cadastrarVoluntario(UsuarioInput usuarioInput);
+    UsuarioTokenOutput autenticar(Usuario usuario);
 
-    public UsuarioTokenOutput autenticar(Usuario usuario);
-
-    public List<UsuarioListarOutput> buscarUsuarios();
+    List<UsuarioListarOutput> buscarUsuarios();
 
     public Optional<Usuario> buscaUsuario(Integer id);
 
     public Optional<Usuario> buscaUsuarioPorNome(String nome);
 
-    public UsuarioListarOutput atualizarUsuario(Integer id, UsuarioInput usuarioInput);
+    UsuarioListarOutput atualizarUsuario(Integer id, UsuarioInputSegundaFase usuarioInputSegundaFase);
 
     public void deletarUsuario(Integer id);
+    
+    Usuario buscarDadosPrimeiraFase(Integer idUsuario);
+    Usuario buscarDadosPrimeiraFase(String email);
 }

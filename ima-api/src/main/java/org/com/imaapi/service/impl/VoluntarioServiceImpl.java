@@ -27,8 +27,8 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @PostMapping
-    public void cadastrarVoluntario(@RequestBody VoluntarioInput voluntarioInput) {
+    @Override
+    public void cadastrarVoluntario(VoluntarioInput voluntarioInput) {
         try {
             Voluntario voluntario = gerarObjetoVoluntario(voluntarioInput);
             voluntarioRepository.save(voluntario);

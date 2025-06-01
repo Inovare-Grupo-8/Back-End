@@ -1,50 +1,50 @@
 package imaapi.model.input;
 
-import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UsuarioInputTest {
+public class UsuarioInputPrimeiraFaseTest {
 
     @Test
     void emailDeveSerValido() {
-        UsuarioInput usuarioInput = new UsuarioInput();
-        usuarioInput.setEmail("teste.teste.com");
+        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
+        usuarioInputPrimeiraFase.setEmail("teste.teste.com");
 
-        String email = usuarioInput.getEmail();
+        String email = usuarioInputPrimeiraFase.getEmail();
         assertFalse(email.contains("@"), "Email inválido: deve conter '@'");
     }
 
     @Test
     void nomeDeveSerValido() {
-        UsuarioInput usuarioInput = new UsuarioInput();
-        usuarioInput.setNome(null);
+        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
+        usuarioInputPrimeiraFase.setNome(null);
 
-        String nome = usuarioInput.getNome();
+        String nome = usuarioInputPrimeiraFase.getNome();
         assertEquals(null, nome, "Nome não pode ser nulo");
     }
 
     @Test
     void senhaDeveConterCaracterEspecial() {
-        UsuarioInput usuarioInput = new UsuarioInput();
-        usuarioInput.setSenha("senhaTeste");
+        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
+        usuarioInputPrimeiraFase.setSenha("senhaTeste");
 
-        String senha = usuarioInput.getSenha();
+        String senha = usuarioInputPrimeiraFase.getSenha();
         assertFalse(senha.contains("@"), "Senha deve conter caracter especial");
     }
 
     @Test
     void senhaMenorQueSeisCaracteresNaoEhValida() {
-        UsuarioInput usuario = new UsuarioInput();
+        UsuarioInputPrimeiraFase usuario = new UsuarioInputPrimeiraFase();
         usuario.setSenha("abc"); // apenas 3 caracteres
         assertTrue(usuario.getSenha().length() < 6, "Senha com menos de 6 caracteres deve ser inválida");
     }
 
     @Test
     void deveAceitarCpfValidoComOnzeDigitos() {
-        UsuarioInput mockUsuario = Mockito.mock(UsuarioInput.class);
+        UsuarioInputPrimeiraFase mockUsuario = Mockito.mock(UsuarioInputPrimeiraFase.class);
         Mockito.when(mockUsuario.getCpf()).thenReturn("12345678901");
 
         String cpf = mockUsuario.getCpf();
