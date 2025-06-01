@@ -4,13 +4,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.com.imaapi.config.GerenciadorTokenJwt;
-import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.service.UsuarioService;
 import org.com.imaapi.service.impl.OauthTokenServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
@@ -48,6 +46,9 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+
+        System.out.println("=== INICIANDO onAuthenticationSuccess ===");
+
         OAuth2AuthenticationToken authenticationToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User usuarioOauth = (OAuth2User) authenticationToken.getPrincipal();
         String email = usuarioOauth.getAttribute("email");
@@ -80,8 +81,12 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
             OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
             OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
 
+            System.out.println("Access Token: " + accessToken.getTokenValue());
+            System.out.println("Refresh Token: " +
+                    (refreshToken != null ? refreshToken.getTokenValue() : "null"));
+
             if(refreshToken == null) {
-                throw new ServletException("Não foi recebido um refresh token");
+                System.out.println("Não foi recebido um refresh token");
             }
 
             oauthTokenService.salvarToken(usuario, accessToken, refreshToken);
@@ -89,8 +94,10 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
             throw new ServletException("Erro ao obter tokens autorizados com o google");
         }
 
-        String token = gerenciadorTokenJwt.generateToken(authentication);
-        response.setHeader("Authorization", "Bearer " + token);
+        UsuarioTokenOutput tokenOutput = usuarioService.autenticar(usuarioOptional.get());
+        response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
+
+        System.out.println("=== FINALIZANDO onAuthenticationSuccess ===");
     }
 
 }

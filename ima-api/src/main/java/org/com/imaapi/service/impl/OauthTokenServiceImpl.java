@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,12 +31,10 @@ public class OauthTokenServiceImpl implements OauthTokenService {
     private final OauthTokenRepository oauthTokenRepository;
     private final UsuarioRepository usuarioRepository;
     private final ClientRegistrationRepository clientRegistrationRepository;
-
-    @Qualifier("googleAuthorizedClientManager")
     private final OAuth2AuthorizedClientManager oauthClientManager;
 
     public OauthTokenServiceImpl(OauthTokenRepository oauthTokenRepository,
-                                 @Qualifier("googleAuthorizedClientManager") OAuth2AuthorizedClientManager oauthClientManager,
+                                 OAuth2AuthorizedClientManager oauthClientManager,
                                  UsuarioRepository usuarioRepository,
                                  ClientRegistrationRepository clientRegistrationRepository) {
         this.oauthTokenRepository = oauthTokenRepository;
@@ -75,7 +74,7 @@ public class OauthTokenServiceImpl implements OauthTokenService {
 
     @Override
     public void salvarToken(Usuario usuario, OAuth2AccessToken accessToken, OAuth2RefreshToken refreshToken) {
-        OauthToken oauthToken = oauthTokenRepository.findByIdUsuario(usuario.getIdUsuario())
+        OauthToken oauthToken = oauthTokenRepository.findByUsuarioIdUsuario(usuario.getIdUsuario())
                 .orElse(new OauthToken());
 
         oauthToken.setUsuario(usuario);
@@ -89,16 +88,19 @@ public class OauthTokenServiceImpl implements OauthTokenService {
         oauthTokenRepository.save(oauthToken);
     }
 
-    public String buildAuthorizationUrl(Set<String> escopos, String state) {
+    public String construirUrl(Set<String> escoposAdicionais, String state) {
 
         ClientRegistration googleRegistration = clientRegistrationRepository.findByRegistrationId("google");
+
+        Set<String> escoposCombinados = new HashSet<>(googleRegistration.getScopes());
+        escoposCombinados.addAll(escoposAdicionais);
 
         return UriComponentsBuilder
                 .fromUriString(googleRegistration.getProviderDetails().getAuthorizationUri())
                 .queryParam("client_id", googleRegistration.getClientId())
                 .queryParam("redirect_uri", googleRegistration.getRedirectUri())
                 .queryParam("response_type", "code")
-                .queryParam("scope", String.join(" ", escopos))
+                .queryParam("scope", String.join(" ", escoposCombinados))
                 .queryParam("state", state)
                 .queryParam("access_type", "offline")
                 .queryParam("prompt", "consent")

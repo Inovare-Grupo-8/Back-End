@@ -1,32 +1,46 @@
 package org.com.imaapi.config.oauth2;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class OAuth2ClientConfig {
 
-    @Bean("googleAuthorizedClientManager")
-    public OAuth2AuthorizedClientManager googleAuthorizedClientManager(
-            ClientRegistrationRepository clientRegistrationRepository,
-            OAuth2AuthorizedClientRepository authorizedClientRepository) {
-
-        OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
-                .authorizationCode()
-                .refreshToken()
-                .build();
-
-        DefaultOAuth2AuthorizedClientManager authorizedClientManager =
-                new DefaultOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientRepository);
-
-        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-
-        return authorizedClientManager;
+    private OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> refreshTokenTokenResponseClient(WebClient webClient) {
+        return new SpringSecurityOAuth2RefreshTokenResponseClient(webClient);
     }
+
+    // Implementação customizada baseada na nova API
+        private record SpringSecurityOAuth2RefreshTokenResponseClient(WebClient webClient)
+                implements OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> {
+
+        @Override
+            public OAuth2AccessTokenResponse getTokenResponse(OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest) {
+                ClientRegistration clientRegistration = refreshTokenGrantRequest.getClientRegistration();
+
+                return webClient.post()
+                        .uri(clientRegistration.getProviderDetails().getTokenUri())
+                        .body(BodyInserters.fromFormData(createRequestParameters(refreshTokenGrantRequest)))
+                        .headers(headers -> headers.setBasicAuth(clientRegistration.getClientId(), clientRegistration.getClientSecret()))
+                        .retrieve()
+                        .bodyToMono(OAuth2AccessTokenResponse.class)
+                        .block();
+            }
+
+            private MultiValueMap<String, String> createRequestParameters(OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest) {
+                MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+                parameters.add(OAuth2ParameterNames.GRANT_TYPE, refreshTokenGrantRequest.getGrantType().getValue());
+                parameters.add(OAuth2ParameterNames.REFRESH_TOKEN, refreshTokenGrantRequest.getRefreshToken().getTokenValue());
+                parameters.add(OAuth2ParameterNames.SCOPE, String.join(" ", refreshTokenGrantRequest.getClientRegistration().getScopes()));
+                return parameters;
+            }
+        }
 }
