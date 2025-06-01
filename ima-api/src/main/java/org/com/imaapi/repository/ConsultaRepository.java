@@ -5,5 +5,5 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ConsultaRepository extends JpaRepository<Consulta, Integer> {
-    List<Consulta> findByVoluntario_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
+    List<Consulta> findByVoluntarioAndHorarioBetween(Integer idVoluntario, LocalDateTime inicio, LocalDateTime fim);
 }

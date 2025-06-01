@@ -17,7 +17,7 @@ public class DisponibilidadeServiceImpl {
     @Autowired
     private ConsultaRepository consultaRepository;
 
-    public List<LocalTime> buscarHorariosDisponiveis(Integer idUsuario, LocalDate data) {
+    public List<LocalTime> buscarHorariosDisponiveis(Integer idVoluntario, LocalDate data) {
         List<LocalTime> horariosPossiveis = new ArrayList<>();
         for (int h = 0; h < 24; h++) {
             horariosPossiveis.add(LocalTime.of(h, 0));
@@ -25,7 +25,7 @@ public class DisponibilidadeServiceImpl {
 
         LocalDateTime inicio = data.atStartOfDay();
         LocalDateTime fim = data.atTime(23, 59, 59);
-        List<Consulta> consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(idUsuario, inicio, fim);
+        List<Consulta> consultas = consultaRepository.findByVoluntarioAndHorarioBetween(idVoluntario, inicio, fim);
 
         List<LocalTime> horariosOcupados = consultas.stream()
                 .map(c -> c.getHorario().toLocalTime())

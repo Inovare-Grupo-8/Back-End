@@ -37,6 +37,10 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         }
     }
 
+    public Voluntario buscarPorId(Integer idVoluntario) {
+        return voluntarioRepository.findById(idVoluntario).orElse(null);
+    }
+
     public void excluirVoluntario(Integer id) {
         try {
             voluntarioRepository.deleteById(id);
