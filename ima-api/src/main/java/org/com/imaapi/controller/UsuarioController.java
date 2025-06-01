@@ -112,6 +112,18 @@ public class UsuarioController {
     public ResponseEntity<Void> deletarUsuario(@PathVariable Integer id) {
         usuarioService.deletarUsuario(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }    @GetMapping("/fase1/{idUsuario}")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> buscarDadosPrimeiraFase(@PathVariable Integer idUsuario) {
+        Usuario usuario = usuarioService.buscarDadosPrimeiraFase(idUsuario);
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return ResponseEntity.ok(output);
+    }
+
+    @GetMapping("/voluntario/fase1/{idUsuario}")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> buscarDadosPrimeiraFaseVoluntario(@PathVariable Integer idUsuario) {
+        Usuario usuario = usuarioService.buscarDadosPrimeiraFase(idUsuario);
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return ResponseEntity.ok(output);
     }
 
     @GetMapping("/fase1")

@@ -69,6 +69,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         logger.info("Iniciando cadastro de usuário fase 1: {}", usuarioInputPrimeiraFase);
         Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
+
         logger.info("Usuário fase 1 cadastrado com sucesso. ID: {}", usuarioSalvo.getIdUsuario());
 
         emailService.enviarEmail(usuarioSalvo.getEmail(), usuarioSalvo.getNome() + "|" + usuarioSalvo.getIdUsuario(), "continuar cadastro");
@@ -84,6 +85,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
+
         usuario.setTipo(usuarioInputSegundaFase.getTipo());
         
         // Buscar e salvar endereço
@@ -114,6 +116,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
+
         usuario.setTipo(TipoUsuario.VOLUNTARIO);
         
         usuarioRepository.save(usuario);
@@ -188,6 +191,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado"));
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
+
         usuario.setTipo(usuarioInputSegundaFase.getTipo());
 
         usuarioRepository.save(usuario);
@@ -212,13 +216,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }
-
+  
     @Override
     public Usuario buscarDadosPrimeiraFase(String email) {
         logger.info("Buscando dados da primeira fase do usuário por email: {}", email);
         return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }
+
 
 
 //        Endereco endereco = enderecoHandlerService.buscarSalvarEndereco(
