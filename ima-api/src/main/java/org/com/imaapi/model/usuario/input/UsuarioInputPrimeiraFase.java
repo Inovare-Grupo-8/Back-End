@@ -13,16 +13,16 @@ import org.com.imaapi.model.enums.TipoUsuario;
 @Getter @Setter @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class UsuarioInput {
-    @NotBlank(message="Nome não pode estar em branco")
+public class UsuarioInputPrimeiraFase {
+    @NotBlank(message = "Nome não pode estar em branco")
     @Size(min = 3, message = "O nome deve ter entre 3 e 50 caracteres")
     private String nome;
 
-    @NotNull(message="CPF não pode ser nulo")
-    @Digits(integer=11, fraction=0, message="CPF deve ter 11 digitos")
+    @NotNull(message = "CPF não pode ser nulo")
+    @Digits(integer = 11, fraction = 0, message = "CPF deve ter 11 digitos")
     private String cpf;
 
-    @Email(message="Email inválido")
+    @Email(message = "Email inválido")
     private String email;
 
     @NotBlank(message = "O campo senha não pode estar em branco")
@@ -33,24 +33,4 @@ public class UsuarioInput {
     @PastOrPresent(message = "Data de nascimento inválida")
     private LocalDate dataNascimento;
 
-    @NotNull(message = "Valor nulo, insíra um valor válido")
-    private Double renda;
-
-    @NotNull(message = "O gênero deve ser informado")
-    private Genero genero;
-
-    @NotNull(message="Confirme se é um voluntário")
-    private Boolean isVoluntario;
-
-    private Funcao funcao;
-    private TipoUsuario tipo;
-
-    //inserindo o endereço
-    @NotBlank(message = "O CEP não pode estar em branco")
-    @Pattern(regexp = "\\d{8}|\\d{5}-\\d{3}", message = "O CEP deve estar no formato 00000000 ou 00000-000")
-    private String cep;
-
-    private String numero;
-
-    private String complemento;
 }

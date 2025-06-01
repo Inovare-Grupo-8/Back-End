@@ -3,7 +3,8 @@ package imaapi.controller;
 import org.com.imaapi.controller.UsuarioController;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
-import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
+import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.service.UsuarioService;
@@ -39,25 +40,27 @@ public class UsuarioControllerTest {
 
     @Test
     public void testCadastrarUsuario() {
-        UsuarioInput usuarioInput = new UsuarioInput();
-        Mockito.doNothing().when(usuarioService).cadastrarUsuario(any(UsuarioInput.class));
+        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
+        Usuario usuario = new Usuario();
+        Mockito.when(usuarioService.cadastrarPrimeiraFase(any(UsuarioInputPrimeiraFase.class))).thenReturn(usuario);
 
-        ResponseEntity<Void> response = usuarioController.cadastrarUsuario(usuarioInput);
+        ResponseEntity<Usuario> response = usuarioController.cadastrarUsuarioFase1(usuarioInputPrimeiraFase);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(usuario, response.getBody());
     }
 
     @Test
-    public void testCadastrarUsuarioComErro() {
-        UsuarioInput usuarioInput = new UsuarioInput();
-        Mockito.doThrow(new RuntimeException("Erro ao cadastrar usuário"))
-                .when(usuarioService).cadastrarUsuario(any(UsuarioInput.class));
+    public void testCompletarCadastroUsuario() {
+        Integer id = 1;
+        UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
+        Usuario usuario = new Usuario();
+        Mockito.when(usuarioService.cadastrarSegundaFase(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuario);
 
-        try {
-            usuarioController.cadastrarUsuario(usuarioInput);
-        } catch (RuntimeException e) {
-            assertEquals("Erro ao cadastrar usuário", e.getMessage());
-        }
+        ResponseEntity<Usuario> response = usuarioController.completarCadastroUsuario(id, usuarioInputSegundaFase);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(usuario, response.getBody());
     }
 
     @Test
@@ -85,11 +88,11 @@ public class UsuarioControllerTest {
     @Test
     public void testAtualizarUsuario() {
         Integer id = 1;
-        UsuarioInput usuarioInput = new UsuarioInput();
+        UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
         UsuarioListarOutput usuarioAtualizado = new UsuarioListarOutput();
-        Mockito.when(usuarioService.atualizarUsuario(eq(id), any(UsuarioInput.class))).thenReturn(usuarioAtualizado);
+        Mockito.when(usuarioService.atualizarUsuario(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuarioAtualizado);
 
-        ResponseEntity<UsuarioListarOutput> response = usuarioController.atualizarUsuario(id, usuarioInput);
+        ResponseEntity<UsuarioListarOutput> response = usuarioController.atualizarUsuario(id, usuarioInputSegundaFase);
 
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertEquals(usuarioAtualizado, response.getBody());
@@ -98,10 +101,10 @@ public class UsuarioControllerTest {
     @Test
     public void testAtualizarUsuarioNaoEncontrado() {
         Integer id = 1;
-        UsuarioInput usuarioInput = new UsuarioInput();
-        Mockito.when(usuarioService.atualizarUsuario(eq(id), any(UsuarioInput.class))).thenReturn(null);
+        UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
+        Mockito.when(usuarioService.atualizarUsuario(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(null);
 
-        ResponseEntity<UsuarioListarOutput> response = usuarioController.atualizarUsuario(id, usuarioInput);
+        ResponseEntity<UsuarioListarOutput> response = usuarioController.atualizarUsuario(id, usuarioInputSegundaFase);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
@@ -175,24 +178,27 @@ public class UsuarioControllerTest {
 
     @Test
     public void testCadastrarVoluntario() {
-        UsuarioInput usuarioInput = new UsuarioInput();
-        Mockito.doNothing().when(usuarioService).cadastrarVoluntario(any(UsuarioInput.class));
+        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
+        Usuario usuario = new Usuario();
+        Mockito.when(usuarioService.cadastrarPrimeiraFase(any(UsuarioInputPrimeiraFase.class))).thenReturn(usuario);
 
-        ResponseEntity<Void> response = usuarioController.cadastrarVoluntario(usuarioInput);
+        ResponseEntity<Usuario> response = usuarioController.cadastrarVoluntarioFase1(usuarioInputPrimeiraFase);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(usuario, response.getBody());
     }
 
     @Test
-    public void testCadastrarVoluntarioComErro() {
-        UsuarioInput usuarioInput = new UsuarioInput();
-        Mockito.doThrow(new RuntimeException("Erro ao cadastrar voluntário"))
-                .when(usuarioService).cadastrarVoluntario(any(UsuarioInput.class));
+    public void testCompletarCadastroVoluntario() {
+        Integer id = 1;
+        UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
+        Usuario usuario = new Usuario();
+        Mockito.when(usuarioService.cadastrarSegundaFaseVoluntario(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuario);
 
-        try {
-            usuarioController.cadastrarVoluntario(usuarioInput);
-        } catch (RuntimeException e) {
-            assertEquals("Erro ao cadastrar voluntário", e.getMessage());
-        }
+        ResponseEntity<Usuario> response = usuarioController.completarCadastroVoluntario(id, usuarioInputSegundaFase);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(usuario, response.getBody());
     }
+
 }

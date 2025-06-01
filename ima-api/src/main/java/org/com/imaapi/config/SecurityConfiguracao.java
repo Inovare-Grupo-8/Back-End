@@ -6,7 +6,6 @@ import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.com.imaapi.service.impl.OauthTokenServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -56,7 +55,8 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/error/**"),
             new AntPathRequestMatcher("/"),
             new AntPathRequestMatcher("/oauth2/**"),
-            new AntPathRequestMatcher("/oauth2/authorization/google")
+            new AntPathRequestMatcher("/oauth2/authorization/google"),
+            new AntPathRequestMatcher("/dev/token")
     };
 
     @Bean

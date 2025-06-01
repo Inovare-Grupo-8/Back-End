@@ -2,6 +2,10 @@ package org.com.imaapi.model.consulta;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.Especialidade;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "consulta")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Consulta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
