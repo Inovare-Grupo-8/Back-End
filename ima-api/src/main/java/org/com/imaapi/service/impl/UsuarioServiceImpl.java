@@ -150,7 +150,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioTokenOutput autenticar(Usuario usuario) {
         final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
-                usuario.getEmail(), usuario.getSenha());
+                usuario.getEmail(), usuario.getSenha(), UsuarioMapper.ofDetalhes(usuario).getAuthorities());
 
         final Authentication authentication = authenticationManager.authenticate(credentials);
 
