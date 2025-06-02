@@ -16,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 public class ConsultaServiceImpl implements ConsultaService {
 
@@ -57,6 +60,18 @@ public class ConsultaServiceImpl implements ConsultaService {
             logger.error("Erro ao cadastrar evento: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public List<Consulta> buscarProximasConsultasAssistido(Integer idUsuario, int limit) {
+        List<Consulta> consultas = consultaRepository
+                .findByAssistido_IdUsuarioAndHorarioAfterOrderByHorarioAsc(idUsuario, LocalDateTime.now());
+        return consultas.stream().limit(limit).toList();
+    }
+
+    public List<Consulta> buscarProximasConsultasVoluntario(Integer idUsuario, int limit) {
+        List<Consulta> consultas = consultaRepository
+                .findByVoluntario_IdUsuarioAndHorarioAfterOrderByHorarioAsc(idUsuario, LocalDateTime.now());
+        return consultas.stream().limit(limit).toList();
     }
 
     private Consulta gerarObjetoEvento(ConsultaInput consultaInput) {
