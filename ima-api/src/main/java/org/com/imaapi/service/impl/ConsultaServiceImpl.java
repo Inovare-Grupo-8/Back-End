@@ -25,13 +25,13 @@ public class ConsultaServiceImpl implements ConsultaService {
     private static final Logger logger = LoggerFactory.getLogger(ConsultaServiceImpl.class);
 
     @Autowired
-    private ConsultaRepository consultaRepository;
+    private static ConsultaRepository consultaRepository;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private static UsuarioRepository usuarioRepository;
 
     @Autowired
-    private EspecialidadeRepository especialidadeRepository;
+    private static EspecialidadeRepository especialidadeRepository;
 
     public ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput) {
         try {
