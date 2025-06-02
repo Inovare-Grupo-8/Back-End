@@ -12,6 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Map;
 
 
 @RestController
@@ -64,5 +68,28 @@ public class PerfilController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{tipo}/foto")
+    public ResponseEntity<?> uploadFoto(
+            @RequestParam Integer usuarioId,
+            @PathVariable String tipo,
+            @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("O arquivo não pode estar vazio.");
+        }
+
+        // Validação do tipo MIME
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            return ResponseEntity.badRequest().body("O arquivo deve ser uma imagem.");
+        }
+
+        try {
+            String fotoUrl = perfilService.salvarFoto(usuarioId, tipo, file);
+            return ResponseEntity.ok(Map.of("message", "Foto salva com sucesso.", "url", fotoUrl));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Erro ao salvar a foto.");
+        }
     }
 }

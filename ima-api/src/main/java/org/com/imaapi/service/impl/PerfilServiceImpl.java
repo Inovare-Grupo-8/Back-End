@@ -9,12 +9,16 @@ import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.EnderecoService;
+import org.com.imaapi.service.FotoService;
 import org.com.imaapi.service.PerfilService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 public class PerfilServiceImpl implements PerfilService {
@@ -27,6 +31,8 @@ public class PerfilServiceImpl implements PerfilService {
     private EnderecoService enderecoService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private FotoService fotoService;
 
     @Override
     public UsuarioDadosPessoaisOutput buscarDadosPessoaisPorId(Integer usuarioId) {
@@ -126,6 +132,20 @@ public class PerfilServiceImpl implements PerfilService {
             LOGGER.error("Erro ao atualizar endereço para o usuário com ID: {}", usuarioId, e);
             return false;
         }
+    }
+
+    @Override
+    public String salvarFoto(Integer usuarioId, String tipo, MultipartFile file) throws IOException {
+        LOGGER.info("Salvando foto para o usuário com ID: {}", usuarioId);
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        String fotoUrl = fotoService.salvarFoto(tipo, usuarioId, file);
+        usuario.setFotoUrl(fotoUrl);
+        usuarioRepository.save(usuario);
+
+        LOGGER.info("Foto salva com sucesso para o usuário com ID: {}", usuarioId);
+        return fotoUrl;
     }
 
     private Usuario buscarUsuarioPorId(Integer usuarioId) {

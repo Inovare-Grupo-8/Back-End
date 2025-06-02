@@ -57,6 +57,9 @@ public class Usuario{
     @JoinColumn(name = "fk_endereco", referencedColumnName = "id_endereco")
     private Endereco endereco;
 
+    @Column(name = "foto_url")
+    private String fotoUrl;
+
     //para gerar a data de cadastro no banco
     @PrePersist
     public void prePersist() {

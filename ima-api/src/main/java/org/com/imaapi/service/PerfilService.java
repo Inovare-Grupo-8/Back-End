@@ -5,11 +5,17 @@ import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 public interface PerfilService {
     // Métodos genéricos para buscar e atualizar dados
     UsuarioDadosPessoaisOutput buscarDadosPessoaisPorId(Integer usuarioId);
     EnderecoOutput buscarEnderecoPorId(Integer usuarioId);
-    UsuarioOutput atualizarDadosPessoais(Integer usuarioId, UsuarioInputAtualizacaoDadosPessoais usuarioInputAtualizacaoDadosPessoais);    boolean atualizarEnderecoPorUsuarioId(Integer usuarioId, String cep, String numero, String complemento);
+    UsuarioOutput atualizarDadosPessoais(Integer usuarioId, UsuarioInputAtualizacaoDadosPessoais usuarioInputAtualizacaoDadosPessoais);
+    boolean atualizarEnderecoPorUsuarioId(Integer usuarioId, String cep, String numero, String complemento);
 
-    }
+    String salvarFoto(Integer usuarioId, String tipo, MultipartFile file) throws IOException;
+
+}
