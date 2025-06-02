@@ -1,12 +1,18 @@
 package org.com.imaapi.controller;
 
 import jakarta.validation.Valid;
-import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.input.EnderecoInput;
+import org.com.imaapi.model.usuario.input.UsuarioInputAtualizacaoDadosPessoais;
+import org.com.imaapi.model.usuario.output.EnderecoOutput;
+import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.service.PerfilService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/perfil")
@@ -15,84 +21,45 @@ public class PerfilController {
     @Autowired
     private PerfilService perfilService;
 
-    // Endpoints relacionados ao Voluntário
-    @GetMapping("/voluntario/dados-pessoais")
-    public ResponseEntity<UsuarioOutput> buscarDadosPessoaisVoluntario(@RequestParam Integer voluntarioId) {
-        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(voluntarioId);
+    @GetMapping("/{tipo}/dados-pessoais")
+    public ResponseEntity<UsuarioDadosPessoaisOutput> buscarDadosPessoais(
+            @RequestParam Integer usuarioId, @PathVariable String tipo) {
+        UsuarioDadosPessoaisOutput usuarioOutput = perfilService.buscarDadosPessoaisPorId(usuarioId);
         if (usuarioOutput == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(usuarioOutput);
     }
 
-    @PatchMapping("/voluntario/dados-pessoais")
-    public ResponseEntity<UsuarioOutput> atualizarDadosPessoaisVoluntario(
-            @RequestParam Integer voluntarioId,
-            @RequestBody UsuarioInput usuarioInput) {
-        UsuarioOutput usuarioOutput = perfilService.atualizarDadosPessoaisPorId(voluntarioId, usuarioInput);
+    @PatchMapping("/{tipo}/dados-pessoais")
+    public ResponseEntity<UsuarioOutput> atualizarDadosPessoais(
+            @RequestParam Integer usuarioId,
+            @PathVariable String tipo,
+            @RequestBody UsuarioInputAtualizacaoDadosPessoais usuarioInputAtualizacaoDadosPessoais) {
+        UsuarioOutput usuarioOutput = perfilService.atualizarDadosPessoais(usuarioId, usuarioInputAtualizacaoDadosPessoais);
         if (usuarioOutput == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body(null);
         }
         return ResponseEntity.ok(usuarioOutput);
     }
 
-    @GetMapping("/voluntario/endereco")
-    public ResponseEntity<UsuarioOutput> buscarEnderecoVoluntario(@RequestParam Integer voluntarioId) {
-        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(voluntarioId);
-        if (usuarioOutput == null || usuarioOutput.getEndereco() == null) {
+    @GetMapping("/{tipo}/endereco")
+    public ResponseEntity<EnderecoOutput> buscarEndereco(
+            @RequestParam Integer usuarioId, @PathVariable String tipo) {
+        EnderecoOutput enderecoOutput = perfilService.buscarEnderecoPorId(usuarioId);
+        if (enderecoOutput == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(usuarioOutput);
+        return ResponseEntity.ok(enderecoOutput);
     }
 
-    @PutMapping("/voluntario/endereco")
-    public ResponseEntity<Void> atualizarEnderecoVoluntario(
-            @RequestParam Integer voluntarioId,
-            @RequestBody @Valid UsuarioInput usuarioInput) {
+    @PutMapping("/{tipo}/endereco")
+    public ResponseEntity<Void> atualizarEndereco(
+            @RequestParam Integer usuarioId,
+            @PathVariable String tipo,
+            @RequestBody @Valid EnderecoInput enderecoInput) {
         boolean atualizado = perfilService.atualizarEnderecoPorUsuarioId(
-                voluntarioId, usuarioInput.getCep(), usuarioInput.getNumero(), usuarioInput.getComplemento());
-        if (!atualizado) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.noContent().build();
-    }
-
-    // Endpoints relacionados ao Assistido
-    @GetMapping("/assistido/dados-pessoais")
-    public ResponseEntity<UsuarioOutput> buscarDadosPessoaisAssistido(@RequestParam Integer assistidoId) {
-        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(assistidoId);
-        if (usuarioOutput == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(usuarioOutput);
-    }
-
-    @PatchMapping("/assistido/dados-pessoais")
-    public ResponseEntity<UsuarioOutput> atualizarDadosPessoaisAssistido(
-            @RequestParam Integer assistidoId,
-            @RequestBody UsuarioInput usuarioInput) {
-        UsuarioOutput usuarioOutput = perfilService.atualizarDadosPessoaisPorId(assistidoId, usuarioInput);
-        if (usuarioOutput == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(usuarioOutput);
-    }
-
-    @GetMapping("/assistido/endereco")
-    public ResponseEntity<UsuarioOutput> buscarEnderecoAssistido(@RequestParam Integer assistidoId) {
-        UsuarioOutput usuarioOutput = perfilService.buscarUsuarioComEnderecoPorId(assistidoId);
-        if (usuarioOutput == null || usuarioOutput.getEndereco() == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(usuarioOutput);
-    }
-
-    @PutMapping("/assistido/endereco")
-    public ResponseEntity<Void> atualizarEnderecoAssistido(
-            @RequestParam Integer assistidoId,
-            @RequestBody @Valid UsuarioInput usuarioInput) {
-        boolean atualizado = perfilService.atualizarEnderecoPorUsuarioId(
-                assistidoId, usuarioInput.getCep(), usuarioInput.getNumero(), usuarioInput.getComplemento());
+                usuarioId, enderecoInput.getCep(), enderecoInput.getNumero(), enderecoInput.getComplemento());
         if (!atualizado) {
             return ResponseEntity.notFound().build();
         }

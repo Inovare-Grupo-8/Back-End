@@ -1,110 +1,170 @@
 package org.com.imaapi.service.impl;
 
+import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.Usuario;
-import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.input.UsuarioInputAtualizacaoDadosPessoais;
+import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
+import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.repository.UsuarioRepository;
+import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.PerfilService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class PerfilServiceImpl implements PerfilService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PerfilServiceImpl.class);
+
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private EnderecoService enderecoService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
-//    public UsuarioOutput buscarUsuarioComEnderecoPorId(Integer usuarioId) {
-//        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
-//        if (usuarioOptional.isEmpty()) {
-//            return null;
-//        }
-//        Usuario usuario = usuarioOptional.get();
+    public UsuarioDadosPessoaisOutput buscarDadosPessoaisPorId(Integer usuarioId) {
+        LOGGER.info("Buscando dados pessoais para o usuário com ID: {}", usuarioId);
+        Usuario usuario = buscarUsuarioPorId(usuarioId);
+        if (usuario == null) {
+            LOGGER.warn("Usuário não encontrado para o ID: {}", usuarioId);
+            return null;
+        }
+        UsuarioDadosPessoaisOutput usuarioOutput = new UsuarioDadosPessoaisOutput();
+        usuarioOutput.setNome(usuario.getNome());
+        usuarioOutput.setCpf(usuario.getCpf());
+        usuarioOutput.setEmail(usuario.getEmail());
+        usuarioOutput.setDataNascimento(usuario.getDataNascimento());
+        usuarioOutput.setTipo(usuario.getTipo().toString());
+        LOGGER.info("Dados pessoais encontrados para o usuário com ID: {}", usuarioId);
+        return usuarioOutput;
+    }
+
+    public EnderecoOutput buscarEnderecoPorId(Integer usuarioId) {
+        LOGGER.info("Buscando endereço para o usuário com ID: {}", usuarioId);
+        Usuario usuario = buscarUsuarioPorId(usuarioId);
+        if (usuario != null && usuario.getEndereco() != null) {
+            EnderecoOutput enderecoOutput = new EnderecoOutput();
+            enderecoOutput.setCep(usuario.getEndereco().getCep());
+            enderecoOutput.setNumero(usuario.getEndereco().getNumero());
+            enderecoOutput.setComplemento(usuario.getEndereco().getComplemento());
+            enderecoOutput.setLogradouro(usuario.getEndereco().getLogradouro());
+            enderecoOutput.setBairro(usuario.getEndereco().getBairro());
+            enderecoOutput.setLocalidade(usuario.getEndereco().getLocalidade());
+            enderecoOutput.setUf(usuario.getEndereco().getUf());
+            return enderecoOutput;
+        }
+        return null;
+    }
+
+    @Override
+    public UsuarioOutput atualizarDadosPessoais(Integer usuarioId, UsuarioInputAtualizacaoDadosPessoais usuarioInputAtualizacaoDadosPessoais) {
+        LOGGER.info("Atualizando dados pessoais para o usuário com ID: {}", usuarioId);
+        Usuario usuario = buscarUsuarioPorId(usuarioId);
+        if (usuario == null) {
+            LOGGER.warn("Usuário não encontrado para o ID: {}", usuarioId);
+            return null;
+        }
+
+        if (usuarioInputAtualizacaoDadosPessoais.getNome() != null) {
+            usuario.setNome(usuarioInputAtualizacaoDadosPessoais.getNome());
+        }
+        if (usuarioInputAtualizacaoDadosPessoais.getEmail() != null) {
+            usuario.setEmail(usuarioInputAtualizacaoDadosPessoais.getEmail());
+        }
+        if (usuarioInputAtualizacaoDadosPessoais.getSenha() != null) {
+            String senhaCriptografada = passwordEncoder.encode(usuarioInputAtualizacaoDadosPessoais.getSenha());
+            usuario.setSenha(senhaCriptografada);
+        }
+        if (usuarioInputAtualizacaoDadosPessoais.getDataNascimento() != null) {
+            usuario.setDataNascimento(usuarioInputAtualizacaoDadosPessoais.getDataNascimento());
+        }
+
+        usuarioRepository.save(usuario);
+        LOGGER.info("Dados pessoais atualizados com sucesso para o usuário com ID: {}", usuarioId);
+
+        UsuarioDadosPessoaisOutput dadosPessoais = buscarDadosPessoaisPorId(usuarioId);
+        return converterParaUsuarioOutput(dadosPessoais);
+    }
+
+    @Override
+    public boolean atualizarEnderecoPorUsuarioId(Integer usuarioId, String cep, String numero, String complemento) {
+        LOGGER.info("Iniciando atualização de endereço para o usuário com ID: {}", usuarioId);
+        try {
+            Usuario usuario = buscarUsuarioPorId(usuarioId);
+            if (usuario == null || usuario.getEndereco() == null) {
+                LOGGER.warn("Usuário ou endereço não encontrado para o ID: {}", usuarioId);
+                return false;
+            }
+
+            if (!cep.equals(usuario.getEndereco().getCep())) {
+                EnderecoOutput enderecoApi = enderecoService.buscaEndereco(cep, numero, complemento).getBody();
+                if (enderecoApi == null) {
+                    LOGGER.warn("Endereço não encontrado na API para o CEP: {}", cep);
+                    return false;
+                }
+                usuario.getEndereco().setCep(enderecoApi.getCep());
+                usuario.getEndereco().setLogradouro(enderecoApi.getLogradouro());
+                usuario.getEndereco().setBairro(enderecoApi.getBairro());
+                usuario.getEndereco().setLocalidade(enderecoApi.getLocalidade());
+                usuario.getEndereco().setUf(enderecoApi.getUf());
+            }
+
+            usuario.getEndereco().setNumero(numero);
+            usuario.getEndereco().setComplemento(complemento);
+            usuarioRepository.save(usuario);
+
+            LOGGER.info("Endereço atualizado com sucesso para o usuário com ID: {}", usuarioId);
+            return true;
+        } catch (Exception e) {
+            LOGGER.error("Erro ao atualizar endereço para o usuário com ID: {}", usuarioId, e);
+            return false;
+        }
+    }
+
+    private Usuario buscarUsuarioPorId(Integer usuarioId) {
+        LOGGER.debug("Consultando repositório para o usuário com ID: {}", usuarioId);
+        return usuarioRepository.findById(usuarioId).orElse(null);
+    }
+
+    private UsuarioOutput converterParaUsuarioOutput(UsuarioDadosPessoaisOutput dadosPessoais) {
+        if (dadosPessoais == null) {
+            LOGGER.error("Erro: Dados pessoais não podem ser nulos.");
+            throw new IllegalArgumentException("Dados pessoais não podem ser nulos.");
+        }
+        return new UsuarioOutput(
+                dadosPessoais.getNome(),
+                dadosPessoais.getCpf(),
+                dadosPessoais.getEmail(),
+                dadosPessoais.getDataNascimento(),
+                TipoUsuario.valueOf(dadosPessoais.getTipo())
+        );
+    }
+
+//    private UsuarioOutput converterParaUsuarioOutput(Usuario usuario) {
 //        UsuarioOutput usuarioOutput = new UsuarioOutput(usuario);
 //        usuarioOutput.setNome(usuario.getNome());
 //        usuarioOutput.setCpf(usuario.getCpf());
 //        usuarioOutput.setEmail(usuario.getEmail());
-//        usuarioOutput.setSenha(usuario.getSenha());
 //        usuarioOutput.setDataNascimento(usuario.getDataNascimento());
-//        usuarioOutput.setRenda(usuario.getRenda());
-//        usuarioOutput.setGenero(usuario.getGenero());
 //        usuarioOutput.setTipo(usuario.getTipo());
-//        usuarioOutput.setDataCadastro(usuario.getDataCadastro());
 //        if (usuario.getEndereco() != null) {
 //            EnderecoOutput enderecoOutput = new EnderecoOutput();
 //            enderecoOutput.setCep(usuario.getEndereco().getCep());
 //            enderecoOutput.setNumero(usuario.getEndereco().getNumero());
 //            enderecoOutput.setComplemento(usuario.getEndereco().getComplemento());
+//            enderecoOutput.setLogradouro(usuario.getEndereco().getLogradouro());
+//            enderecoOutput.setBairro(usuario.getEndereco().getBairro());
+//            enderecoOutput.setLocalidade(usuario.getEndereco().getLocalidade());
+//            enderecoOutput.setUf(usuario.getEndereco().getUf());
 //            usuarioOutput.setEndereco(enderecoOutput);
 //        }
 //        return usuarioOutput;
 //    }
-
-    public UsuarioOutput buscarUsuarioComEnderecoPorId(Integer usuarioId) {
-        Usuario usuario = buscarUsuarioPorId(usuarioId);
-        if (usuario == null) {
-            return null;
-        }
-        return converterParaUsuarioOutput(usuario);
-    }
-
-    @Override
-    public boolean atualizarEnderecoPorUsuarioId(Integer usuarioId, String cep, String numero, String complemento) {
-        Usuario usuario = buscarUsuarioPorId(usuarioId);
-        if (usuario == null || usuario.getEndereco() == null) {
-            return false;
-        }
-        atualizarEndereco(usuario, cep, numero, complemento);
-        usuarioRepository.save(usuario);
-        return true;
-    }
-
-    @Override
-    public UsuarioOutput atualizarDadosPessoaisPorId(Integer usuarioId, UsuarioInput usuarioInput) {
-        Usuario usuario = buscarUsuarioPorId(usuarioId);
-        if (usuario == null) {
-            return null;
-        }
-        atualizarDadosPessoais(usuario, usuarioInput);
-        usuarioRepository.save(usuario);
-        return converterParaUsuarioOutput(usuario);
-    }
-
-    // Método auxiliar para buscar usuário por ID
-    private Usuario buscarUsuarioPorId(Integer usuarioId) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
-        return usuarioOptional.orElse(null);
-    }
-
-    // Método auxiliar para atualizar endereço
-    private void atualizarEndereco(Usuario usuario, String cep, String numero, String complemento) {
-        usuario.getEndereco().setCep(cep);
-        usuario.getEndereco().setNumero(numero);
-        usuario.getEndereco().setComplemento(complemento);
-    }
-
-    // Método auxiliar para atualizar dados pessoais
-    private void atualizarDadosPessoais(Usuario usuario, UsuarioInput usuarioInput) {
-        usuario.setNome(usuarioInput.getNome());
-        usuario.setCpf(usuarioInput.getCpf());
-        usuario.setEmail(usuarioInput.getEmail());
-        usuario.setSenha(usuarioInput.getSenha());
-        usuario.setDataNascimento(usuarioInput.getDataNascimento());
-        usuario.setRenda(usuarioInput.getRenda());
-        usuario.setGenero(usuarioInput.getGenero());
-        usuario.setTipo(usuarioInput.getTipo());
-
-        if (usuario.getEndereco() != null) {
-            atualizarEndereco(usuario, usuarioInput.getCep(), usuarioInput.getNumero(), usuarioInput.getComplemento());
-        }
-    }
-
-    // Método auxiliar para converter Usuario para UsuarioOutput
-    private UsuarioOutput converterParaUsuarioOutput(Usuario usuario) {
-        return new UsuarioOutput(usuario);
-    }
 }

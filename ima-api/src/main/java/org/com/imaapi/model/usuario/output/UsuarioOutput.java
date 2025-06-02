@@ -26,22 +26,11 @@ public class UsuarioOutput {
     private LocalDateTime dataCadastro;
     private EnderecoOutput endereco;
 
-    public UsuarioOutput(Usuario usuario) {
-        this.id = usuario.getIdUsuario();
-        this.nome = usuario.getNome();
-        this.cpf = usuario.getCpf();
-        this.email = usuario.getEmail();
-        this.senha = usuario.getSenha();
-        this.dataNascimento = usuario.getDataNascimento();
-        this.renda = usuario.getRenda();
-        this.genero = usuario.getGenero();
-        this.tipo = usuario.getTipo();
-        this.dataCadastro = usuario.getDataCadastro();
-        if (usuario.getEndereco() != null) {
-            this.endereco = new EnderecoOutput();
-            this.endereco.setCep(usuario.getEndereco().getCep());
-            this.endereco.setNumero(usuario.getEndereco().getNumero());
-            this.endereco.setComplemento(usuario.getEndereco().getComplemento());
-        }
+    public UsuarioOutput(String nome, String cpf, String email, LocalDate dataNascimento, TipoUsuario tipo) {
+        this.nome = nome;
+        this.cpf = cpf;
+        this.email = email;
+        this.dataNascimento = dataNascimento;
+        this.tipo = tipo;
     }
 }
