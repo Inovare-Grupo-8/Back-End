@@ -46,55 +46,53 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-
         System.out.println("=== INICIANDO onAuthenticationSuccess ===");
 
         OAuth2AuthenticationToken authenticationToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User usuarioOauth = (OAuth2User) authenticationToken.getPrincipal();
         String email = usuarioOauth.getAttribute("email");
+        if (email == null || email.isBlank()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"E-mail não recebido do provedor OAuth2. Verifique os escopos e permissões do Google.\"}");
+            return;
+        }
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
-
-        if (email == null) {
+        if (usuarioOptional.isEmpty()) {
+            usuarioService.cadastrarUsuarioOAuth(usuarioOauth);
+            usuarioOptional = usuarioRepository.findByEmail(email);
             if (usuarioOptional.isEmpty()) {
-                usuarioService.cadastrarUsuarioOAuth(usuarioOauth);
-                usuarioOptional = usuarioRepository.findByEmail(email);
-
-                if (usuarioOptional.isEmpty()) {
-                    throw new ServletException("Erro ao cadastrar usuário");
-                }
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Erro ao cadastrar usuário OAuth2.\"}");
+                return;
             }
         }
-
         OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
                 .withClientRegistrationId(authenticationToken.getAuthorizedClientRegistrationId())
                 .principal(authentication)
                 .attribute(HttpServletRequest.class.getName(), request)
                 .attribute(HttpServletResponse.class.getName(), response)
                 .build();
-
         OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
-
         if(authorizedClient != null) {
             Usuario usuario = usuarioOptional.get();
             OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
             OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
-
-            System.out.println("Access Token: " + accessToken.getTokenValue());
-            System.out.println("Refresh Token: " +
-                    (refreshToken != null ? refreshToken.getTokenValue() : "null"));
-
             if(refreshToken == null) {
                 System.out.println("Não foi recebido um refresh token");
             }
-
             oauthTokenService.salvarToken(usuario, accessToken, refreshToken);
         } else {
-            throw new ServletException("Erro ao obter tokens autorizados com o google");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Erro ao obter tokens autorizados com o Google.\"}");
+            return;
         }
-
         UsuarioTokenOutput tokenOutput = usuarioService.autenticar(usuarioOptional.get());
         response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
-
+        response.setContentType("application/json");
+        response.getWriter().write(String.format("{\"token\":\"%s\",\"type\":\"Bearer\"}", tokenOutput.getToken()));
         System.out.println("=== FINALIZANDO onAuthenticationSuccess ===");
     }
 

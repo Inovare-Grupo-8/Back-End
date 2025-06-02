@@ -24,11 +24,17 @@ public class AutenticacaoProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
         final String username = authentication.getName();
-        final String password = authentication.getCredentials().toString();
+        final Object credentials = authentication.getCredentials();
+        final String password = credentials != null ? credentials.toString() : null;
 
         UserDetails userDetails = this.autenticacaoService.loadUserByUsername(username);
 
-        if (this.passwordEncoder.matches(password, userDetails.getPassword())) {
+        // Se o usuário não tem senha (login social), autentica sem verificar senha
+        if (userDetails.getPassword() == null && password == null) {
+            return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        }
+
+        if (password != null && this.passwordEncoder.matches(password, userDetails.getPassword())) {
             return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         } else {
             throw new BadCredentialsException("Usuário ou senha inválidos");

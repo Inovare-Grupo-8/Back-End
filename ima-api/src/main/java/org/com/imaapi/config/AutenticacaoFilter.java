@@ -37,7 +37,9 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
         return path.startsWith("/usuarios") ||
                path.equals("/dev/token") ||   
                path.startsWith("/swagger-ui") ||
-               path.startsWith("/v3/api-docs");
+               path.startsWith("/v3/api-docs") ||
+               path.startsWith("/oauth2") ||
+               path.startsWith("/login/oauth2");
     }
 
     @Override

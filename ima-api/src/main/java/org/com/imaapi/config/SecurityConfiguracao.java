@@ -56,7 +56,10 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/oauth2/authorization/google"),
-            new AntPathRequestMatcher("/dev/token")
+            new AntPathRequestMatcher("/dev/token"),
+            new AntPathRequestMatcher("/usuarios/voluntario/**"),
+            new AntPathRequestMatcher("/usuarios/fase1"),
+            new AntPathRequestMatcher("/usuarios/fase2")
     };
 
     @Bean
@@ -79,9 +82,10 @@ public class SecurityConfiguracao {
                 )
                 .exceptionHandling(handling -> handling
                         .authenticationEntryPoint(autenticacaoEntryPoint))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(escopoIncrementalFilter, OAuth2AuthorizationRequestRedirectFilter.class)
+                .formLogin(form -> form.disable())
                 .build();
     }
 

@@ -14,10 +14,8 @@ import java.io.IOException;
 public class AutenticacaoEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        if(authException.getClass().equals(BadCredentialsException.class) || authException.getClass().equals(InsufficientAuthenticationException.class)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        } else {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-        }
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\":\"Unauthorized\"}");
     }
 }

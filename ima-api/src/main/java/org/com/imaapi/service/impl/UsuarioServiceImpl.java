@@ -82,15 +82,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     public void cadastrarUsuarioOAuth(OAuth2User usuario) {
-
         String nome = usuario.getAttribute("nome");
         String email = usuario.getAttribute("email");
 
         Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(nome);
         novoUsuario.setEmail(email);
-        novoUsuario.setSenha("");
+        // Para login social, defina uma senha nula ou string especial, nunca vazio
+        novoUsuario.setSenha(null); // ou "OAUTH2_USER" se preferir
         novoUsuario.setDataCadastro(LocalDateTime.now());
+        novoUsuario.setTipo(TipoUsuario.GRATUIDADE);
 
         usuarioRepository.save(novoUsuario);
     }
