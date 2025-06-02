@@ -32,12 +32,4 @@ public class OauthToken {
 
     @Column(name = "expires_at", columnDefinition = "DATETIME(6)")
     private Instant expiresAt;
-
-    public void atualizarTokens(String accessToken, String refreshToken, Instant expiresAt) {
-        this.setAccessToken(accessToken);
-        this.setExpiresAt(expiresAt);
-        if (refreshToken != null) {
-            this.setRefreshToken(refreshToken);
-        }
-    }
 }

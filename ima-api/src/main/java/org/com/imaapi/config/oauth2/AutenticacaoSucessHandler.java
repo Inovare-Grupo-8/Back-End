@@ -55,15 +55,13 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
 
         if (email == null) {
-            throw new ServletException("Email não encontrado para o OAuth2");
-        }
-
-        if (usuarioOptional.isEmpty()) {
-            usuarioService.cadastrarUsuarioOAuth(usuarioOauth);
-            usuarioOptional = usuarioRepository.findByEmail(email);
-
             if (usuarioOptional.isEmpty()) {
-                throw new ServletException("Erro ao cadastrar usuário");
+                usuarioService.cadastrarUsuarioOAuth(usuarioOauth);
+                usuarioOptional = usuarioRepository.findByEmail(email);
+
+                if (usuarioOptional.isEmpty()) {
+                    throw new ServletException("Erro ao cadastrar usuário");
+                }
             }
         }
 
