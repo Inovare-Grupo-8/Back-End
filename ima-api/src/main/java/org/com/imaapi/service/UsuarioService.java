@@ -29,5 +29,6 @@ public interface UsuarioService {
     public void deletarUsuario(Integer id);
     
     Usuario buscarDadosPrimeiraFase(Integer idUsuario);
+
     Usuario buscarDadosPrimeiraFase(String email);
 }

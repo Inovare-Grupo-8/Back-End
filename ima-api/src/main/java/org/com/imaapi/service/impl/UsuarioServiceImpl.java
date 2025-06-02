@@ -24,8 +24,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,7 +63,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Usuario cadastrarPrimeiraFase(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
         String senhaCriptografada = passwordEncoder.encode(usuarioInputPrimeiraFase.getSenha());
         usuarioInputPrimeiraFase.setSenha(senhaCriptografada);
-        
+
         Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(usuarioInputPrimeiraFase.getNome());
         novoUsuario.setEmail(usuarioInputPrimeiraFase.getEmail());
@@ -77,17 +81,31 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioSalvo;
     }
 
+    public void cadastrarUsuarioOAuth(OAuth2User usuario) {
+
+        String nome = usuario.getAttribute("nome");
+        String email = usuario.getAttribute("email");
+
+        Usuario novoUsuario = new Usuario();
+        novoUsuario.setNome(nome);
+        novoUsuario.setEmail(email);
+        novoUsuario.setSenha("");
+        novoUsuario.setDataCadastro(LocalDateTime.now());
+
+        usuarioRepository.save(novoUsuario);
+    }
+
     @Override
     public Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         logger.info("Iniciando cadastro fase 2 para usuário ID: {}", idUsuario);
-        
+
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
 
         usuario.setTipo(usuarioInputSegundaFase.getTipo());
-        
+
         // Buscar e salvar endereço
         Endereco endereco = enderecoHandlerService.buscarSalvarEndereco(
                 usuarioInputSegundaFase.getCep(),
@@ -103,7 +121,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuarioRepository.save(usuario);
         logger.info("Usuário fase 2 atualizado com sucesso. ID: {}", idUsuario);
-        
+
         emailService.enviarEmail(usuario.getEmail(), usuario.getNome(), "bem vindo");
         return usuario;
     }
@@ -111,19 +129,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         logger.info("Iniciando cadastro fase 2 para voluntário ID: {}", idUsuario);
-        
+
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
         usuario.setGenero(usuarioInputSegundaFase.getGenero());
 
         usuario.setTipo(TipoUsuario.VOLUNTARIO);
-        
+
         usuarioRepository.save(usuario);
-        
+
         VoluntarioInput voluntarioInput = UsuarioMapper.of(usuarioInputSegundaFase, idUsuario);
         voluntarioService.cadastrarVoluntario(voluntarioInput);
-        
+
         logger.info("Voluntário fase 2 atualizado com sucesso. ID: {}", idUsuario);
         emailService.enviarEmail(usuario.getEmail(), usuario.getNome(), "bem vindo voluntario");
         return usuario;
@@ -131,18 +149,25 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioTokenOutput autenticar(Usuario usuario) {
+        logger.info("[AUTENTICAR] Iniciando autenticação para email: {}", usuario.getEmail());
         final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
-                usuario.getEmail(), usuario.getSenha());
+                usuario.getEmail(), usuario.getSenha(), UsuarioMapper.ofDetalhes(usuario).getAuthorities());
 
         final Authentication authentication = authenticationManager.authenticate(credentials);
 
         Usuario usuarioAutenticado = usuarioRepository.findByEmail(usuario.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado"));
 
+        logger.info("[AUTENTICAR] Usuário autenticado: {} | Tipo: {} (Enum: {})", usuarioAutenticado.getEmail(), usuarioAutenticado.getTipo(), usuarioAutenticado.getTipo() != null ? usuarioAutenticado.getTipo().name() : "null");
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        final String token = gerenciadorTokenJwt.generateToken(authentication);
+        if (usuarioAutenticado.getTipo() == null) {
+            logger.warn("[AUTENTICAR] Usuário sem tipo definido: {}", usuarioAutenticado.getEmail());
+            return UsuarioMapper.of(usuarioAutenticado, gerenciadorTokenJwt.generateToken(authentication));
+        }
 
+        final String token = gerenciadorTokenJwt.generateToken(authentication);
+        logger.info("[AUTENTICAR] Token gerado para usuário: {} | Tipo retornado: {} (Enum: {})", usuarioAutenticado.getEmail(), usuarioAutenticado.getTipo(), usuarioAutenticado.getTipo().name());
         return UsuarioMapper.of(usuarioAutenticado, token);
     }
 
@@ -216,7 +241,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }
-  
+
     @Override
     public Usuario buscarDadosPrimeiraFase(String email) {
         logger.info("Buscando dados da primeira fase do usuário por email: {}", email);

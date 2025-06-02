@@ -28,6 +28,9 @@ public class UsuarioDetalhesOutput implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (tipo == null) {
+            return List.of();
+        }
         return List.of(new SimpleGrantedAuthority("ROLE_" + tipo.name()));
     }
 

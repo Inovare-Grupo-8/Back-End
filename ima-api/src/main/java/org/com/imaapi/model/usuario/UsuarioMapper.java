@@ -4,6 +4,7 @@ import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
+import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
@@ -40,7 +41,9 @@ public class UsuarioMapper {
         usuarioTokenOutput.setNome(usuario.getNome());
         usuarioTokenOutput.setEmail(usuario.getEmail());
         usuarioTokenOutput.setToken(token);
-
+        usuarioTokenOutput.setTipo(
+            usuario.getTipo() != null ? usuario.getTipo().getValue() : null
+        );
         return usuarioTokenOutput;
     }
 
@@ -68,5 +71,9 @@ public class UsuarioMapper {
         output.setCpf(usuario.getCpf());
         output.setDataNascimento(usuario.getDataNascimento());
         return output;
+    }
+
+    public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario) {
+        return new UsuarioDetalhesOutput(usuario);
     }
 }
