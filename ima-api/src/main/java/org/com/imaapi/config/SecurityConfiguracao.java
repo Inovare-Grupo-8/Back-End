@@ -56,7 +56,10 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/oauth2/authorization/google"),
-            new AntPathRequestMatcher("/dev/token")
+            new AntPathRequestMatcher("/dev/token"),
+            new AntPathRequestMatcher("/usuarios/voluntario/**"),
+            new AntPathRequestMatcher("/usuarios/fase1"),
+            new AntPathRequestMatcher("/usuarios/fase2")
     };
 
     @Bean
