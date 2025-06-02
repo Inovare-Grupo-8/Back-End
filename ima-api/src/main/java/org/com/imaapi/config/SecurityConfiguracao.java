@@ -59,7 +59,7 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/dev/token"),
             new AntPathRequestMatcher("/usuarios/voluntario/**"),
             new AntPathRequestMatcher("/usuarios/fase1"),
-            new AntPathRequestMatcher("/usuarios/fase2")
+            new AntPathRequestMatcher("/usuarios/fase2/**")
     };
 
     @Bean
