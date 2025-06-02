@@ -92,13 +92,4 @@ public class PerfilController {
             return ResponseEntity.status(500).body("Erro ao salvar a foto.");
         }
     }
-
-    @PatchMapping("/voluntario/dados-profissionais")
-    public ResponseEntity<Void> atualizarDadosProfissionais(@RequestParam Integer usuarioId, @RequestBody @Valid UsuarioInputSegundaFase dadosProfissionais) {
-        boolean atualizado = perfilService.atualizarDadosProfissionais(usuarioId, dadosProfissionais);
-        if (!atualizado) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.noContent().build();
-    }
 }
