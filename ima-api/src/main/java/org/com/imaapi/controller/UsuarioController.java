@@ -11,6 +11,8 @@ import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.service.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,8 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioController.class);
 
     @PostMapping("/fase1")
     public ResponseEntity<Usuario> cadastrarUsuarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
@@ -54,14 +58,17 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<UsuarioTokenOutput> login(@RequestBody @Valid UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
-            Usuario usuario = UsuarioMapper.of(usuarioAutenticacaoInput);
-            UsuarioTokenOutput usuarioTokenOutput = usuarioService.autenticar(usuario);
+        LOGGER.warn("[LOGIN] Requisição de login recebida para email: {}", usuarioAutenticacaoInput.getEmail());
+        Usuario usuario = UsuarioMapper.of(usuarioAutenticacaoInput);
+        UsuarioTokenOutput usuarioTokenOutput = usuarioService.autenticar(usuario);
 
-            if (usuarioTokenOutput == null) {
-                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-            }
+        if (usuarioTokenOutput == null) {
+            LOGGER.warn("[LOGIN] Falha na autenticação para email: {}", usuarioAutenticacaoInput.getEmail());
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
-            return new ResponseEntity<>(usuarioTokenOutput, HttpStatus.OK);
+        LOGGER.info("[LOGIN] Login bem-sucedido para email: {}", usuarioAutenticacaoInput.getEmail());
+        return new ResponseEntity<>(usuarioTokenOutput, HttpStatus.OK);
     }
 
     @GetMapping

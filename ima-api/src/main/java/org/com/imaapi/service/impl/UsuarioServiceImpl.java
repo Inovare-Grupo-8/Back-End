@@ -149,6 +149,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioTokenOutput autenticar(Usuario usuario) {
+        logger.info("[AUTENTICAR] Iniciando autenticação para email: {}", usuario.getEmail());
         final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
                 usuario.getEmail(), usuario.getSenha(), UsuarioMapper.ofDetalhes(usuario).getAuthorities());
 
@@ -157,10 +158,16 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuarioAutenticado = usuarioRepository.findByEmail(usuario.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado"));
 
+        logger.info("[AUTENTICAR] Usuário autenticado: {} | Tipo: {} (Enum: {})", usuarioAutenticado.getEmail(), usuarioAutenticado.getTipo(), usuarioAutenticado.getTipo() != null ? usuarioAutenticado.getTipo().name() : "null");
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        final String token = gerenciadorTokenJwt.generateToken(authentication);
+        if (usuarioAutenticado.getTipo() == null) {
+            logger.warn("[AUTENTICAR] Usuário sem tipo definido: {}", usuarioAutenticado.getEmail());
+            return UsuarioMapper.of(usuarioAutenticado, gerenciadorTokenJwt.generateToken(authentication));
+        }
 
+        final String token = gerenciadorTokenJwt.generateToken(authentication);
+        logger.info("[AUTENTICAR] Token gerado para usuário: {} | Tipo retornado: {} (Enum: {})", usuarioAutenticado.getEmail(), usuarioAutenticado.getTipo(), usuarioAutenticado.getTipo().name());
         return UsuarioMapper.of(usuarioAutenticado, token);
     }
 
