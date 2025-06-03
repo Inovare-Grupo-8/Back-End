@@ -46,4 +46,9 @@ public class Consulta {
     @OneToOne
     @JoinColumn(name = "fk_especialista")
     private Usuario voluntario;
+
+    @Column(name = "motivo_cancelamento")
+    private String motivoCancelamento;
+
+
 }

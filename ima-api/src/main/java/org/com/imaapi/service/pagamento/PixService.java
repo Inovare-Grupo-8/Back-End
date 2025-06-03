@@ -1,4 +1,4 @@
-package org.com.imaapi.service.pagamento;
+/*package org.com.imaapi.service.pagamento;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.com.imaapi.config.ConfigCoraPagamento;
@@ -50,3 +50,4 @@ public class PixService {
         return "Gerando cobrança pix";
     }
 }
+*/

@@ -18,4 +18,11 @@ public class ConsultaOutput {
     private Especialidade especialidade;
     private Usuario assistido;
     private Usuario voluntario;
+
+    public ConsultaOutput(Integer idConsulta, LocalDateTime horario, StatusConsulta status, ModalidadeConsulta modalidade, String local, String observacoes, Especialidade especialidade, Usuario assistido, Usuario voluntario) {
+    }
+
+    public ConsultaOutput() {
+
+    }
 }

@@ -1,4 +1,4 @@
-package org.com.imaapi.controller;
+/*package org.com.imaapi.controller;
 
 import lombok.Data;
 import lombok.Getter;
@@ -45,3 +45,4 @@ public class PagamentoController {
     }
 
 }
+*/
