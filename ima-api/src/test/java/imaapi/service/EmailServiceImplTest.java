@@ -32,13 +32,12 @@ public class EmailServiceImplTest {
         field.setAccessible(true);
         field.set(emailService, "remetente@teste.com");
     }
-
-    @Test
+@Test
     public void testEnviarEmailComSucesso() {
         // Arrange
         String destinatario = "julia@teste.com";
         String nome = "Julia";
-        String assunto = "cadastro de email";
+        String assunto = "continuar cadastro";
 
         // Act
         String resultado = emailService.enviarEmail(destinatario, nome, assunto);
