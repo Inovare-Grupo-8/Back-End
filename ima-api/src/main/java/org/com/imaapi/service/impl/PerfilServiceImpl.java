@@ -2,12 +2,15 @@ package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.model.usuario.Voluntario;
 import org.com.imaapi.model.usuario.input.UsuarioInputAtualizacaoDadosPessoais;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
+import org.com.imaapi.model.usuario.input.VoluntarioDadosProfissionaisInput;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.repository.UsuarioRepository;
+import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.FotoService;
 import org.com.imaapi.service.PerfilService;
@@ -19,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Service
 public class PerfilServiceImpl implements PerfilService {
@@ -33,6 +37,8 @@ public class PerfilServiceImpl implements PerfilService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private FotoService fotoService;
+    @Autowired
+    private VoluntarioRepository voluntarioRepository;
 
     @Override
     public UsuarioDadosPessoaisOutput buscarDadosPessoaisPorId(Integer usuarioId) {
@@ -146,6 +152,64 @@ public class PerfilServiceImpl implements PerfilService {
 
         LOGGER.info("Foto salva com sucesso para o usuário com ID: {}", usuarioId);
         return fotoUrl;
+    }
+
+    @Override
+    public boolean atualizarDadosProfissionais(Integer usuarioId, VoluntarioDadosProfissionaisInput dadosProfissionais) {
+        LOGGER.info("Atualizando dados profissionais para o voluntário com ID de usuário: {}", usuarioId);
+        Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuarioId);
+        if (voluntario == null) {
+            LOGGER.warn("Voluntário não encontrado para o ID de usuário: {}", usuarioId);
+            return false;
+        }
+
+        if (dadosProfissionais.getFuncao() != null) {
+            voluntario.setFuncao(dadosProfissionais.getFuncao());
+        }
+        if (dadosProfissionais.getRegistroProfissional() != null) {
+            voluntario.setRegistroProfissional(dadosProfissionais.getRegistroProfissional());
+        }
+        if (dadosProfissionais.getBiografiaProfissional() != null) {
+            voluntario.setBiografiaProfissional(dadosProfissionais.getBiografiaProfissional());
+        }
+
+        voluntarioRepository.save(voluntario);
+        LOGGER.info("Dados profissionais atualizados com sucesso para o voluntário com ID de usuário: {}", usuarioId);
+        return true;
+    }
+
+    @Override
+    public boolean criarDisponibilidade(Integer usuarioId, Map<String, Object> disponibilidade) {
+        LOGGER.info("Criando disponibilidade para o voluntário com ID de usuário: {}", usuarioId);
+        Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuarioId);
+        if (voluntario == null) {
+            LOGGER.warn("Voluntário não encontrado para o ID de usuário: {}", usuarioId);
+            return false;
+        }
+
+        // Lógica para criar disponibilidade (exemplo: salvar no banco)
+        // Exemplo: voluntario.setDisponibilidade(disponibilidade);
+
+        voluntarioRepository.save(voluntario);
+        LOGGER.info("Disponibilidade criada com sucesso para o voluntário com ID de usuário: {}", usuarioId);
+        return true;
+    }
+
+    @Override
+    public boolean atualizarDisponibilidade(Integer usuarioId, Map<String, Object> disponibilidade) {
+        LOGGER.info("Atualizando disponibilidade para o voluntário com ID de usuário: {}", usuarioId);
+        Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuarioId);
+        if (voluntario == null) {
+            LOGGER.warn("Voluntário não encontrado para o ID de usuário: {}", usuarioId);
+            return false;
+        }
+
+        // Lógica para atualizar disponibilidade (exemplo: atualizar campos específicos)
+        // Exemplo: voluntario.setDisponibilidade(disponibilidade);
+
+        voluntarioRepository.save(voluntario);
+        LOGGER.info("Disponibilidade atualizada com sucesso para o voluntário com ID de usuário: {}", usuarioId);
+        return true;
     }
 
     private Usuario buscarUsuarioPorId(Integer usuarioId) {

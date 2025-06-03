@@ -20,6 +20,12 @@ public class Voluntario {
     @Column(name = "funcao")
     private Funcao funcao;
 
+    @Column(name = "registro_profissional")
+    private String registroProfissional;
+
+    @Column(name = "biografia_profissional", length = 500)
+    private String biografiaProfissional;
+
     @Column (name = "data_cadastro")
     private LocalDateTime dataCadastro;
 

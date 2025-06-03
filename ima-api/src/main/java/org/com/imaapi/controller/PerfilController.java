@@ -1,11 +1,15 @@
 package org.com.imaapi.controller;
 
 import jakarta.validation.Valid;
+import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.model.usuario.Voluntario;
 import org.com.imaapi.model.usuario.input.EnderecoInput;
 import org.com.imaapi.model.usuario.input.UsuarioInputAtualizacaoDadosPessoais;
+import org.com.imaapi.model.usuario.input.VoluntarioDadosProfissionaisInput;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
+import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.PerfilService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,8 @@ public class PerfilController {
 
     @Autowired
     private PerfilService perfilService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @GetMapping("/{tipo}/dados-pessoais")
     public ResponseEntity<UsuarioDadosPessoaisOutput> buscarDadosPessoais(
@@ -91,5 +97,38 @@ public class PerfilController {
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Erro ao salvar a foto.");
         }
+    }
+
+    @PatchMapping("/voluntario/dados-profissionais")
+    public ResponseEntity<Void> atualizarDadosProfissionais(
+            @RequestParam Integer usuarioId,
+            @RequestBody @Valid VoluntarioDadosProfissionaisInput dadosProfissionais) {
+        boolean atualizado = perfilService.atualizarDadosProfissionais(usuarioId, dadosProfissionais);
+        if (!atualizado) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/voluntario/disponibilidade")
+    public ResponseEntity<Void> criarDisponibilidade(
+            @RequestParam Integer usuarioId,
+            @RequestBody Map<String, Object> disponibilidade) {
+        boolean criado = perfilService.criarDisponibilidade(usuarioId, disponibilidade);
+        if (!criado) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.status(201).build();
+    }
+
+    @PatchMapping("/voluntario/disponibilidade")
+    public ResponseEntity<Void> atualizarDisponibilidade(
+            @RequestParam Integer usuarioId,
+            @RequestBody Map<String, Object> disponibilidade) {
+        boolean atualizado = perfilService.atualizarDisponibilidade(usuarioId, disponibilidade);
+        if (!atualizado) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
     }
 }
