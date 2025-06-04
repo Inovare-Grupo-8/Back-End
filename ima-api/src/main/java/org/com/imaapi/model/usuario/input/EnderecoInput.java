@@ -20,4 +20,7 @@ public class EnderecoInput {
     @NotBlank(message = "Número é obrigatório")
     @Size(max = 10, message = "Número não pode ter mais que 10 caracteres")
     private String numero;
+
+    @NotBlank(message = "Complemento é obrigatório")
+    private String complemento;
 }

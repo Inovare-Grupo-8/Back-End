@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -23,76 +24,93 @@ public class Ficha {
     @Column(name = "id_ficha")
     private Integer idFicha;
 
-    @Column(name = "nome", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "fk_endereco")
+    private Endereco endereco;
+
+    @Column(name = "nome", nullable = false, length = 45)
     private String nome;
 
-    @Column(name = "sobrenome", nullable = false)
+    @Column(name = "sobrenome", nullable = false, length = 45)
     private String sobrenome;
 
-    @Column(name = "cpf", unique = true)
-    private String cpf;
-
-    @Column(name = "renda")
-    private Double renda;
+    @Column(name = "cpf", unique = true, length = 11)
+    private String cpf;    
+    
+    @Column(name = "renda", precision = 10, scale = 2)
+    private BigDecimal renda;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "genero")
+    @Column(name = "genero", length = 20)
+
     private Genero genero;
 
     @Column(name = "dt_nascim")
     private LocalDate dtNascim;
 
-    @ManyToOne
-    @JoinColumn(name = "fk_endereco")
-    private Endereco endereco;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Version
-    @Column(name = "version")
-    private Integer version;    
-    
-    @Column(name = "area_orientacao")
+    @Column(name = "area_orientacao", length = 255)
     private String areaOrientacao;
 
-    @Column(name = "como_soube")
+    @Column(name = "como_soube", length = 255)
     private String comoSoube;
-    
-    @Column(name = "profissao")
+
+    @Column(name = "profissao", length = 255)
     private String profissao;
+
+    @Column(name = "criado_em")
+    private LocalDateTime criadoEm;
+
+    @Column(name = "atualizado_em")
+    private LocalDateTime atualizadoEm;
+
+    @Version
+    @Column(name = "versao")
+    private Integer versao;
 
     @PrePersist
     public void prePersist() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
+        if (this.criadoEm == null) {
+            this.criadoEm = LocalDateTime.now();
         }
-        if (this.updatedAt == null) {
-            this.updatedAt = LocalDateTime.now();
+        if (this.atualizadoEm == null) {
+            this.atualizadoEm = LocalDateTime.now();
         }
-        if (this.version == null) {
-            this.version = 0;
+        if (this.versao == null) {
+            this.versao = 0;
         }
     }
 
     @PreUpdate
     public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
+        this.atualizadoEm = LocalDateTime.now();
+    }    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
         this.setCpf(input.getCpf());
         this.setDtNascim(input.getDataNascimento());
-        this.setRenda(input.getRenda());
+        this.setRenda(input.getRenda() != null ? BigDecimal.valueOf(input.getRenda()) : null);
+        this.setAreaOrientacao(input.getAreaOrientacao());
+        this.setComoSoube(input.getComoSoube());
+        this.setProfissao(input.getProfissao());
 
         try {
-            Genero generoEnum = Genero.valueOf(input.getGenero().toUpperCase());
-            this.setGenero(generoEnum);
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalArgumentException("Gênero inválido: " + input.getGenero());
+            String generoInput = input.getGenero().trim().toUpperCase();
+            switch (generoInput) {
+                case "M":
+                case "MASCULINO":
+                    this.setGenero(Genero.MASCULINO);
+                    break;
+                case "F":
+                case "FEMININO":
+                    this.setGenero(Genero.FEMININO);
+                    break;
+                case "O":
+                case "OUTRO":
+                    this.setGenero(Genero.OUTRO);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Gênero inválido: " + input.getGenero());
+            }
+        } catch (NullPointerException e) {
+            throw new IllegalArgumentException("Gênero não pode ser nulo");
         }
     }
 }

@@ -23,13 +23,31 @@ public class FeedbackConsulta {
     @Column(name = "dt_feedback")
     private LocalDateTime dtFeedback;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "criado_em")
+    private LocalDateTime criadoEm;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "atualizado_em")
+    private LocalDateTime atualizadoEm;
 
     @Version
-    @Column(name = "version")
-    private Integer version;
+    @Column(name = "versao")
+    private Integer versao;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.criadoEm == null) {
+            this.criadoEm = LocalDateTime.now();
+        }
+        if (this.atualizadoEm == null) {
+            this.atualizadoEm = LocalDateTime.now();
+        }
+        if (this.versao == null) {
+            this.versao = 0;
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.atualizadoEm = LocalDateTime.now();
+    }
 }

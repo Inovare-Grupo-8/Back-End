@@ -8,12 +8,9 @@ import org.com.imaapi.service.VoluntarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -49,7 +46,7 @@ public class VoluntarioServiceImpl implements VoluntarioService {
     private Voluntario gerarObjetoVoluntario(VoluntarioInput voluntarioInput) {
         Voluntario voluntario = new Voluntario();
         voluntario.setFuncao(voluntarioInput.getFuncao());
-        voluntario.setDataCadastro(LocalDateTime.now());
+        voluntario.setDataCadastro(LocalDate.now());
         voluntario.setUsuario(usuarioRepository.findById(voluntarioInput.getFkUsuario())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado")));
         return voluntario;

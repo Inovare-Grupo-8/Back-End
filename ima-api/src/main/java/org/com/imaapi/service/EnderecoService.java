@@ -1,5 +1,6 @@
 package org.com.imaapi.service;
 
+import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.repository.EnderecoRepository;
 import org.hibernate.annotations.DialectOverride;
@@ -15,4 +16,6 @@ public interface EnderecoService {
     public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero, String complemento);
 
     public List<EnderecoOutput> listarEnderecos();
+
+    Endereco cadastrarEndereco(EnderecoOutput enderecoOutput, String complemento);
 }
