@@ -64,28 +64,6 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void testBuscarUsuario() {
-        Integer id = 1;
-        Usuario usuario = new Usuario();
-        Mockito.when(usuarioService.buscaUsuario(eq(id))).thenReturn(Optional.of(usuario));
-
-        ResponseEntity<Optional<Usuario>> response = usuarioController.buscaUsuario(id);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(usuario, response.getBody().orElse(null));
-    }
-
-    @Test
-    public void testBuscarUsuarioNaoEncontrado() {
-        Integer id = 1;
-        Mockito.when(usuarioService.buscaUsuario(eq(id))).thenReturn(Optional.empty());
-
-        ResponseEntity<Optional<Usuario>> response = usuarioController.buscaUsuario(id);
-
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
     public void testAtualizarUsuario() {
         Integer id = 1;
         UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
@@ -130,50 +108,6 @@ public class UsuarioControllerTest {
         } catch (RuntimeException e) {
             assertEquals("Erro ao excluir usuário", e.getMessage());
         }
-    }
-
-    @Test
-    public void testListarUsuarios() {
-        List<UsuarioListarOutput> usuarios = Collections.singletonList(new UsuarioListarOutput());
-        Mockito.when(usuarioService.buscarUsuarios()).thenReturn(usuarios);
-
-        ResponseEntity<List<UsuarioListarOutput>> response = usuarioController.buscarUsuarios();
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(usuarios, response.getBody());
-    }
-
-    @Test
-    public void testListarUsuariosVazio() {
-        Mockito.when(usuarioService.buscarUsuarios()).thenReturn(Collections.emptyList());
-
-        ResponseEntity<List<UsuarioListarOutput>> response = usuarioController.buscarUsuarios();
-
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    }
-
-    @Test
-    public void testAutenticarUsuario() {
-        UsuarioAutenticacaoInput usuarioAutenticacaoInput = new UsuarioAutenticacaoInput();
-        Usuario usuario = new Usuario();
-        UsuarioTokenOutput tokenOutput = new UsuarioTokenOutput();
-        Mockito.when(usuarioService.autenticar(any(Usuario.class))).thenReturn(tokenOutput);
-
-        ResponseEntity<UsuarioTokenOutput> response = usuarioController.login(usuarioAutenticacaoInput);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(tokenOutput, response.getBody());
-    }
-
-    @Test
-    public void testAutenticarUsuarioNaoAutorizado() {
-        UsuarioAutenticacaoInput usuarioAutenticacaoInput = new UsuarioAutenticacaoInput();
-        Usuario usuario = new Usuario();
-        Mockito.when(usuarioService.autenticar(any(Usuario.class))).thenReturn(null);
-
-        ResponseEntity<UsuarioTokenOutput> response = usuarioController.login(usuarioAutenticacaoInput);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test

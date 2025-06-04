@@ -1,21 +1,27 @@
-package org.com.imaapi.model.usuario;
+package org.com.imaapi.model.consulta;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "especialidade")
-public class Especialidade {
+@Table(name = "avaliacao_consulta")
+public class AvaliacaoConsulta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_especialidade")
-    private Integer idEspecialidade;
+    @Column(name = "id_avaliacao")
+    private Integer idAvaliacao;
 
-    @Column(name = "nome", length = 45, nullable = false, unique = true)
-    private String nome;
+    @ManyToOne
+    @JoinColumn(name = "fk_consulta")
+    private Consulta consulta;
+
+    @Column(name = "nota")
+    private Integer nota;
+
+    @Column(name = "dt_avaliacao")
+    private LocalDateTime dtAvaliacao;
 
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;

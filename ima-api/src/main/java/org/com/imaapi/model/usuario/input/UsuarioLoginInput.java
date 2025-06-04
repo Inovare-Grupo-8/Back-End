@@ -1,11 +1,13 @@
 package org.com.imaapi.model.usuario.input;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
-public class UsuarioAutenticacaoInput {
+public class UsuarioLoginInput {
+    @NotBlank
     private String email;
+
+    @NotBlank
     private String senha;
 }

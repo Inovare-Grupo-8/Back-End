@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Setter;
 import org.com.imaapi.model.enums.Funcao;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,7 +20,11 @@ public class Voluntario {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "funcao")
-    private Funcao funcao;
+    private Funcao funcao;    @Column(name = "dt_cadastro", nullable = false)
+    private LocalDate dataCadastro;
+
+    @Column(name = "criado_em")
+    private LocalDateTime criadoEm;
 
     @Column(name = "registro_profissional")
     private String registroProfissional;
@@ -29,6 +34,12 @@ public class Voluntario {
 
     @Column (name = "data_cadastro")
     private LocalDateTime dataCadastro;
+    @Column(name = "atualizado_em")
+    private LocalDateTime atualizadoEm;
+
+    @Version
+    @Column(name = "versao")
+    private Integer versao;
 
     @Setter
     @ManyToOne
@@ -37,4 +48,22 @@ public class Voluntario {
 
     @OneToMany(mappedBy = "voluntario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Disponibilidade> disponibilidades;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.criadoEm == null) {
+            this.criadoEm = LocalDateTime.now();
+        }
+        if (this.atualizadoEm == null) {
+            this.atualizadoEm = LocalDateTime.now();
+        }
+        if (this.versao == null) {
+            this.versao = 0;
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.atualizadoEm = LocalDateTime.now();
+    }
 }

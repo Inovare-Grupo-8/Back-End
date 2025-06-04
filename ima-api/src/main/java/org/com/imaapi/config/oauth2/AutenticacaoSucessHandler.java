@@ -4,13 +4,18 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.com.imaapi.config.GerenciadorTokenJwt;
+import org.com.imaapi.model.usuario.Ficha;
 import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.model.usuario.UsuarioMapper;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.com.imaapi.repository.FichaRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.OauthTokenServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -25,19 +30,22 @@ import java.util.Optional;
 
 public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
-
     private final UsuarioRepository usuarioRepository;
+    private final FichaRepository fichaRepository;
     private final GerenciadorTokenJwt gerenciadorTokenJwt;
     private final UsuarioServiceImpl usuarioService;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
     private final OauthTokenServiceImpl oauthTokenService;
 
-    public AutenticacaoSucessHandler(UsuarioRepository usuarioRepository,
-                                     GerenciadorTokenJwt gerenciadorTokenJwt,
-                                     UsuarioServiceImpl usuarioService,
-                                     @Qualifier("googleAuthorizedClientManager") OAuth2AuthorizedClientManager authorizedClientManager,
-                                     OauthTokenServiceImpl oauthTokenService) {
+    public AutenticacaoSucessHandler(
+            UsuarioRepository usuarioRepository,
+            FichaRepository fichaRepository,
+            GerenciadorTokenJwt gerenciadorTokenJwt,
+            UsuarioServiceImpl usuarioService,
+            OAuth2AuthorizedClientManager authorizedClientManager,
+            OauthTokenServiceImpl oauthTokenService) {
         this.usuarioRepository = usuarioRepository;
+        this.fichaRepository = fichaRepository;
         this.gerenciadorTokenJwt = gerenciadorTokenJwt;
         this.usuarioService = usuarioService;
         this.authorizedClientManager = authorizedClientManager;
@@ -47,26 +55,34 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        System.out.println("=== INICIANDO onAuthenticationSuccess ===");
-
         OAuth2AuthenticationToken authenticationToken = (OAuth2AuthenticationToken) authentication;
-        OAuth2User usuarioOauth = (OAuth2User) authenticationToken.getPrincipal();
+        OAuth2User usuarioOauth = authenticationToken.getPrincipal();
+
         String email = usuarioOauth.getAttribute("email");
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        Boolean emailVerificado = usuarioOauth.getAttribute("email_verified");
 
         if (email == null) {
-            throw new ServletException("Email não encontrado para o OAuth2");
+            throw new ServletException("Email não encontrado no provedor OAuth2.");
         }
+
+        if (emailVerificado != null && !emailVerificado) {
+            throw new ServletException("Email não verificado pelo provedor OAuth2.");
+        }
+
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
 
         if (usuarioOptional.isEmpty()) {
             usuarioService.cadastrarUsuarioOAuth(usuarioOauth);
             usuarioOptional = usuarioRepository.findByEmail(email);
 
             if (usuarioOptional.isEmpty()) {
-                throw new ServletException("Erro ao cadastrar usuário");
+                throw new ServletException("Erro ao cadastrar usuário OAuth2.");
             }
         }
 
+        Usuario usuario = usuarioOptional.get();
+
+        // Obter tokens OAuth2
         OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
                 .withClientRegistrationId(authenticationToken.getAuthorizedClientRegistrationId())
                 .principal(authentication)
@@ -76,28 +92,31 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
         OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
 
-        if(authorizedClient != null) {
-            Usuario usuario = usuarioOptional.get();
+        if (authorizedClient != null) {
             OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
             OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
 
-            System.out.println("Access Token: " + accessToken.getTokenValue());
-            System.out.println("Refresh Token: " +
-                    (refreshToken != null ? refreshToken.getTokenValue() : "null"));
-
-            if(refreshToken == null) {
-                System.out.println("Não foi recebido um refresh token");
-            }
-
             oauthTokenService.salvarToken(usuario, accessToken, refreshToken);
         } else {
-            throw new ServletException("Erro ao obter tokens autorizados com o google");
+            throw new ServletException("Erro ao obter tokens autorizados com o Google.");
         }
 
-        UsuarioTokenOutput tokenOutput = usuarioService.autenticar(usuarioOptional.get());
-        response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
+        Ficha ficha = fichaRepository.findById(usuario.getFicha().getIdFicha())
+                .orElseThrow(() -> new ServletException("Ficha não encontrada para o usuário."));
 
-        System.out.println("=== FINALIZANDO onAuthenticationSuccess ===");
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                usuario.getEmail(), null, UsuarioMapper.ofDetalhes(usuario, ficha).getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        // Gera token JWT
+        String token = gerenciadorTokenJwt.generateToken(auth);
+        UsuarioTokenOutput tokenOutput = UsuarioMapper.of(usuario, token);
+
+        response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"token\": \"" + tokenOutput.getToken() + "\"}");
     }
 
 }

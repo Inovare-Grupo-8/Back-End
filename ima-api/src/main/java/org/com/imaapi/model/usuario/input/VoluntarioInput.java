@@ -9,7 +9,6 @@ import lombok.Data;
 @Data
 public class VoluntarioInput {
     @Enumerated(EnumType.STRING)
-    @NotBlank(message="Informe sua função")
     private Funcao funcao;
     private Integer fkUsuario;
 }

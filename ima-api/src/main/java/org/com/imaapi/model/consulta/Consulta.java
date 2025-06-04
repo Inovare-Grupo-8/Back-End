@@ -54,4 +54,10 @@ public class Consulta {
     @OneToOne
     @JoinColumn(name = "fk_especialista")
     private Usuario voluntario;
+
+    @Column(name = "feedback_status")
+    private String feedbackStatus = "PENDENTE";
+
+    @Column(name = "avaliacao_status")
+    private String avaliacaoStatus = "PENDENTE";
 }
