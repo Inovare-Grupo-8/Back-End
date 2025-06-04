@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Data
-@Setter
-@Getter
 public class UsuarioAutenticacaoInput {
     private String email;
     private String senha;
