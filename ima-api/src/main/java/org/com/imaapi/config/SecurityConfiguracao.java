@@ -2,6 +2,7 @@ package org.com.imaapi.config;
 
 import org.com.imaapi.config.oauth2.AutenticacaoSucessHandler;
 import org.com.imaapi.config.oauth2.EscopoIncrementalFilter;
+import org.com.imaapi.repository.FichaRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.com.imaapi.service.impl.OauthTokenServiceImpl;
@@ -109,6 +110,7 @@ public class SecurityConfiguracao {
     @Bean
     public AutenticacaoSucessHandler autenticacaoSucessHandler(
             UsuarioRepository usuarioRepository,
+            FichaRepository fichaRepository,
             GerenciadorTokenJwt gerenciadorTokenJwt,
             UsuarioServiceImpl usuarioService,
             OAuth2AuthorizedClientManager authorizedClientManager,
@@ -116,6 +118,7 @@ public class SecurityConfiguracao {
 
         return new AutenticacaoSucessHandler(
                 usuarioRepository,
+                fichaRepository,
                 gerenciadorTokenJwt,
                 usuarioService,
                 authorizedClientManager,

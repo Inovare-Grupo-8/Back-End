@@ -41,13 +41,4 @@ public class UsuarioInputPrimeiraFaseTest {
         usuario.setSenha("abc"); // apenas 3 caracteres
         assertTrue(usuario.getSenha().length() < 6, "Senha com menos de 6 caracteres deve ser inválida");
     }
-
-    @Test
-    void deveAceitarCpfValidoComOnzeDigitos() {
-        UsuarioInputPrimeiraFase mockUsuario = Mockito.mock(UsuarioInputPrimeiraFase.class);
-        Mockito.when(mockUsuario.getCpf()).thenReturn("12345678901");
-
-        String cpf = mockUsuario.getCpf();
-        assertTrue(cpf.matches("\\d{11}"), "CPF com 11 dígitos numéricos deve ser aceito");
-    }
 }

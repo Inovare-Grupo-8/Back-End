@@ -2,38 +2,39 @@ package org.com.imaapi.model.usuario.input;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.time.LocalDate;
-
 import org.com.imaapi.model.enums.Funcao;
-import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.enums.TipoUsuario;
 
+import java.time.LocalDate;
+
 @Data
-@Getter @Setter @NoArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
 @ToString
 public class UsuarioInputSegundaFase {
-    @NotNull(message = "Valor nulo, insíra um valor válido")
-    private String profissao;
+    @NotNull(message = "CPF não pode ser nulo")
+    @Pattern(regexp = "\\d{11}", message = "CPF deve ter 11 dígitos")
+    private String cpf;
+
+    @NotNull(message = "Data de nascimento não pode ser nula")
+    @PastOrPresent(message = "Data de nascimento inválida")
+    private LocalDate dataNascimento;    
+    
+    private Double renda;
 
     @NotNull(message = "O gênero deve ser informado")
-    private Genero genero;
+    private String genero;
 
-    @NotNull(message="Confirme se é um voluntário")
-    private Boolean isVoluntario;
-
-    private Funcao funcao;
-  
+    @NotNull(message="O tipo de usuário deve ser informado")
     private TipoUsuario tipo;
 
-    @NotBlank(message = "O CEP não pode estar em branco")
-    @Pattern(regexp = "\\d{8}|\\d{5}-\\d{3}", message = "O CEP deve estar no formato 00000000 ou 00000-000")
+    @NotNull(message = "Informações do endereço são obrigatórias")
+    private EnderecoInput endereco;
 
-    private String cep;
+    @NotNull(message = "Informações do telefone são obrigatórias")
+    private TelefoneInput telefone;    
     
-    private String numero;
-    
-    private String complemento;
-    
-    private String telefone;
+    private Funcao funcao;
+
+
 }

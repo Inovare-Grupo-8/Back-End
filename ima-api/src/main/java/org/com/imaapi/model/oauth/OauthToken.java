@@ -11,10 +11,9 @@ import java.time.Instant;
 @Table(name = "oauth_token")
 @Getter
 @Setter
-public class OauthToken {
-
-    @Id
+public class OauthToken {    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_oauth_token")
     private Integer id;
 
     @OneToOne

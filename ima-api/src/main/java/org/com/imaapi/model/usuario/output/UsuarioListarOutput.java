@@ -3,12 +3,9 @@ package org.com.imaapi.model.usuario.output;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.com.imaapi.model.enums.TipoUsuario;
 
 @Data
-@Getter
-@Setter
-public class UsuarioListarOutput {
-    private Integer id;
-    private String nome;
-    private String email;
+public class UsuarioListarOutput extends BaseUsuarioOutput {
+    private TipoUsuario tipo;
 }

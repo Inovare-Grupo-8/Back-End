@@ -46,13 +46,13 @@ public class EnderecoServiceImpl implements EnderecoService {
             enderecoOutput.setComplemento(complemento);
         }
 
-        Endereco endereco = new Endereco();
+        Endereco endereco = new Endereco();        
         endereco.setCep(enderecoOutput.getCep());
         endereco.setLogradouro(enderecoOutput.getLogradouro());
         endereco.setBairro(enderecoOutput.getBairro());
         endereco.setNumero(enderecoOutput.getNumero());
         endereco.setUf(enderecoOutput.getUf());
-        endereco.setLocalidade(enderecoOutput.getLocalidade());
+        endereco.setCidade(enderecoOutput.getLocalidade());
 
         LOGGER.info("Endereço encontrado: {}", endereco);
         return ResponseEntity.ok(enderecoOutput);
