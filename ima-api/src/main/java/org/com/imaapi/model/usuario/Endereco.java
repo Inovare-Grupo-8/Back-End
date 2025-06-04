@@ -70,6 +70,7 @@ public class Endereco {
     @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
+
     }
 
     public static Endereco of(EnderecoOutput enderecoOutput) {
