@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class RemarcarConsulta {
-          private LocalDateTime horario;
+        private LocalDateTime horario;
         private String local;
         private ModalidadeConsulta modalidade;
 
