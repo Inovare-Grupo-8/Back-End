@@ -2,66 +2,88 @@ package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.enums.TipoUsuario;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.com.imaapi.model.enums.converter.TipoUsuarioConverter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
 
 @Data
 @Entity
 @Table(name = "usuario")
 @Getter
 @Setter
-public class Usuario{
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column (name = "id_usuario")
+    @Column(name = "id_usuario")
     private Integer idUsuario;
+      
+    @OneToOne(optional = false)
+    @JoinColumn(name = "fk_ficha", unique = true, nullable = false)
+    private Ficha ficha;
 
-    @Column (name = "nome")
-    private String nome;
-
-    @Column (name = "cpf")
-    private String cpf;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo")
-    private TipoUsuario tipo;
-
-    @Column (name = "email")
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column (name = "senha")
-    private String senha;
+    @Column(name = "senha", nullable = false, length = 128)
+    private String senha;    
+    
+    @Column(name = "tipo", length = 20)
+    @Convert(converter = TipoUsuarioConverter.class)
+    private TipoUsuario tipo;
 
-    @Column (name = "data_nascimento")
-    private LocalDate dataNascimento;
+    @Column(name = "dt_cadastro", nullable = false)
+    private LocalDate dataCadastro;
 
-    @Column (name = "renda")
-    private Double renda;
+    @Column(name = "criado_em")
+    private LocalDateTime criadoEm;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "genero", length = 1)
-    private Genero genero;
+    @Column(name = "atualizado_em")
+    private LocalDateTime atualizadoEm;
 
-    @Column (name = "data_cadastro")
-    private LocalDateTime dataCadastro;
+    @Version
+    @Column(name = "versao")
+    private Integer versao;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "fk_endereco", referencedColumnName = "id_endereco")
-    private Endereco endereco;
-
-    //para gerar a data de cadastro no banco
     @PrePersist
     public void prePersist() {
         if (this.dataCadastro == null) {
-            this.dataCadastro = LocalDateTime.now();
+            this.dataCadastro = LocalDate.now();
         }
+        if (this.criadoEm == null) {
+            this.criadoEm = LocalDateTime.now();
+        }
+        if (this.atualizadoEm == null) {
+            this.atualizadoEm = LocalDateTime.now();
+        }
+        if (this.versao == null) {
+            this.versao = 0;
+        }
+        if (this.tipo == null) {
+            this.tipo = TipoUsuario.NAO_CLASSIFICADO;
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.atualizadoEm = LocalDateTime.now();
+    }
+
+    public static Usuario criarUsuarioBasico(String email, String senha, Ficha ficha) {
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setSenha(senha);
+        usuario.setTipo(TipoUsuario.NAO_CLASSIFICADO);
+        usuario.setDataCadastro(LocalDate.now());
+        usuario.setCriadoEm(LocalDateTime.now());
+        usuario.setAtualizadoEm(LocalDateTime.now());
+        usuario.setVersao(0);
+        usuario.setFicha(ficha);
+        return usuario;
+    }
+
+    public void atualizarTipo(TipoUsuario tipo) {
+        this.setTipo(tipo);
     }
 }

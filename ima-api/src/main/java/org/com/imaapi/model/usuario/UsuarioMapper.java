@@ -1,70 +1,76 @@
 package org.com.imaapi.model.usuario;
 
+import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
-import org.com.imaapi.model.usuario.input.UsuarioInput;
+import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
+import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
-import org.com.imaapi.model.usuario.output.EnderecoOutput;
+import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
-import org.com.imaapi.repository.EnderecoRepository;
-import org.com.imaapi.service.EnderecoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
+import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 
 public class UsuarioMapper {
 
-    public static Usuario of(UsuarioInput usuarioInput) {
+    public static Usuario of(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         Usuario usuario = new Usuario();
 
-        usuario.setNome(usuarioInput.getNome());
-        usuario.setEmail(usuarioInput.getEmail());
-        usuario.setSenha(usuarioInput.getSenha());
-        usuario.setCpf(usuarioInput.getCpf());
-        usuario.setTipo(usuarioInput.getTipo());
-        usuario.setGenero(usuarioInput.getGenero());
-        usuario.setDataNascimento(usuarioInput.getDataNascimento());
-        usuario.setRenda(usuarioInput.getRenda());
+        Ficha ficha = new Ficha();
+        ficha.setNome(usuarioInputPrimeiraFase.getNome());
+        ficha.setCpf(usuarioInputSegundaFase.getCpf());
+        ficha.setDtNascim(usuarioInputSegundaFase.getDataNascimento());
+
+        usuario.setEmail(usuarioInputPrimeiraFase.getEmail());
+        usuario.setSenha(usuarioInputPrimeiraFase.getSenha());
+        usuario.setTipo(TipoUsuario.NAO_CLASSIFICADO);
+        usuario.setFicha(ficha);
 
         return usuario;
     }
 
     public static Usuario of(UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
         Usuario usuario = new Usuario();
-
         usuario.setEmail(usuarioAutenticacaoInput.getEmail());
         usuario.setSenha(usuarioAutenticacaoInput.getSenha());
-
         return usuario;
     }
 
     public static UsuarioTokenOutput of(Usuario usuario, String token) {
         UsuarioTokenOutput usuarioTokenOutput = new UsuarioTokenOutput();
-
-        usuarioTokenOutput.setId(usuario.getIdUsuario());
-        usuarioTokenOutput.setNome(usuario.getNome());
+        usuarioTokenOutput.setIdUsuario(usuario.getIdUsuario());
+        usuarioTokenOutput.setNome(usuario.getFicha().getNome());
         usuarioTokenOutput.setEmail(usuario.getEmail());
         usuarioTokenOutput.setToken(token);
-
+        usuarioTokenOutput.setTipo(usuario.getTipo());
         return usuarioTokenOutput;
     }
 
     public static UsuarioListarOutput of(Usuario usuario) {
-        UsuarioListarOutput usuarioListarOutput = new UsuarioListarOutput();
-
-        usuarioListarOutput.setId(usuario.getIdUsuario());
-        usuarioListarOutput.setNome(usuario.getNome());
-        usuarioListarOutput.setEmail(usuario.getEmail());
-
-        return usuarioListarOutput;
+        UsuarioListarOutput output = new UsuarioListarOutput();
+        output.setIdUsuario(usuario.getIdUsuario());
+        output.setNome(usuario.getFicha().getNome());
+        output.setEmail(usuario.getEmail());
+        output.setTipo(usuario.getTipo());
+        return output;
     }
 
-    public static VoluntarioInput of(UsuarioInput usuarioInput, Integer idUsuario) {
+    public static VoluntarioInput of(UsuarioInputSegundaFase usuarioInputSegundaFase, Integer idUsuario) {
         VoluntarioInput voluntario = new VoluntarioInput();
         voluntario.setFkUsuario(idUsuario);
-        voluntario.setFuncao(usuarioInput.getFuncao());
+        voluntario.setFuncao(usuarioInputSegundaFase.getFuncao());
         return voluntario;
+    }
+
+    public static UsuarioPrimeiraFaseOutput ofPrimeiraFase(Usuario usuario) {
+        UsuarioPrimeiraFaseOutput output = new UsuarioPrimeiraFaseOutput();
+        output.setNome(usuario.getFicha().getNome());
+        output.setEmail(usuario.getEmail());
+        output.setCpf(usuario.getFicha().getCpf());
+        output.setDataNascimento(usuario.getFicha().getDtNascim());
+        return output;
+    }
+
+    public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario, Ficha ficha) {
+        return new UsuarioDetalhesOutput(usuario, ficha);
     }
 }

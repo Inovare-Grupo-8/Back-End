@@ -1,7 +1,9 @@
 package org.com.imaapi.model.usuario.output;
 
+import lombok.Data;
 import lombok.Getter;
 import org.com.imaapi.model.enums.TipoUsuario;
+import org.com.imaapi.model.usuario.Ficha;
 import org.com.imaapi.model.usuario.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,17 +12,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+@Data
 public class UsuarioDetalhesOutput implements UserDetails {
-    @Getter
     private final String nome;
     private final String email;
     private final String senha;
-
-    @Getter
     private final TipoUsuario tipo;
 
-    public UsuarioDetalhesOutput(Usuario usuario) {
-        this.nome = usuario.getNome();
+    public UsuarioDetalhesOutput(Usuario usuario, Ficha ficha) {
+        this.nome = ficha.getNome();
         this.email = usuario.getEmail();
         this.senha = usuario.getSenha();
         this.tipo = usuario.getTipo();
@@ -28,6 +28,9 @@ public class UsuarioDetalhesOutput implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (tipo == null) {
+            return List.of();
+        }
         return List.of(new SimpleGrantedAuthority("ROLE_" + tipo.name()));
     }
 

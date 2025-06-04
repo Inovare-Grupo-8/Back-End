@@ -1,5 +1,6 @@
 package org.com.imaapi.config;
 
+
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,6 +29,15 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
     public AutenticacaoFilter(AutenticacaoServiceImpl autenticacaoService, GerenciadorTokenJwt tokenManager) {
         this.autenticacaoService = autenticacaoService;
         this.jwtTokenManager = tokenManager;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/usuarios") ||
+               path.equals("/dev/token") ||   
+               path.startsWith("/swagger-ui") ||
+               path.startsWith("/v3/api-docs");
     }
 
     @Override

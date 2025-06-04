@@ -51,4 +51,10 @@ public class Consulta {
     private String motivoCancelamento;
 
 
+
+    @Column(name = "feedback_status")
+    private String feedbackStatus = "PENDENTE";
+
+    @Column(name = "avaliacao_status")
+    private String avaliacaoStatus = "PENDENTE";
 }

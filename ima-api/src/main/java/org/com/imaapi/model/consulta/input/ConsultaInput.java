@@ -1,8 +1,10 @@
 package org.com.imaapi.model.consulta.input;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
 import org.com.imaapi.model.enums.StatusConsulta;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -10,6 +12,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 @Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ConsultaInput {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime horario;
@@ -28,4 +34,3 @@ public class ConsultaInput {
     private Integer idAssistido;
     private Integer idVoluntario;
 }
-

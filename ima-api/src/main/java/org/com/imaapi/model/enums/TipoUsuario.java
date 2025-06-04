@@ -2,8 +2,9 @@ package org.com.imaapi.model.enums;
 
 public enum TipoUsuario {
     ADMINISTRADOR("administrador"),
-    VOLUNTARIO("voluntário"),
+    VOLUNTARIO("voluntario"),
     VALOR_SOCIAL("valor social"),
+    NAO_CLASSIFICADO("não classificado"),
     GRATUIDADE("gratuidade");
 
     private final String value;
@@ -14,6 +15,10 @@ public enum TipoUsuario {
 
     public String getValue() {
         return value;
+    }
+
+    public String getPrefixed() {
+        return "ROLE_" + this.name();
     }
 
     public static TipoUsuario fromValue(String value) {

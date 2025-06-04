@@ -103,4 +103,43 @@ public class ConsultaController {
     }
 
 
+
+    @GetMapping("/consultas/dia")
+    public ResponseEntity<?> getConsultasDia(@RequestParam String user) {
+        return consultaService.getConsultasDia(user);
+    }
+
+    @GetMapping("/consultas/semana")
+    public ResponseEntity<?> getConsultasSemana(@RequestParam String user) {
+        return consultaService.getConsultasSemana(user);
+    }
+
+    @GetMapping("/consultas/mes")
+    public ResponseEntity<?> getConsultasMes(@RequestParam String user) {
+        return consultaService.getConsultasMes(user);
+    }
+
+    @GetMapping("/consultas/avaliacoes-feedback")
+    public ResponseEntity<?> getAvaliacoesFeedback(@RequestParam String user) {
+        return consultaService.getAvaliacoesFeedback(user);
+    }
+
+    @GetMapping("/consultas/id-recentes")
+    public ResponseEntity<?> getConsultasRecentes(@RequestParam String user) {
+        return consultaService.getConsultasRecentes(user);
+    }
+
+    @PostMapping("/consultas/{id}/feedback")
+    public ResponseEntity<?> adicionarFeedback(
+            @PathVariable Long id,
+            @RequestBody String feedback) {
+        return consultaService.adicionarFeedback(id, feedback);
+    }
+
+    @PostMapping("/consultas/{id}/avaliacao")
+    public ResponseEntity<?> adicionarAvaliacao(
+            @PathVariable Long id,
+            @RequestBody String avaliacao) {
+        return consultaService.adicionarAvaliacao(id, avaliacao);
+    }
 }

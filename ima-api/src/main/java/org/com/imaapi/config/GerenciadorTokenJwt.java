@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -33,9 +34,12 @@ public class GerenciadorTokenJwt {
         final String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
-        return Jwts.builder().setSubject(authentication.getName())
-                .signWith(parseSecret()).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtTokenValidity * 1000)).compact();
+        return Jwts.builder()
+                .subject(authentication.getName())
+                .claim("authorities", authorities)
+                .signWith(parseSecret())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + jwtTokenValidity * 1000)).compact();
     }
 
     public <T> T getClaimForToken(String token, Function<Claims, T> claimsResolver) {
@@ -57,7 +61,7 @@ public class GerenciadorTokenJwt {
         return Jwts.parser()
                 .setSigningKey(parseSecret())
                 .build()
-                .parseClaimsJws(token).getBody();
+                .parseSignedClaims(token).getBody();
     }
 
     private SecretKey parseSecret() {return Keys.hmacShaKeyFor(this.secret.getBytes(StandardCharsets.UTF_8));}
