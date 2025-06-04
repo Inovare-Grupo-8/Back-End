@@ -7,8 +7,9 @@ import java.util.List;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.List;
 
-@Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, Integer> {
     List<Consulta> findByAssistidoId(Integer idAssistido);
 
@@ -25,6 +26,10 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Integer> {
     List<Consulta> findTop3ByAssistidoIdAndHorarioAfterOrderByHorarioAsc(Integer assistidoId, LocalDateTime dataAtual);
 
 
+    List<Consulta> findByVoluntario_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
+    List<Consulta> findByAssistido_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
+    List<Consulta> findByVoluntario_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
+    List<Consulta> findByAssistido_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
     List<Consulta> findByVoluntario_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
     List<Consulta> findByAssistido_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
     List<Consulta> findByVoluntario_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
