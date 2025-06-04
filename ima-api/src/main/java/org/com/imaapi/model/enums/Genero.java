@@ -1,9 +1,19 @@
 package org.com.imaapi.model.enums;
 
 public enum Genero {
-    M,
-    F,
-    OUTRO;
+    MASCULINO("MASCULINO"),
+    FEMININO("FEMININO"),
+    OUTRO("OUTRO");
+
+    private final String value;
+
+    Genero(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 
     public static Genero fromString(String valor) {
         if (valor == null) return null;
@@ -11,10 +21,10 @@ public enum Genero {
         switch (valor.trim().toUpperCase()) {
             case "M":
             case "MASCULINO":
-                return M;
+                return MASCULINO;
             case "F":
             case "FEMININO":
-                return F;
+                return FEMININO;
             case "OUTRO":
             case "O":
                 return OUTRO;

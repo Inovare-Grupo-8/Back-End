@@ -29,6 +29,9 @@ public class Endereco {
     @Column(name = "logradouro", length = 200)
     private String logradouro;
 
+    @Column(name = "complemento", length = 200)
+    private String complemento;
+
     @Column(name = "bairro", length = 45)
     private String bairro;
 
@@ -41,29 +44,32 @@ public class Endereco {
     @Column(name = "uf", length = 2)
     private String uf;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "criado_em")
+    private LocalDateTime criadoEm;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "atualizado_em")
+    private LocalDateTime atualizadoEm;
 
     @Version
-    @Column(name = "version")
-    private Integer version;
+    @Column(name = "versao")
+    private Integer versao;
 
     @PrePersist
     public void prePersist() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
+        if (this.criadoEm == null) {
+            this.criadoEm = LocalDateTime.now();
         }
-        if (this.updatedAt == null) {
-            this.updatedAt = LocalDateTime.now();
+        if (this.atualizadoEm == null) {
+            this.atualizadoEm = LocalDateTime.now();
+        }
+        if (this.versao == null) {
+            this.versao = 0;
         }
     }
 
     @PreUpdate
     public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.atualizadoEm = LocalDateTime.now();
     }
 
     public static Endereco of(EnderecoOutput enderecoOutput) {

@@ -28,7 +28,7 @@ public class UsuarioInputSegundaFase {
     @NotNull(message="O tipo de usuário deve ser informado")
     private TipoUsuario tipo;
 
-    @NotNull(message = "Informações do endereço são obrigatórias")
+    @NotNull(message = "Informações do endereço são obrigatórias")  
     private EnderecoInput endereco;
 
     @NotNull(message = "Informações do telefone são obrigatórias")
@@ -36,5 +36,9 @@ public class UsuarioInputSegundaFase {
     
     private Funcao funcao;
 
+    private String areaOrientacao;
 
+    private String comoSoube; 
+
+    private String profissao;
 }

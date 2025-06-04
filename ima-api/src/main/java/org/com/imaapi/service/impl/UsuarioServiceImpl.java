@@ -119,8 +119,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuarioRepository.save(novoUsuario);
         logger.info("Usuário OAuth salvo no banco com email: {}", novoUsuario.getEmail());
-    }
-
+    }    
+    
     @Override
     public Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         logger.info("Iniciando cadastro da segunda fase para usuário ID: {}", idUsuario);
@@ -133,39 +133,43 @@ public class UsuarioServiceImpl implements UsuarioService {
         Ficha ficha = usuario.getFicha();
         logger.info("Dados atuais da ficha antes da atualização: {}", ficha);
 
+        if (usuarioInputSegundaFase.getEndereco() != null) {
+            String cep = usuarioInputSegundaFase.getEndereco().getCep().replace("-", "");
+            String numero = usuarioInputSegundaFase.getEndereco().getNumero();
+            String complemento = usuarioInputSegundaFase.getEndereco().getComplemento();
+            
+            logger.info("Processando endereço no início do cadastro: CEP={}, numero={}", cep, numero);
+            
+            ResponseEntity<EnderecoOutput> enderecoResponse = enderecoService.buscaEndereco(cep, numero, complemento);
+            EnderecoOutput enderecoOutput = enderecoResponse.getBody();
+            
+            if (enderecoOutput != null && enderecoOutput.getCep() != null) {
+                Optional<Endereco> endereco = enderecoRepository.findByCepAndNumero(cep, numero);
+                
+                if (endereco.isPresent()) {
+                    ficha.setEndereco(endereco.get());
+                    logger.info("Endereço vinculado à ficha através da FK: endereco_id={}", endereco.get().getIdEndereco());
+                } else {
+                    logger.error("Endereço não encontrado após tentativa de cadastro: CEP={}, numero={}", cep, numero);
+                    throw new RuntimeException("Erro ao processar endereço para vinculação com a ficha");
+                }
+            } else {
+                logger.warn("Dados de endereço inválidos recebidos da API de CEP");
+                throw new IllegalArgumentException("Dados de endereço inválidos");
+            }
+        } else {
+            logger.warn("Nenhum endereço fornecido para o cadastro da segunda fase");
+        }
+
         ficha.atualizarDadosSegundaFase(usuarioInputSegundaFase);
         logger.info("Ficha atualizada com os novos dados: {}", ficha);
 
-        if (usuarioInputSegundaFase.getEndereco() != null) {
-            logger.info("Endereço fornecido, consultando serviço de CEP para CEP: {}", usuarioInputSegundaFase.getEndereco().getCep());
-            ResponseEntity<EnderecoOutput> enderecoResponse = enderecoService.buscaEndereco(
-                    usuarioInputSegundaFase.getEndereco().getCep(),
-                    usuarioInputSegundaFase.getEndereco().getNumero(),
-                    null
-            );
-
-            if (enderecoResponse.getBody() != null) {
-                EnderecoOutput enderecoOutput = enderecoResponse.getBody();
-                Endereco endereco = Endereco.of(enderecoOutput);
-                endereco = enderecoRepository.save(endereco);
-                ficha.setEndereco(endereco);
-                logger.info("Endereço salvo e associado à ficha: {}", endereco);
-            } else {
-                logger.warn("Serviço de CEP não retornou endereço para os dados: {}", usuarioInputSegundaFase.getEndereco());
-            }
-        } else {
-            logger.info("Nenhum endereço fornecido para atualização.");
-        }
-
         usuario.atualizarTipo(usuarioInputSegundaFase.getTipo());
-        logger.info("Tipo do usuário atualizado para: {}", usuario.getTipo());
-
-        usuarioRepository.save(usuario);
+        logger.info("Tipo do usuário atualizado para: {}", usuario.getTipo());        usuarioRepository.save(usuario);
         logger.info("Usuário salvo após atualização da segunda fase: ID={}, email={}", usuario.getIdUsuario(), usuario.getEmail());
 
         if (usuarioInputSegundaFase.getTelefone() != null) {
-            Telefone telefone = Telefone.of(usuarioInputSegundaFase.getTelefone(), ficha.getIdFicha());
-            telefoneRepository.save(telefone);
+            Telefone telefone = Telefone.of(usuarioInputSegundaFase.getTelefone(), ficha);            telefoneRepository.save(telefone);
             logger.info("Telefone salvo para a ficha ID {}: {}", ficha.getIdFicha(), telefone);
         } else {
             logger.info("Nenhum telefone fornecido para atualização.");
