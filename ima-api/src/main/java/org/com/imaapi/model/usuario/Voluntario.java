@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.com.imaapi.model.enums.Funcao;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -33,4 +34,7 @@ public class Voluntario {
     @ManyToOne
     @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario")
     private Usuario usuario;
+
+    @OneToMany(mappedBy = "voluntario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Disponibilidade> disponibilidades;
 }

@@ -1,6 +1,10 @@
 package org.com.imaapi.service.impl;
 import org.com.imaapi.model.consulta.Consulta;
+import org.com.imaapi.model.usuario.Disponibilidade;
+import org.com.imaapi.model.usuario.Voluntario;
 import org.com.imaapi.repository.ConsultaRepository;
+import org.com.imaapi.repository.DisponibilidadeRepository;
+import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.service.DisponibilidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,25 +19,31 @@ import java.util.stream.Collectors;
 @Service
 public class DisponibilidadeServiceImpl implements DisponibilidadeService {
 
-    @Autowired
-    private ConsultaRepository consultaRepository;
+    private final DisponibilidadeRepository disponibilidadeRepository;
+    private final VoluntarioRepository voluntarioRepository;
 
-    public List<LocalTime> buscarHorariosDisponiveis(Integer idUsuario, LocalDate data) {
-        List<LocalTime> horariosPossiveis = new ArrayList<>();
-        for (int h = 0; h < 24; h++) {
-            horariosPossiveis.add(LocalTime.of(h, 0));
+    public DisponibilidadeServiceImpl(DisponibilidadeRepository disponibilidadeRepository, VoluntarioRepository voluntarioRepository) {
+        this.disponibilidadeRepository = disponibilidadeRepository;
+        this.voluntarioRepository = voluntarioRepository;
+    }
+
+    @Override
+    public boolean criarDisponibilidade(Integer usuarioId, Disponibilidade disponibilidade) {
+        Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuarioId);
+        if (voluntario == null) {
+            throw new IllegalArgumentException("Voluntário não encontrado para o usuário ID: " + usuarioId);
         }
+        disponibilidade.setVoluntario(voluntario);
+        disponibilidadeRepository.save(disponibilidade);
+        return true;
+    }
 
-        LocalDateTime inicio = data.atStartOfDay();
-        LocalDateTime fim = data.atTime(23, 59, 59);
-        List<Consulta> consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(idUsuario, inicio, fim);
-
-        List<LocalTime> horariosOcupados = consultas.stream()
-                .map(c -> c.getHorario().toLocalTime())
-                .collect(Collectors.toList());
-
-        horariosPossiveis.removeAll(horariosOcupados);
-
-        return horariosPossiveis;
+    @Override
+    public boolean atualizarDisponibilidade(Integer usuarioId, Disponibilidade disponibilidade) {
+        Disponibilidade disponibilidadeExistente = disponibilidadeRepository.findById(disponibilidade.getIdDisponibilidade())
+                .orElseThrow(() -> new IllegalArgumentException("Disponibilidade não encontrada para ID: " + disponibilidade.getIdDisponibilidade()));
+        disponibilidadeExistente.setDataHora(disponibilidade.getDataHora());
+        disponibilidadeRepository.save(disponibilidadeExistente);
+        return true;
     }
 }
