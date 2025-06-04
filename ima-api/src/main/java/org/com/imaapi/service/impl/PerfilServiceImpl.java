@@ -2,15 +2,17 @@ package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.model.usuario.Ficha;
 import org.com.imaapi.model.usuario.Voluntario;
+import org.com.imaapi.model.usuario.Endereco;
 import org.com.imaapi.model.usuario.input.UsuarioInputAtualizacaoDadosPessoais;
-import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.VoluntarioDadosProfissionaisInput;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.repository.VoluntarioRepository;
+import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.FotoService;
 import org.com.imaapi.service.PerfilService;
@@ -26,13 +28,14 @@ import java.util.Map;
 
 @Service
 public class PerfilServiceImpl implements PerfilService {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(PerfilServiceImpl.class);
 
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
     private EnderecoService enderecoService;
+    @Autowired
+    private EnderecoRepository enderecoRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -48,31 +51,22 @@ public class PerfilServiceImpl implements PerfilService {
             LOGGER.warn("Usuário não encontrado para o ID: {}", usuarioId);
             return null;
         }
+        
+        Ficha ficha = usuario.getFicha();
+        if (ficha == null) {
+            LOGGER.warn("Ficha não encontrada para o usuário com ID: {}", usuarioId);
+            return null;
+        }
+
         UsuarioDadosPessoaisOutput usuarioOutput = new UsuarioDadosPessoaisOutput();
-        usuarioOutput.setNome(usuario.getNome());
-        usuarioOutput.setCpf(usuario.getCpf());
+        usuarioOutput.setNome(ficha.getNome());
+        usuarioOutput.setCpf(ficha.getCpf());
         usuarioOutput.setEmail(usuario.getEmail());
-        usuarioOutput.setDataNascimento(usuario.getDataNascimento());
-        usuarioOutput.setTipo(usuario.getTipo().toString());
+        usuarioOutput.setDataNascimento(ficha.getDtNascim());
+        usuarioOutput.setTipo(usuario.getTipo() != null ? usuario.getTipo().toString() : null);
+        
         LOGGER.info("Dados pessoais encontrados para o usuário com ID: {}", usuarioId);
         return usuarioOutput;
-    }
-
-    public EnderecoOutput buscarEnderecoPorId(Integer usuarioId) {
-        LOGGER.info("Buscando endereço para o usuário com ID: {}", usuarioId);
-        Usuario usuario = buscarUsuarioPorId(usuarioId);
-        if (usuario != null && usuario.getEndereco() != null) {
-            EnderecoOutput enderecoOutput = new EnderecoOutput();
-            enderecoOutput.setCep(usuario.getEndereco().getCep());
-            enderecoOutput.setNumero(usuario.getEndereco().getNumero());
-            enderecoOutput.setComplemento(usuario.getEndereco().getComplemento());
-            enderecoOutput.setLogradouro(usuario.getEndereco().getLogradouro());
-            enderecoOutput.setBairro(usuario.getEndereco().getBairro());
-            enderecoOutput.setLocalidade(usuario.getEndereco().getLocalidade());
-            enderecoOutput.setUf(usuario.getEndereco().getUf());
-            return enderecoOutput;
-        }
-        return null;
     }
 
     @Override
@@ -84,8 +78,14 @@ public class PerfilServiceImpl implements PerfilService {
             return null;
         }
 
+        Ficha ficha = usuario.getFicha();
+        if (ficha == null) {
+            LOGGER.warn("Ficha não encontrada para o usuário com ID: {}", usuarioId);
+            return null;
+        }
+
         if (usuarioInputAtualizacaoDadosPessoais.getNome() != null) {
-            usuario.setNome(usuarioInputAtualizacaoDadosPessoais.getNome());
+            ficha.setNome(usuarioInputAtualizacaoDadosPessoais.getNome());
         }
         if (usuarioInputAtualizacaoDadosPessoais.getEmail() != null) {
             usuario.setEmail(usuarioInputAtualizacaoDadosPessoais.getEmail());
@@ -95,7 +95,7 @@ public class PerfilServiceImpl implements PerfilService {
             usuario.setSenha(senhaCriptografada);
         }
         if (usuarioInputAtualizacaoDadosPessoais.getDataNascimento() != null) {
-            usuario.setDataNascimento(usuarioInputAtualizacaoDadosPessoais.getDataNascimento());
+            ficha.setDtNascim(usuarioInputAtualizacaoDadosPessoais.getDataNascimento());
         }
 
         usuarioRepository.save(usuario);
@@ -106,30 +106,69 @@ public class PerfilServiceImpl implements PerfilService {
     }
 
     @Override
+    public EnderecoOutput buscarEnderecoPorId(Integer usuarioId) {
+        LOGGER.info("Buscando endereço para o usuário com ID: {}", usuarioId);
+        Usuario usuario = buscarUsuarioPorId(usuarioId);
+        if (usuario == null) {
+            LOGGER.warn("Usuário não encontrado para o ID: {}", usuarioId);
+            return null;
+        }
+        
+        Ficha ficha = usuario.getFicha();
+        if (ficha == null || ficha.getEndereco() == null) {
+            LOGGER.warn("Ficha ou endereço não encontrado para o usuário com ID: {}", usuarioId);
+            return null;
+        }
+
+        Endereco endereco = ficha.getEndereco();
+        EnderecoOutput enderecoOutput = new EnderecoOutput();
+        enderecoOutput.setCep(endereco.getCep());
+        enderecoOutput.setNumero(endereco.getNumero());
+        enderecoOutput.setComplemento(endereco.getComplemento());
+        enderecoOutput.setLogradouro(endereco.getLogradouro());
+        enderecoOutput.setBairro(endereco.getBairro());
+        enderecoOutput.setLocalidade(endereco.getCidade());
+        enderecoOutput.setUf(endereco.getUf());
+        return enderecoOutput;
+    }
+
+    @Override
     public boolean atualizarEnderecoPorUsuarioId(Integer usuarioId, String cep, String numero, String complemento) {
         LOGGER.info("Iniciando atualização de endereço para o usuário com ID: {}", usuarioId);
         try {
             Usuario usuario = buscarUsuarioPorId(usuarioId);
-            if (usuario == null || usuario.getEndereco() == null) {
-                LOGGER.warn("Usuário ou endereço não encontrado para o ID: {}", usuarioId);
+            if (usuario == null) {
+                LOGGER.warn("Usuário não encontrado para o ID: {}", usuarioId);
                 return false;
             }
 
-            if (!cep.equals(usuario.getEndereco().getCep())) {
-                EnderecoOutput enderecoApi = enderecoService.buscaEndereco(cep, numero, complemento).getBody();
-                if (enderecoApi == null) {
-                    LOGGER.warn("Endereço não encontrado na API para o CEP: {}", cep);
-                    return false;
-                }
-                usuario.getEndereco().setCep(enderecoApi.getCep());
-                usuario.getEndereco().setLogradouro(enderecoApi.getLogradouro());
-                usuario.getEndereco().setBairro(enderecoApi.getBairro());
-                usuario.getEndereco().setLocalidade(enderecoApi.getLocalidade());
-                usuario.getEndereco().setUf(enderecoApi.getUf());
+            Ficha ficha = usuario.getFicha();
+            if (ficha == null) {
+                LOGGER.warn("Ficha não encontrada para o usuário com ID: {}", usuarioId);
+                return false;
             }
 
-            usuario.getEndereco().setNumero(numero);
-            usuario.getEndereco().setComplemento(complemento);
+            EnderecoOutput enderecoApi = enderecoService.buscaEndereco(cep, numero, complemento).getBody();
+            if (enderecoApi == null) {
+                LOGGER.warn("Endereço não encontrado na API para o CEP: {}", cep);
+                return false;
+            }
+
+            Endereco endereco = ficha.getEndereco();
+            if (endereco == null) {
+                endereco = new Endereco();
+                ficha.setEndereco(endereco);
+            }
+
+            endereco.setCep(enderecoApi.getCep());
+            endereco.setLogradouro(enderecoApi.getLogradouro());
+            endereco.setBairro(enderecoApi.getBairro());
+            endereco.setCidade(enderecoApi.getLocalidade());
+            endereco.setUf(enderecoApi.getUf());
+            endereco.setNumero(numero);
+            endereco.setComplemento(complemento);
+
+            enderecoRepository.save(endereco);
             usuarioRepository.save(usuario);
 
             LOGGER.info("Endereço atualizado com sucesso para o usuário com ID: {}", usuarioId);

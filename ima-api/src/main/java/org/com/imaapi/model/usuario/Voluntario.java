@@ -20,7 +20,9 @@ public class Voluntario {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "funcao")
-    private Funcao funcao;    @Column(name = "dt_cadastro", nullable = false)
+    private Funcao funcao;
+
+    @Column(name = "dt_cadastro", nullable = false)
     private LocalDate dataCadastro;
 
     @Column(name = "criado_em")
@@ -32,8 +34,6 @@ public class Voluntario {
     @Column(name = "biografia_profissional", length = 500)
     private String biografiaProfissional;
 
-    @Column (name = "data_cadastro")
-    private LocalDateTime dataCadastro;
     @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
 
