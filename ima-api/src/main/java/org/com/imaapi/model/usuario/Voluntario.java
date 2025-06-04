@@ -11,15 +11,15 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "voluntario")
-public class Voluntario {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class Voluntario {    @Id
     @Column(name = "id_voluntario")
     private Integer idVoluntario;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "funcao")
-    private Funcao funcao;    @Column(name = "dt_cadastro", nullable = false)
+    private Funcao funcao;    
+    
+    @Column(name = "dt_cadastro", nullable = false)
     private LocalDate dataCadastro;
 
     @Column(name = "criado_em")

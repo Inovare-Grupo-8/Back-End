@@ -1,14 +1,8 @@
 package org.com.imaapi.model.usuario.output;
 
-import jakarta.persistence.Table;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
-@Getter
-@Setter
-@Table(name = "enderecos")
 public class EnderecoOutput {
     private String cep;
     private String logradouro;

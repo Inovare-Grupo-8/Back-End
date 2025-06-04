@@ -4,6 +4,7 @@ import org.com.imaapi.model.usuario.Ficha;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
+import org.com.imaapi.model.usuario.input.VoluntarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -16,7 +17,7 @@ public interface UsuarioService {
     
     Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
     
-    Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
+    Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, VoluntarioInputSegundaFase voluntarioInput);
 
     UsuarioTokenOutput autenticar(Usuario usuario, Ficha ficha);
 
@@ -24,7 +25,7 @@ public interface UsuarioService {
 
     Optional<Usuario> buscaUsuario(Integer id);
 
-    public Optional<Usuario> buscaUsuarioPorNome(String nome);
+    Optional<Usuario> buscaUsuarioPorNome(String nome);
 
     void cadastrarUsuarioOAuth(OAuth2User usuario);
 

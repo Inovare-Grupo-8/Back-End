@@ -88,28 +88,26 @@ public class EmailServiceImpl implements EmailService {
                     <title>Complete seu cadastro no IMA!</title>
                 </head>
                 <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0;">
-                    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                        <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 2px solid #ED4231;">
-                            <img src="https://i.ibb.co/MDHNc40s/logo-v2.png" alt="Logo IMA" style="width: 10%%; height: auto;">
+                    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <img src="https://i.ibb.co/MDHNc40s/logo-v2.png" alt="Logo IMA" style="width: 120px; height: auto;">
                         </div>
                         <div style="margin: 20px 0; text-align: center;">
-                            <h1 style="color: #ED4231; font-size: 24px;">Complete seu cadastro!</h1>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Olá, <strong>%s</strong>,</p>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Estamos quase lá! Para aproveitar todos os nossos serviços, precisamos que você complete seu cadastro.</p>                            
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">É rápido e simples, basta clicar no botão abaixo:</p>
+                            <h1 style="color: #8B008B; font-size: 28px; margin-bottom: 30px;">Complete seu cadastro!</h1>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Olá, <strong>%s</strong>,</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">Estamos quase lá! Para aproveitar todos os nossos serviços, precisamos que você complete seu cadastro.</p>                            
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">É rápido e simples, basta clicar no botão abaixo:</p>
                             <a href="http://localhost:3030/inscricao-anamnese?id=%d"
-                               style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #ED4231; color: #f4f4f9; text-decoration: none; font-weight: bold; border-radius: 20px; transition: background-color 0.3s ease;">Completar Cadastro</a>
+                               style="display: inline-block; margin: 30px 0; padding: 12px 40px; background-color: #FF4040; color: white; text-decoration: none; font-weight: bold; border-radius: 25px; font-size: 16px;">Completar Cadastro</a>
                         </div>
-                        <div style="text-align: center; font-size: 12px; color: #888; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd;">
+                        <div style="text-align: center; font-size: 14px; color: #666; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
                             <p>&copy; 2025 IMA. Todos os direitos reservados.</p>
                         </div>
                     </div>
                 </body>
                 </html>
                 """.formatted(nome, idUsuario);
-    }
-
-    private String gerarConteudoHtmlBemVindo(String nome) {
+    }    private String gerarConteudoHtmlBemVindo(String nome) {
         return """
                 <!DOCTYPE html>
                 <html lang="pt-BR">
@@ -119,28 +117,28 @@ public class EmailServiceImpl implements EmailService {
                     <title>Bem-vindo ao IMA!</title>
                 </head>
                 <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0;">
-                    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                        <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 2px solid #ED4231;">
-                            <img src="https://i.ibb.co/MDHNc40s/logo-v2.png" alt="Logo IMA" style="width: 10%%; height: auto;">
+                    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <img src="https://i.ibb.co/MDHNc40s/logo-v2.png" alt="Logo IMA" style="width: 120px; height: auto;">
                         </div>
                         <div style="margin: 20px 0; text-align: center;">
-                            <h1 style="color: #ED4231; font-size: 24px;">Bem-vindo ao IMA!</h1>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Olá, <strong>%s</strong>,</p>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Estamos muito felizes em ter você conosco! Seu cadastro foi concluído com sucesso.</p>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Agora você pode acessar todos os nossos serviços e agendar suas consultas.</p>
+                            <h1 style="color: #8B008B; font-size: 28px; margin-bottom: 30px;">É uma alegria ter você com a gente!</h1>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Olá, <strong>%s</strong>,</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">Seu cadastro foi realizado com sucesso e agora você já pode agendar os serviços disponíveis pela IMA.</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Como organização social, nosso propósito é oferecer apoio e cuidado a quem precisa, com atendimentos acessíveis, de qualidade e conduzidos com respeito e acolhimento.</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Você encontrará na nossa plataforma serviços pensados com carinho para ajudar em diferentes momentos da sua vida.</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">Pronto(a) para começar? É só acessar a plataforma:</p>
                             <a href="http://localhost:3030/login"
-                               style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #ED4231; color: #f4f4f9; text-decoration: none; font-weight: bold; border-radius: 20px; transition: background-color 0.3s ease;">Acessar Plataforma</a>
+                               style="display: inline-block; margin: 30px 0; padding: 12px 40px; background-color: #FF4040; color: white; text-decoration: none; font-weight: bold; border-radius: 25px; font-size: 16px;">Acessar Plataforma</a>
                         </div>
-                        <div style="text-align: center; font-size: 12px; color: #888; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd;">
+                        <div style="text-align: center; font-size: 14px; color: #666; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
                             <p>&copy; 2025 IMA. Todos os direitos reservados.</p>
                         </div>
                     </div>
                 </body>
                 </html>
                 """.formatted(nome);
-    }
-
-    private String gerarConteudoHtmlBemVindoVoluntario(String nome) {
+    }    private String gerarConteudoHtmlBemVindoVoluntario(String nome) {
         return """
                 <!DOCTYPE html>
                 <html lang="pt-BR">
@@ -150,29 +148,27 @@ public class EmailServiceImpl implements EmailService {
                     <title>Bem-vindo ao IMA Voluntário!</title>
                 </head>
                 <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0;">
-                    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                        <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 2px solid #ED4231;">
-                            <img src="https://i.ibb.co/MDHNc40s/logo-v2.png" alt="Logo IMA" style="width: 10%%; height: auto;">
+                    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <img src="https://i.ibb.co/MDHNc40s/logo-v2.png" alt="Logo IMA" style="width: 120px; height: auto;">
                         </div>
                         <div style="margin: 20px 0; text-align: center;">
-                            <h1 style="color: #ED4231; font-size: 24px;">Bem-vindo ao IMA Voluntário!</h1>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Olá, <strong>%s</strong>,</p>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Estamos muito felizes em ter você como voluntário no IMA! Seu cadastro foi concluído com sucesso.</p>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Sua dedicação e compromisso farão a diferença na vida de muitas pessoas.</p>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Acesse a plataforma para gerenciar seus horários e atendimentos:</p>
+                            <h1 style="color: #8B008B; font-size: 28px; margin-bottom: 30px;">É uma alegria ter você com a gente!</h1>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Olá, <strong>%s</strong>,</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">Estamos muito felizes em ter você como voluntário no IMA! Seu cadastro foi concluído com sucesso.</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Sua dedicação e compromisso farão a diferença na vida de muitas pessoas.</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Para começar a ajudar, acesse a plataforma e gerencie seus horários e atendimentos:</p>
                             <a href="http://localhost:3030/login"
-                               style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #ED4231; color: #f4f4f9; text-decoration: none; font-weight: bold; border-radius: 20px; transition: background-color 0.3s ease;">Acessar Plataforma</a>
+                               style="display: inline-block; margin: 30px 0; padding: 12px 40px; background-color: #FF4040; color: white; text-decoration: none; font-weight: bold; border-radius: 25px; font-size: 16px;">Acessar Plataforma</a>
                         </div>
-                        <div style="text-align: center; font-size: 12px; color: #888; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd;">
+                        <div style="text-align: center; font-size: 14px; color: #666; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
                             <p>&copy; 2025 IMA. Todos os direitos reservados.</p>
                         </div>
                     </div>
                 </body>
                 </html>
                 """.formatted(nome);
-    }
-
-    private String gerarConteudoHtmlAgendamento(String nome, String assunto) {
+    }    private String gerarConteudoHtmlAgendamento(String nome, String assunto) {
         return """
                 <!DOCTYPE html>
                 <html lang="pt-BR">
@@ -182,24 +178,25 @@ public class EmailServiceImpl implements EmailService {
                     <title>%s</title>
                 </head>
                 <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0;">
-                    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                        <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 2px solid #ED4231;">
-                            <img src="https://i.ibb.co/MDHNc40s/logo-v2.png" alt="Logo IMA" style="width: 10%%; height: auto;">
+                    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <img src="https://i.ibb.co/MDHNc40s/logo-v2.png" alt="Logo IMA" style="width: 120px; height: auto;">
                         </div>
                         <div style="margin: 20px 0; text-align: center;">
-                            <h1 style="color: #ED4231; font-size: 24px;">%s</h1>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Olá, <strong>%s</strong>,</p>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Seu agendamento foi %s com sucesso!</p>
-                            <p style="color: #262626; font-size: 16px; line-height: 1.5;">Estamos ansiosos para vê-lo em nossa instituição.</p>
+                            <h1 style="color: #8B008B; font-size: 28px; margin-bottom: 30px;">Recebemos seu agendamento e já está tudo certo!</h1>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Olá, <strong>%s</strong>,</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">Agradecemos pela confiança em contar com os serviços da IMA.</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6;">Você receberá um lembrete próximo ao dia agendado para que não perca o atendimento.</p>
+                            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 20px 0;">Caso precise remarcar ou tirar dúvidas, estamos à disposição.</p>
                             <a href="http://localhost:3030/login"
-                               style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #ED4231; color: #f4f4f9; text-decoration: none; font-weight: bold; border-radius: 20px; transition: background-color 0.3s ease;">Acessar Plataforma</a>
+                               style="display: inline-block; margin: 30px 0; padding: 12px 40px; background-color: #FF4040; color: white; text-decoration: none; font-weight: bold; border-radius: 25px; font-size: 16px;">Acessar Plataforma</a>
                         </div>
-                        <div style="text-align: center; font-size: 12px; color: #888; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd;">
+                        <div style="text-align: center; font-size: 14px; color: #666; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
                             <p>&copy; 2025 IMA. Todos os direitos reservados.</p>
                         </div>
                     </div>
                 </body>
                 </html>
-                """.formatted(assunto, assunto, nome, (assunto.equals("Agendamento Cancelado") ? "cancelado" : "realizado"));
+                """.formatted(assunto, nome);
     }
 }

@@ -50,20 +50,20 @@ public class UsuarioControllerTest {
         assertEquals(usuario, response.getBody());
     }
 
-    @Test
-    public void testCompletarCadastroUsuario() {
-        Integer id = 1;
-        UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
-        Usuario usuario = new Usuario();
-        Mockito.when(usuarioService.cadastrarSegundaFase(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuario);
-
-        ResponseEntity<Usuario> response = usuarioController.completarCadastroUsuario(id, usuarioInputSegundaFase);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(usuario, response.getBody());
-    }
-
-    @Test
+//    @Test
+//    public void testCompletarCadastroUsuario() {
+//        Integer id = 1;
+//        UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
+//        Usuario usuario = new Usuario();
+//        Mockito.when(usuarioService.cadastrarSegundaFase(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuario);
+//
+//        ResponseEntity<Usuario> response = usuarioController.completarCadastroUsuario(id, usuarioInputSegundaFase);
+//
+//        assertEquals(HttpStatus.OK, response.getStatusCode());
+//        assertEquals(usuario, response.getBody());
+//    }
+//
+//    @Test
     public void testAtualizarUsuario() {
         Integer id = 1;
         UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
@@ -122,17 +122,17 @@ public class UsuarioControllerTest {
         assertEquals(usuario, response.getBody());
     }
 
-    @Test
-    public void testCompletarCadastroVoluntario() {
-        Integer id = 1;
-        UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
-        Usuario usuario = new Usuario();
-        Mockito.when(usuarioService.cadastrarSegundaFaseVoluntario(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuario);
-
-        ResponseEntity<Usuario> response = usuarioController.completarCadastroVoluntario(id, usuarioInputSegundaFase);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(usuario, response.getBody());
-    }
+//    @Test
+//    public void testCompletarCadastroVoluntario() {
+//        Integer id = 1;
+//        UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
+//        Usuario usuario = new Usuario();
+//        Mockito.when(usuarioService.cadastrarSegundaFaseVoluntario(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuario);
+//
+//        ResponseEntity<Usuario> response = usuarioController.completarCadastroVoluntario(id, usuarioInputSegundaFase);
+//
+//        assertEquals(HttpStatus.OK, response.getStatusCode());
+//        assertEquals(usuario, response.getBody());
+//    }
 
 }

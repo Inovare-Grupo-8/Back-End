@@ -7,6 +7,7 @@ import org.com.imaapi.model.usuario.*;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
+import org.com.imaapi.model.usuario.input.VoluntarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
@@ -32,6 +33,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,7 +78,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         logger.info("Iniciando cadastro da primeira fase do usuário. Dados recebidos: {}", usuarioInputPrimeiraFase);
 
         String senhaCriptografada = passwordEncoder.encode(usuarioInputPrimeiraFase.getSenha());
-        logger.debug("Senha criptografada para o email {}: {}", usuarioInputPrimeiraFase.getEmail(), senhaCriptografada);        Ficha ficha = new Ficha();
+        logger.debug("Senha criptografada para o email {}: {}", usuarioInputPrimeiraFase.getEmail(), senhaCriptografada);
+        
+        Ficha ficha = new Ficha();
         ficha.setNome(usuarioInputPrimeiraFase.getNome());
         ficha.setSobrenome(usuarioInputPrimeiraFase.getSobrenome());
         logger.info("Ficha criada com nome: {}", ficha);
@@ -88,19 +93,31 @@ public class UsuarioServiceImpl implements UsuarioService {
                 senhaCriptografada,
                 fichaSalva);
 
-        logger.info("Usuário básico criado com email: {} e ficha associada com nome: {}",
-                novoUsuario.getEmail(),
-                novoUsuario.getFicha().getNome());
+        // Se for voluntário, já define o tipo
+        if (Boolean.TRUE.equals(usuarioInputPrimeiraFase.getIsVoluntario())) {
+            novoUsuario.setTipo(TipoUsuario.VOLUNTARIO);
+            logger.info("Usuário definido como VOLUNTARIO");
+        }
 
-        Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
-        logger.info("Usuário fase 1 salvo no banco com ID: {} e email: {}", usuarioSalvo.getIdUsuario(), usuarioSalvo.getEmail());
+        try {
+            Usuario usuarioSalvo = usuarioRepository.save(novoUsuario);
+            logger.info("Usuário fase 1 salvo no banco com ID: {} e email: {}", usuarioSalvo.getIdUsuario(), usuarioSalvo.getEmail());
 
-        emailService.enviarEmail(usuarioSalvo.getEmail(),
-                usuarioSalvo.getFicha().getNome() + "|" + usuarioSalvo.getIdUsuario(),
-                "continuar cadastro");
-        logger.info("Email enviado para o usuário {} para continuar cadastro", usuarioSalvo.getEmail());
+            // Envia email apropriado baseado no tipo de usuário
+            if (Boolean.TRUE.equals(usuarioInputPrimeiraFase.getIsVoluntario())) {
+                emailService.enviarEmail(usuarioSalvo.getEmail(), usuarioSalvo.getFicha().getNome(), "bem vindo voluntario");
+            } else {
+                emailService.enviarEmail(usuarioSalvo.getEmail(),
+                        usuarioSalvo.getFicha().getNome() + "|" + usuarioSalvo.getIdUsuario(),
+                        "continuar cadastro");
+            }
+            logger.info("Email enviado para o usuário {} para continuar cadastro", usuarioSalvo.getEmail());
 
-        return usuarioSalvo;
+            return usuarioSalvo;
+        } catch (Exception ex) {
+            logger.error("Erro ao cadastrar usuário na primeira fase: {}", ex.getMessage(), ex);
+            throw new RuntimeException("Erro ao cadastrar usuário na primeira fase", ex);
+        }
     }
 
     @Override
@@ -129,6 +146,12 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para ID: " + idUsuario));
         logger.info("Usuário encontrado no banco: email={}, tipo={}", usuario.getEmail(), usuario.getTipo());
+
+        // Se for voluntário, usar o método específico
+        if (usuario.getTipo() == TipoUsuario.VOLUNTARIO) {
+            logger.info("Usuário é voluntário, redirecionando para cadastro específico");
+            throw new IllegalStateException("Para voluntários, use o endpoint específico de cadastro de voluntários");
+        }
 
         Ficha ficha = usuario.getFicha();
         logger.info("Dados atuais da ficha antes da atualização: {}", ficha);
@@ -165,11 +188,13 @@ public class UsuarioServiceImpl implements UsuarioService {
         logger.info("Ficha atualizada com os novos dados: {}", ficha);
 
         usuario.atualizarTipo(usuarioInputSegundaFase.getTipo());
-        logger.info("Tipo do usuário atualizado para: {}", usuario.getTipo());        usuarioRepository.save(usuario);
+        logger.info("Tipo do usuário atualizado para: {}", usuario.getTipo());
+        usuarioRepository.save(usuario);
         logger.info("Usuário salvo após atualização da segunda fase: ID={}, email={}", usuario.getIdUsuario(), usuario.getEmail());
 
         if (usuarioInputSegundaFase.getTelefone() != null) {
-            Telefone telefone = Telefone.of(usuarioInputSegundaFase.getTelefone(), ficha);            telefoneRepository.save(telefone);
+            Telefone telefone = Telefone.of(usuarioInputSegundaFase.getTelefone(), ficha);
+            telefoneRepository.save(telefone);
             logger.info("Telefone salvo para a ficha ID {}: {}", ficha.getIdFicha(), telefone);
         } else {
             logger.info("Nenhum telefone fornecido para atualização.");
@@ -180,33 +205,89 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         return usuario;
     }   
-    
-    @Override
-    public Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
-        logger.info("Iniciando cadastro fase 2 para voluntário ID: {}", idUsuario);        if (usuarioInputSegundaFase.getFuncao() == null) {
+      @Override
+    public Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, VoluntarioInputSegundaFase voluntarioInput) {
+        logger.info("Iniciando cadastro fase 2 para voluntário ID: {}", idUsuario);
+        
+        if (voluntarioInput.getFuncao() == null) {
+            logger.error("Função do voluntário não informada para ID: {}", idUsuario);
             throw new IllegalArgumentException("A função do voluntário deve ser informada");
-        }
-
-        if (usuarioInputSegundaFase.getRenda() == null) {
-            throw new IllegalArgumentException("A renda do voluntário deve ser informada");
         }
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para ID: " + idUsuario));
 
-        usuario = cadastrarSegundaFase(idUsuario, usuarioInputSegundaFase);
-        usuario.atualizarTipo(TipoUsuario.VOLUNTARIO);
+        if (usuario.getTipo() != TipoUsuario.VOLUNTARIO) {
+            logger.error("Usuário ID {} não é um voluntário", idUsuario);
+            throw new IllegalArgumentException("Apenas voluntários podem completar este cadastro");
+        }
+
+        Ficha ficha = usuario.getFicha();
+        logger.info("Processando cadastro da segunda fase para o voluntário");
+        
+        // Atualizar dados básicos
+        ficha.setCpf(voluntarioInput.getCpf());
+        ficha.setDtNascim(voluntarioInput.getDataNascimento());
+        ficha.setGenero(Genero.fromString(voluntarioInput.getGenero()));
+        ficha.setRenda(voluntarioInput.getRenda() != null ? BigDecimal.valueOf(voluntarioInput.getRenda()) : null);
+        ficha.setProfissao(voluntarioInput.getProfissao());
+        
+        // Processar endereço
+        if (voluntarioInput.getEndereco() != null) {
+            String cep = voluntarioInput.getEndereco().getCep().replace("-", "");
+            String numero = voluntarioInput.getEndereco().getNumero();
+            String complemento = voluntarioInput.getEndereco().getComplemento();
+            
+            logger.info("Processando endereço do voluntário: CEP={}, numero={}", cep, numero);
+            
+            ResponseEntity<EnderecoOutput> enderecoResponse = enderecoService.buscaEndereco(cep, numero, complemento);
+            EnderecoOutput enderecoOutput = enderecoResponse.getBody();
+            
+            if (enderecoOutput != null && enderecoOutput.getCep() != null) {
+                Optional<Endereco> endereco = enderecoRepository.findByCepAndNumero(cep, numero);
+                
+                if (endereco.isPresent()) {
+                    ficha.setEndereco(endereco.get());
+                    logger.info("Endereço vinculado à ficha do voluntário: endereco_id={}", endereco.get().getIdEndereco());
+                } else {
+                    logger.error("Endereço não encontrado após tentativa de cadastro: CEP={}, numero={}", cep, numero);
+                    throw new RuntimeException("Erro ao processar endereço para vinculação com a ficha");
+                }
+            } else {
+                logger.warn("Dados de endereço inválidos recebidos da API de CEP");
+                throw new IllegalArgumentException("Dados de endereço inválidos");
+            }
+        }
+        
+        // Salvar telefone
+        if (voluntarioInput.getTelefone() != null) {
+            Telefone telefone = Telefone.of(voluntarioInput.getTelefone(), ficha);
+            telefoneRepository.save(telefone);
+            logger.info("Telefone salvo para o voluntário: {}", telefone);
+        }
+        
+        // Garantir que o tipo seja VOLUNTARIO
+        usuario.setTipo(TipoUsuario.VOLUNTARIO);
+        
+        // Salvar o usuário primeiro
         usuarioRepository.save(usuario);
-        logger.info("Tipo do usuário atualizado para VOLUNTARIO e salvo: ID={}, email={}", usuario.getIdUsuario(), usuario.getEmail());
-
-        VoluntarioInput voluntarioInput = UsuarioMapper.of(usuarioInputSegundaFase, idUsuario);
-        voluntarioService.cadastrarVoluntario(voluntarioInput);
-        logger.info("Voluntário cadastrado com sucesso para usuário ID: {}", idUsuario);
-
+        logger.info("Usuário voluntário salvo no banco: ID={}, email={}", usuario.getIdUsuario(), usuario.getEmail());
+        
+        // Criar registro de voluntário com a função
+        VoluntarioInput volInput = new VoluntarioInput();
+        volInput.setFkUsuario(usuario.getIdUsuario());
+        volInput.setFuncao(voluntarioInput.getFuncao());
+        
+        // Salvar o registro do voluntário
+        voluntarioService.cadastrarVoluntario(volInput);
+        logger.info("Registro de voluntário criado com função: {}", voluntarioInput.getFuncao());
+        
         emailService.enviarEmail(usuario.getEmail(), usuario.getFicha().getNome(), "bem vindo voluntario");
-        logger.info("Email de boas-vindas para voluntário enviado para o usuário: {}", usuario.getEmail());
+        logger.info("Email de boas-vindas enviado para o voluntário: {}", usuario.getEmail());
 
-        return usuario;
+        // Recarregar o usuário com os dados atualizados
+        return usuarioRepository.findById(usuario.getIdUsuario())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado após salvar"));
     }
 
     @Override

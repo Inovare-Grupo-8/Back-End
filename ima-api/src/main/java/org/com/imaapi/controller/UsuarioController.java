@@ -8,12 +8,13 @@ import org.com.imaapi.model.usuario.UsuarioMapper;
 import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
+import org.com.imaapi.model.usuario.input.VoluntarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
-import org.com.imaapi.service.UsuarioService;
 import org.com.imaapi.service.EnderecoService;
+import org.com.imaapi.service.UsuarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,37 +40,83 @@ public class UsuarioController {
     @Autowired
     private EnderecoService enderecoService;
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioController.class);
 
     @PostMapping("/fase1")
-    public ResponseEntity<Usuario> cadastrarUsuarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
-        Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
-        return new ResponseEntity<>(usuario, HttpStatus.CREATED);
+    public ResponseEntity<Usuario> cadastrarUsuarioFase1(
+
+            @RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
+        LOGGER.info("Iniciando cadastro primeira fase. Dados: {}", usuarioInputPrimeiraFase);
+
+        try {
+            Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
+            LOGGER.info("Cadastro primeira fase concluído com sucesso. ID={}", usuario.getIdUsuario());
+            return new ResponseEntity<>(usuario, HttpStatus.CREATED);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao cadastrar usuário na primeira fase: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    @PatchMapping("/fase2/{idUsuario}")
-    public ResponseEntity<Usuario> completarCadastroUsuario(@PathVariable Integer idUsuario, @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
-        Usuario usuario = usuarioService.cadastrarSegundaFase(idUsuario, usuarioInputSegundaFase);
-        return ResponseEntity.ok(usuario);
+    @PatchMapping({"/fase2/{idUsuario}", "/assistido/fase2/{idUsuario}"})
+    public ResponseEntity<Usuario> completarCadastroAssistido(
+            @PathVariable Integer idUsuario,
+            @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
+        try {
+            LOGGER.info("Iniciando cadastro fase 2 para assistido ID: {}", idUsuario);
+
+            Usuario usuario = usuarioService.cadastrarSegundaFase(idUsuario, usuarioInputSegundaFase);
+            LOGGER.info("Cadastro fase 2 concluído com sucesso: ID={}", idUsuario);
+            return ResponseEntity.ok(usuario);
+        } catch (IllegalStateException e) {
+            LOGGER.info("Tentativa de usar endpoint errado: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .header("X-Error-Message", "Use o endpoint /voluntario/fase2 para voluntários")
+                    .build();
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Erro nos dados fornecidos para cadastro: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (UsernameNotFoundException e) {
+            LOGGER.error("Usuário não encontrado para ID: {}", idUsuario);
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @PostMapping("/voluntario/fase1")
+    @PostMapping({"/voluntario/fase1", "/fase1/voluntario"})
     public ResponseEntity<Usuario> cadastrarVoluntarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
-        Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
-        return new ResponseEntity<>(usuario, HttpStatus.CREATED);
+        try {
+            if (!Boolean.TRUE.equals(usuarioInputPrimeiraFase.getIsVoluntario())) {
+                usuarioInputPrimeiraFase.setIsVoluntario(true); // Ensure it's set as volunteer
+            }
+            Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
+            LOGGER.info("Cadastro primeira fase de voluntário concluído com sucesso. ID={}", usuario.getIdUsuario());
+            return new ResponseEntity<>(usuario, HttpStatus.CREATED);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao cadastrar voluntário na primeira fase: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PatchMapping("/voluntario/fase2/{idUsuario}")
     public ResponseEntity<Usuario> completarCadastroVoluntario(
             @PathVariable Integer idUsuario,
-            @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
+            @RequestBody @Valid VoluntarioInputSegundaFase voluntarioInputSegundaFase) {
         try {
-            Usuario usuario = usuarioService.cadastrarSegundaFaseVoluntario(idUsuario, usuarioInputSegundaFase);
+            LOGGER.info("Iniciando cadastro fase 2 para voluntário ID: {}", idUsuario);
+
+            if (voluntarioInputSegundaFase.getFuncao() == null) {
+                LOGGER.error("Função não informada para o voluntário ID: {}", idUsuario);
+                return ResponseEntity.badRequest().build();
+            }
+
+            Usuario usuario = usuarioService.cadastrarSegundaFaseVoluntario(idUsuario, voluntarioInputSegundaFase);
+            LOGGER.info("Cadastro fase 2 do voluntário concluído com sucesso: ID={}", idUsuario);
             return ResponseEntity.ok(usuario);
         } catch (IllegalArgumentException e) {
+            LOGGER.error("Erro nos dados fornecidos para cadastro do voluntário: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         } catch (UsernameNotFoundException e) {
+            LOGGER.error("Usuário não encontrado para ID: {}", idUsuario);
             return ResponseEntity.notFound().build();
         }
     }
@@ -109,7 +156,6 @@ public class UsuarioController {
     }
 
 
-
     @GetMapping
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<List<UsuarioListarOutput>> listarUsuarios() {
@@ -139,9 +185,9 @@ public class UsuarioController {
             @PathVariable Integer id,
             @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
         UsuarioListarOutput usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioInputSegundaFase);
-        return usuarioAtualizado != null ? 
-               ResponseEntity.ok(usuarioAtualizado) : 
-               ResponseEntity.notFound().build();
+        return usuarioAtualizado != null ?
+                ResponseEntity.ok(usuarioAtualizado) :
+                ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
@@ -164,7 +210,7 @@ public class UsuarioController {
             } else {
                 return ResponseEntity.badRequest().build();
             }
-            
+
             UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
             return ResponseEntity.ok(output);
         } catch (UsernameNotFoundException e) {
