@@ -13,13 +13,14 @@ import java.time.LocalDateTime;
 @Table(name = "voluntario")
 public class Voluntario {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_voluntario")
     private Integer idVoluntario;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "funcao")
-    private Funcao funcao;    @Column(name = "dt_cadastro", nullable = false)
+    private Funcao funcao;
+    
+    @Column(name = "dt_cadastro", nullable = false)
     private LocalDate dataCadastro;
 
     @Column(name = "criado_em")
@@ -34,20 +35,20 @@ public class Voluntario {
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "fk_usuario")
+    @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario", insertable = false, updatable = false)
     private Usuario usuario;
+
+    // Mapeando o id_voluntario para ser igual ao fk_usuario
+    @Column(name = "fk_usuario", unique = true)
+    private Integer fkUsuario;
 
     @PrePersist
     public void prePersist() {
-        if (this.criadoEm == null) {
-            this.criadoEm = LocalDateTime.now();
-        }
-        if (this.atualizadoEm == null) {
-            this.atualizadoEm = LocalDateTime.now();
-        }
-        if (this.versao == null) {
-            this.versao = 0;
-        }
+        this.criadoEm = LocalDateTime.now();
+        this.atualizadoEm = LocalDateTime.now();
+        this.versao = 0;
+        // Garantir que id_voluntario é igual ao fk_usuario
+        this.idVoluntario = this.fkUsuario;
     }
 
     @PreUpdate

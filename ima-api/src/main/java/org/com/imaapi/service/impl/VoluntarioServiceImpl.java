@@ -9,11 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
+@Transactional
 public class VoluntarioServiceImpl implements VoluntarioService {
 
     private static final Logger logger = LoggerFactory.getLogger(VoluntarioServiceImpl.class);
@@ -29,8 +31,10 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         try {
             Voluntario voluntario = gerarObjetoVoluntario(voluntarioInput);
             voluntarioRepository.save(voluntario);
+            logger.info("Voluntário cadastrado com sucesso: {}", voluntario);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar voluntário: {}", erro.getMessage());
+            throw erro; 
         }
     }
 
@@ -40,6 +44,7 @@ public class VoluntarioServiceImpl implements VoluntarioService {
             logger.info("Na tabela de voluntario com ID {} foi deletado com sucesso", id);
         } catch (Exception erro) {
             logger.error("Erro ao excluir voluntário: {}", erro.getMessage());
+            throw erro; 
         }
     }
 
@@ -47,6 +52,8 @@ public class VoluntarioServiceImpl implements VoluntarioService {
         Voluntario voluntario = new Voluntario();
         voluntario.setFuncao(voluntarioInput.getFuncao());
         voluntario.setDataCadastro(LocalDate.now());
+        voluntario.setFkUsuario(voluntarioInput.getFkUsuario());
+        voluntario.setIdVoluntario(voluntarioInput.getFkUsuario());
         voluntario.setUsuario(usuarioRepository.findById(voluntarioInput.getFkUsuario())
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado")));
         return voluntario;
