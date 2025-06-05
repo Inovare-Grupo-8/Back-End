@@ -3,7 +3,10 @@ package org.com.imaapi.model.enums;
 public enum StatusConsulta {
     AGENDADA("agendada"),
     REAGENDADA("reagendada"),
-    REALIZADA("realizada");
+    REALIZADA("realizada"),
+    EM_ANDAMENTO("em_andamento"),
+    CONCLUIDA("concluida"),
+    CANCELADA("cancelada");
 
     private final String value;
 

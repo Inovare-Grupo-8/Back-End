@@ -9,8 +9,11 @@ import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UsuarioMapper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioMapper.class);
 
     public static Usuario of(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         Usuario usuario = new Usuario();
@@ -26,12 +29,15 @@ public class UsuarioMapper {
         usuario.setFicha(ficha);
 
         return usuario;
-    }
-
-    public static Usuario of(UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
+    }    public static Usuario of(UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
+//        LOGGER.debug("[USUARIO_MAPPER] Criando Usuario a partir de UsuarioAutenticacaoInput para email: {}",
+//                usuarioAutenticacaoInput.getEmail());
+                
         Usuario usuario = new Usuario();
         usuario.setEmail(usuarioAutenticacaoInput.getEmail());
         usuario.setSenha(usuarioAutenticacaoInput.getSenha());
+        
+//        LOGGER.debug("[USUARIO_MAPPER] Usuario criado com email: {}", usuario.getEmail());
         return usuario;
     }
 
@@ -68,9 +74,14 @@ public class UsuarioMapper {
         output.setCpf(usuario.getFicha().getCpf());
         output.setDataNascimento(usuario.getFicha().getDtNascim());
         return output;
-    }
-
-    public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario, Ficha ficha) {
-        return new UsuarioDetalhesOutput(usuario, ficha);
+    }    public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario, Ficha ficha) {
+//        LOGGER.info("[USUARIO_MAPPER] Criando UsuarioDetalhesOutput para autenticação do usuário: {}", usuario.getEmail());
+//        LOGGER.debug("[USUARIO_MAPPER] Ficha associada: ID={}", ficha != null ? ficha.getIdFicha() : "null");
+//        LOGGER.debug("[USUARIO_MAPPER] Tipo do usuário: {}", usuario.getTipo());
+        
+        UsuarioDetalhesOutput details = new UsuarioDetalhesOutput(usuario, ficha);
+//        LOGGER.debug("[USUARIO_MAPPER] Autoridades concedidas: {}", details.getAuthorities());
+        
+        return details;
     }
 }

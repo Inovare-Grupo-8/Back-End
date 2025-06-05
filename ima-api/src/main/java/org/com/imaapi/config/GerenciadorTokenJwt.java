@@ -33,7 +33,6 @@ public class GerenciadorTokenJwt {
 
     public String generateToken(final Authentication authentication) {
 
-        // Verificar permissões
         final String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 

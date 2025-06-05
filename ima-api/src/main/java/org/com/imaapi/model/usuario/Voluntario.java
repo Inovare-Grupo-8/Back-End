@@ -11,8 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "voluntario")
-public class Voluntario {
-    @Id
+public class Voluntario {    @Id
     @Column(name = "id_voluntario")
     private Integer idVoluntario;
 
@@ -36,9 +35,7 @@ public class Voluntario {
     @Setter
     @ManyToOne
     @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario", insertable = false, updatable = false)
-    private Usuario usuario;
-
-    @Column(name = "fk_usuario", unique = true)
+    private Usuario usuario;    @Column(name = "fk_usuario", unique = true)
     private Integer fkUsuario;
 
     @PrePersist
