@@ -12,6 +12,7 @@ import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class UsuarioMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioMapper.class);
 

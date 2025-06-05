@@ -25,7 +25,7 @@ public class ConsultaInput {
 
     @NotNull(message = "Indique como será a consulta, online ou presencial")
     private ModalidadeConsulta modalidade;
-    
+
     @NotBlank(message = "Informe o local da consulta")
     private String local;
     

@@ -35,9 +35,8 @@ public class VoluntarioServiceImpl implements VoluntarioService {
             logger.error("Erro ao cadastrar voluntário: {}", erro.getMessage());
             throw erro;
         }
-    }
-
-    public void excluirVoluntario(Integer id) {
+    }    
+      public void excluirVoluntario(Integer id) {
         try {
             if (id == null) {
                 throw new IllegalArgumentException("ID do voluntário não pode ser nulo");
