@@ -16,12 +16,12 @@ public class DevTokenInput {
     @NotBlank(message = "O email é obrigatório")
     @Email(message = "Email inválido")
     private String email;
-    
+
     @NotBlank(message = "O nome é obrigatório")
     private String nome;
-    
+
     @NotEmpty(message = "As authorities são obrigatórias")
     private List<String> authorities;
-    
+
     private Long validityInSeconds;
 }

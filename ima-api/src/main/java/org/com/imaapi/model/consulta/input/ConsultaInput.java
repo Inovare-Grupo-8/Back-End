@@ -1,11 +1,7 @@
 package org.com.imaapi.model.consulta.input;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
 import org.com.imaapi.model.enums.StatusConsulta;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,13 +17,13 @@ public class ConsultaInput {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime horario;
 
-    @NotBlank(message="Status não pode estar em branco")
+    @NotBlank(message = "Status não pode estar em branco")
     private StatusConsulta status;
 
-    @NotBlank(message="Indique como será a consulta, online ou presencial")
+    @NotBlank(message = "Indique como será a consulta, online ou presencial")
     private ModalidadeConsulta modalidade;
 
-    @NotBlank(message="Informe o local da consulta")
+    @NotBlank(message = "Informe o local da consulta")
     private String local;
 
     private String observacoes;

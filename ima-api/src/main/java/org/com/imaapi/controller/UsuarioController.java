@@ -12,8 +12,8 @@ import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
-import org.com.imaapi.service.UsuarioService;
 import org.com.imaapi.service.EnderecoService;
+import org.com.imaapi.service.UsuarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +109,6 @@ public class UsuarioController {
     }
 
 
-
     @GetMapping
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<List<UsuarioListarOutput>> listarUsuarios() {
@@ -139,9 +138,9 @@ public class UsuarioController {
             @PathVariable Integer id,
             @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
         UsuarioListarOutput usuarioAtualizado = usuarioService.atualizarUsuario(id, usuarioInputSegundaFase);
-        return usuarioAtualizado != null ? 
-               ResponseEntity.ok(usuarioAtualizado) : 
-               ResponseEntity.notFound().build();
+        return usuarioAtualizado != null ?
+                ResponseEntity.ok(usuarioAtualizado) :
+                ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
@@ -164,7 +163,7 @@ public class UsuarioController {
             } else {
                 return ResponseEntity.badRequest().build();
             }
-            
+
             UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
             return ResponseEntity.ok(output);
         } catch (UsernameNotFoundException e) {

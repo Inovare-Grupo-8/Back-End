@@ -1,7 +1,9 @@
 package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.enums.converter.TipoUsuarioConverter;
 

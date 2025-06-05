@@ -14,12 +14,14 @@ import java.util.List;
 @Table(name = "voluntario")
 public class Voluntario {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_voluntario")
     private Integer idVoluntario;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "funcao")
+    private Funcao funcao;
+
+    @Column(name = "dt_cadastro", nullable = false)
     private Funcao funcao;
 
     @Column(name = "dt_cadastro", nullable = false)
@@ -43,23 +45,21 @@ public class Voluntario {
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario")
+    @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario", insertable = false, updatable = false)
     private Usuario usuario;
+
+    @Column(name = "fk_usuario", unique = true)
+    private Integer fkUsuario;
 
     @OneToMany(mappedBy = "voluntario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Disponibilidade> disponibilidades;
 
     @PrePersist
     public void prePersist() {
-        if (this.criadoEm == null) {
-            this.criadoEm = LocalDateTime.now();
-        }
-        if (this.atualizadoEm == null) {
-            this.atualizadoEm = LocalDateTime.now();
-        }
-        if (this.versao == null) {
-            this.versao = 0;
-        }
+        this.criadoEm = LocalDateTime.now();
+        this.atualizadoEm = LocalDateTime.now();
+        this.versao = 0;
+        this.idVoluntario = this.fkUsuario;
     }
 
     @PreUpdate

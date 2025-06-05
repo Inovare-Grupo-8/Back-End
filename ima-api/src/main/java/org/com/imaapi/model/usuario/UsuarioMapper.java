@@ -7,8 +7,8 @@ import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
 import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
-import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
+import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 
 public class UsuarioMapper {
 

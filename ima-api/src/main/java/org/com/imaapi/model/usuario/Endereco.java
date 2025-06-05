@@ -1,11 +1,7 @@
 package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 
 import java.time.LocalDateTime;

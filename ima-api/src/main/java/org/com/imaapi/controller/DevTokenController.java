@@ -17,8 +17,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/dev")
-@Profile("dev") 
-@CrossOrigin(origins = "*") 
+@Profile("dev")
+@CrossOrigin(origins = "*")
 public class DevTokenController {
 
     @Value("${jwt.secret}")
@@ -29,14 +29,14 @@ public class DevTokenController {
 
     @PostMapping("/token")
     public ResponseEntity<Map<String, String>> generateDevToken(@RequestBody @Valid DevTokenInput input) {
-        long tokenValidity = input.getValidityInSeconds() != null 
-            ? input.getValidityInSeconds() 
-            : defaultJwtTokenValidity;
+        long tokenValidity = input.getValidityInSeconds() != null
+                ? input.getValidityInSeconds()
+                : defaultJwtTokenValidity;
 
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        
+
         String authorities = String.join(",", input.getAuthorities());
-        
+
         String token = Jwts.builder()
                 .subject(input.getEmail())
                 .claim("authorities", authorities)
@@ -50,7 +50,7 @@ public class DevTokenController {
         response.put("token", token);
         response.put("type", "Bearer");
         response.put("expiresIn", String.valueOf(tokenValidity));
-        
+
         return ResponseEntity.ok(response);
     }
 }
