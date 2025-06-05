@@ -42,7 +42,6 @@ public class Ficha {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "genero", length = 20)
-
     private Genero genero;
 
     @Column(name = "dt_nascim")

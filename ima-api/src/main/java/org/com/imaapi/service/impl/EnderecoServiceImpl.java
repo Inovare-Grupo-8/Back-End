@@ -96,7 +96,6 @@ public class EnderecoServiceImpl implements EnderecoService {
         return enderecoRepository.save(endereco);
     }
 
-
     private EnderecoOutput converterParaEnderecoOutput(Endereco endereco) {
         EnderecoOutput output = new EnderecoOutput();
         output.setCep(endereco.getCep()); 
