@@ -2,8 +2,8 @@ package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Setter;
 import org.com.imaapi.model.usuario.input.TelefoneInput;
+
 import java.time.LocalDateTime;
 
 
@@ -55,7 +55,9 @@ public class Telefone {
     @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-    }    public static Telefone of(TelefoneInput telefoneInput, Ficha ficha) {
+    }
+
+    public static Telefone of(TelefoneInput telefoneInput, Ficha ficha) {
         Telefone telefone = new Telefone();
         telefone.setFicha(ficha);
         telefone.setDdd(telefoneInput.getDdd());

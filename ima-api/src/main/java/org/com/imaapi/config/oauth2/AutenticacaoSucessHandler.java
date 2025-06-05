@@ -12,7 +12,6 @@ import org.com.imaapi.repository.FichaRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.OauthTokenServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

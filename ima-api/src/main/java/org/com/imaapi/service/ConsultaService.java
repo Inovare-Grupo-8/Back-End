@@ -6,18 +6,18 @@ import org.springframework.http.ResponseEntity;
 
 public interface ConsultaService {
     ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput);
-    
+
     ResponseEntity<?> getConsultasDia(String user);
-    
+
     ResponseEntity<?> getConsultasSemana(String user);
-    
+
     ResponseEntity<?> getConsultasMes(String user);
-    
+
     ResponseEntity<?> getAvaliacoesFeedback(String user);
-    
+
     ResponseEntity<?> getConsultasRecentes(String user);
-    
+
     ResponseEntity<?> adicionarFeedback(Long id, String feedback);
-    
+
     ResponseEntity<?> adicionarAvaliacao(Long id, String avaliacao);
 }

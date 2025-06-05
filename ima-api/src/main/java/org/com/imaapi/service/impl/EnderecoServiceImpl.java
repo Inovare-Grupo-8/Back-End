@@ -22,8 +22,8 @@ public class EnderecoServiceImpl implements EnderecoService {
 
     public EnderecoServiceImpl(EnderecoRepository enderecoRepository) {
         this.enderecoRepository = enderecoRepository;
-    }    
-    
+    }
+
     @Override
     public ResponseEntity<EnderecoOutput> buscaEndereco(String cep, String numero, String complemento) {
         if (cep == null || cep.trim().isEmpty()) {
@@ -31,22 +31,22 @@ public class EnderecoServiceImpl implements EnderecoService {
         }
 
         cep = formatarCep(cep);
-        
+
         if (!isValidCep(cep)) {
             throw new IllegalArgumentException("CEP inválido. Deve conter 8 dígitos.");
         }
 
         Optional<Endereco> enderecoExistenteOpt = enderecoRepository.findByCepAndNumero(cep, numero);
-        
+
         if (enderecoExistenteOpt.isPresent()) {
             Endereco enderecoExistente = enderecoExistenteOpt.get();
-            
-            if (complemento != null && !complemento.trim().isEmpty() 
-                && !complemento.equals(enderecoExistente.getComplemento())) {
+
+            if (complemento != null && !complemento.trim().isEmpty()
+                    && !complemento.equals(enderecoExistente.getComplemento())) {
                 enderecoExistente.setComplemento(complemento);
                 enderecoExistente = enderecoRepository.save(enderecoExistente);
             }
-            
+
             return ResponseEntity.ok(converterParaEnderecoOutput(enderecoExistente));
         }
 
@@ -86,7 +86,7 @@ public class EnderecoServiceImpl implements EnderecoService {
         }
 
         Endereco endereco = new Endereco();
-        endereco.setCep(cep); 
+        endereco.setCep(cep);
         endereco.setLogradouro(enderecoOutput.getLogradouro());
         endereco.setBairro(enderecoOutput.getBairro());
         endereco.setNumero(enderecoOutput.getNumero());
@@ -99,7 +99,7 @@ public class EnderecoServiceImpl implements EnderecoService {
 
     private EnderecoOutput converterParaEnderecoOutput(Endereco endereco) {
         EnderecoOutput output = new EnderecoOutput();
-        output.setCep(endereco.getCep()); 
+        output.setCep(endereco.getCep());
         output.setLogradouro(endereco.getLogradouro());
         output.setBairro(endereco.getBairro());
         output.setNumero(endereco.getNumero());

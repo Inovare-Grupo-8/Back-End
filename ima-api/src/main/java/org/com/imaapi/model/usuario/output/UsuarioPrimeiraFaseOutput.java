@@ -1,6 +1,7 @@
 package org.com.imaapi.model.usuario.output;
 
 import lombok.Data;
+
 import java.time.LocalDate;
 
 @Data

@@ -38,7 +38,6 @@ public class Voluntario {
     @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario", insertable = false, updatable = false)
     private Usuario usuario;
 
-    // Mapeando o id_voluntario para ser igual ao fk_usuario
     @Column(name = "fk_usuario", unique = true)
     private Integer fkUsuario;
 
@@ -47,7 +46,6 @@ public class Voluntario {
         this.criadoEm = LocalDateTime.now();
         this.atualizadoEm = LocalDateTime.now();
         this.versao = 0;
-        // Garantir que id_voluntario é igual ao fk_usuario
         this.idVoluntario = this.fkUsuario;
     }
 

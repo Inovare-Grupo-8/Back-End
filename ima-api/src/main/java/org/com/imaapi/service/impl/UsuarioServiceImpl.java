@@ -75,11 +75,12 @@ public class UsuarioServiceImpl implements UsuarioService {
         logger.info("Iniciando cadastro da primeira fase do usuário. Dados recebidos: {}", usuarioInputPrimeiraFase);
 
         String senhaCriptografada = passwordEncoder.encode(usuarioInputPrimeiraFase.getSenha());
-        logger.debug("Senha criptografada para o email {}: {}", usuarioInputPrimeiraFase.getEmail(), senhaCriptografada);        Ficha ficha = new Ficha();
+        logger.debug("Senha criptografada para o email {}: {}", usuarioInputPrimeiraFase.getEmail(), senhaCriptografada);
+        Ficha ficha = new Ficha();
         ficha.setNome(usuarioInputPrimeiraFase.getNome());
         ficha.setSobrenome(usuarioInputPrimeiraFase.getSobrenome());
         logger.info("Ficha criada com nome: {}", ficha);
-        
+
         Ficha fichaSalva = fichaRepository.save(ficha);
         logger.info("Ficha salva com ID: {}", fichaSalva.getIdFicha());
 
@@ -119,8 +120,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuarioRepository.save(novoUsuario);
         logger.info("Usuário OAuth salvo no banco com email: {}", novoUsuario.getEmail());
-    }    
-    
+    }
+
     @Override
     public Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         logger.info("Iniciando cadastro da segunda fase para usuário ID: {}", idUsuario);
@@ -137,15 +138,15 @@ public class UsuarioServiceImpl implements UsuarioService {
             String cep = usuarioInputSegundaFase.getEndereco().getCep().replace("-", "");
             String numero = usuarioInputSegundaFase.getEndereco().getNumero();
             String complemento = usuarioInputSegundaFase.getEndereco().getComplemento();
-            
+
             logger.info("Processando endereço no início do cadastro: CEP={}, numero={}", cep, numero);
-            
+
             ResponseEntity<EnderecoOutput> enderecoResponse = enderecoService.buscaEndereco(cep, numero, complemento);
             EnderecoOutput enderecoOutput = enderecoResponse.getBody();
-            
+
             if (enderecoOutput != null && enderecoOutput.getCep() != null) {
                 Optional<Endereco> endereco = enderecoRepository.findByCepAndNumero(cep, numero);
-                
+
                 if (endereco.isPresent()) {
                     ficha.setEndereco(endereco.get());
                     logger.info("Endereço vinculado à ficha através da FK: endereco_id={}", endereco.get().getIdEndereco());
@@ -165,11 +166,13 @@ public class UsuarioServiceImpl implements UsuarioService {
         logger.info("Ficha atualizada com os novos dados: {}", ficha);
 
         usuario.atualizarTipo(usuarioInputSegundaFase.getTipo());
-        logger.info("Tipo do usuário atualizado para: {}", usuario.getTipo());        usuarioRepository.save(usuario);
+        logger.info("Tipo do usuário atualizado para: {}", usuario.getTipo());
+        usuarioRepository.save(usuario);
         logger.info("Usuário salvo após atualização da segunda fase: ID={}, email={}", usuario.getIdUsuario(), usuario.getEmail());
 
         if (usuarioInputSegundaFase.getTelefone() != null) {
-            Telefone telefone = Telefone.of(usuarioInputSegundaFase.getTelefone(), ficha);            telefoneRepository.save(telefone);
+            Telefone telefone = Telefone.of(usuarioInputSegundaFase.getTelefone(), ficha);
+            telefoneRepository.save(telefone);
             logger.info("Telefone salvo para a ficha ID {}: {}", ficha.getIdFicha(), telefone);
         } else {
             logger.info("Nenhum telefone fornecido para atualização.");
@@ -179,11 +182,12 @@ public class UsuarioServiceImpl implements UsuarioService {
         logger.info("Email de boas-vindas enviado para o usuário: {}", usuario.getEmail());
 
         return usuario;
-    }   
-    
+    }
+
     @Override
     public Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
-        logger.info("Iniciando cadastro fase 2 para voluntário ID: {}", idUsuario);        if (usuarioInputSegundaFase.getFuncao() == null) {
+        logger.info("Iniciando cadastro fase 2 para voluntário ID: {}", idUsuario);
+        if (usuarioInputSegundaFase.getFuncao() == null) {
             throw new IllegalArgumentException("A função do voluntário deve ser informada");
         }
 

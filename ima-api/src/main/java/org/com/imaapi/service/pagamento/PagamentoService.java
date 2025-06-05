@@ -7,7 +7,10 @@ import org.com.imaapi.model.pagamento.dto.TEDPaymentResponse;
 
 public interface PagamentoService {
     PixPaymentResponse realizarPagamentoPix(Charge charge) throws Exception;
+
     String realizarTed(TEDPaymentResponse request, String token) throws Exception;
+
     String gerarBoleto(BoletoPaymentResponse request, String token) throws Exception;
+
     String obterToken() throws Exception;
 }
