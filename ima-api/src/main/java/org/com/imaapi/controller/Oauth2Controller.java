@@ -1,27 +1,19 @@
 package org.com.imaapi.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.OauthTokenServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
-
-import static com.fasterxml.jackson.databind.type.LogicalType.Map;
 
 @Controller
 @RequestMapping("/oauth2")

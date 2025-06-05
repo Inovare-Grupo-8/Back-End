@@ -36,15 +36,24 @@ public class VoluntarioServiceImpl implements VoluntarioService {
             logger.error("Erro ao cadastrar voluntário: {}", erro.getMessage());
             throw erro; 
         }
-    }
-
+    }    
+    
     public void excluirVoluntario(Integer id) {
         try {
+            if (id == null) {
+                throw new IllegalArgumentException("ID do voluntário não pode ser nulo");
+            }
+            if (!voluntarioRepository.existsById(id)) {
+                throw new IllegalArgumentException("Voluntário não encontrado com o ID: " + id);
+            }
             voluntarioRepository.deleteById(id);
             logger.info("Na tabela de voluntario com ID {} foi deletado com sucesso", id);
+        } catch (IllegalArgumentException e) {
+            logger.error("Erro de validação ao excluir voluntário: {}", e.getMessage());
+            throw e;
         } catch (Exception erro) {
             logger.error("Erro ao excluir voluntário: {}", erro.getMessage());
-            throw erro; 
+            throw new RuntimeException("Erro ao excluir voluntário: " + erro.getMessage()); 
         }
     }
 

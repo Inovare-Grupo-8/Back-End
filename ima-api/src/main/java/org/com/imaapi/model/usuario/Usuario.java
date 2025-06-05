@@ -1,7 +1,9 @@
 package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.enums.converter.TipoUsuarioConverter;
 
@@ -18,7 +20,7 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Integer idUsuario;
-      
+
     @OneToOne(optional = false)
     @JoinColumn(name = "fk_ficha", unique = true, nullable = false)
     private Ficha ficha;
@@ -27,8 +29,8 @@ public class Usuario {
     private String email;
 
     @Column(name = "senha", nullable = false, length = 128)
-    private String senha;    
-    
+    private String senha;
+
     @Column(name = "tipo", length = 20)
     @Convert(converter = TipoUsuarioConverter.class)
     private TipoUsuario tipo;

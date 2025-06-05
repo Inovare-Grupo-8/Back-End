@@ -1,16 +1,11 @@
 package org.com.imaapi.service.impl;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.repository.OauthTokenRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.OauthTokenService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -51,13 +46,13 @@ public class OauthTokenServiceImpl implements OauthTokenService {
 
         OAuth2AuthorizedClient authorizedClient = oauthClientManager.authorize(authorizeRequest);
 
-        if(authorizedClient == null) {
+        if (authorizedClient == null) {
             throw new IllegalStateException("Usuário não autorizado ou token expirado e refresh token indisponível.");
         }
 
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(authentication.getName());
 
-        if(usuarioOptional.isPresent()) {
+        if (usuarioOptional.isPresent()) {
             Usuario usuario = usuarioOptional.get();
 
             OAuth2AccessToken accessToken = authorizedClient.getAccessToken();

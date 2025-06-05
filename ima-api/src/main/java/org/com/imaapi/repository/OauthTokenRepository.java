@@ -7,8 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface OauthTokenRepository extends JpaRepository<OauthToken, Integer>{
+public interface OauthTokenRepository extends JpaRepository<OauthToken, Integer> {
     Optional<OauthToken> findByUsuarioIdUsuario(Integer id);
+
     boolean existsByUsuarioIdUsuario(Integer id);
+
     void deleteByUsuarioIdUsuario(Integer id);
 }

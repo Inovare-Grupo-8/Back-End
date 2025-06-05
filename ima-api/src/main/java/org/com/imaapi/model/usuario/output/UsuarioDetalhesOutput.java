@@ -1,7 +1,6 @@
 package org.com.imaapi.model.usuario.output;
 
 import lombok.Data;
-import lombok.Getter;
 import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.Ficha;
 import org.com.imaapi.model.usuario.Usuario;

@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -24,9 +23,13 @@ public class GerenciadorTokenJwt {
     @Value("${jwt.validity}")
     private long jwtTokenValidity;
 
-    public String getUsernameFromToken(String token) {return getClaimForToken(token, Claims::getSubject);}
+    public String getUsernameFromToken(String token) {
+        return getClaimForToken(token, Claims::getSubject);
+    }
 
-    public Date getExpirationDateFromToken(String token) {return getClaimForToken(token, Claims::getExpiration);}
+    public Date getExpirationDateFromToken(String token) {
+        return getClaimForToken(token, Claims::getExpiration);
+    }
 
     public String generateToken(final Authentication authentication) {
 
@@ -64,5 +67,7 @@ public class GerenciadorTokenJwt {
                 .parseSignedClaims(token).getBody();
     }
 
-    private SecretKey parseSecret() {return Keys.hmacShaKeyFor(this.secret.getBytes(StandardCharsets.UTF_8));}
+    private SecretKey parseSecret() {
+        return Keys.hmacShaKeyFor(this.secret.getBytes(StandardCharsets.UTF_8));
+    }
 }

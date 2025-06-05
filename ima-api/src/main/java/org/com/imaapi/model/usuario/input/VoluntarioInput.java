@@ -1,10 +1,9 @@
 package org.com.imaapi.model.usuario.input;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import org.com.imaapi.model.enums.Funcao;
-
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Data;
+import org.com.imaapi.model.enums.Funcao;
 
 @Data
 public class VoluntarioInput {

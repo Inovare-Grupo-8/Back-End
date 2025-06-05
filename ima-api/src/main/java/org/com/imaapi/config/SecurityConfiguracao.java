@@ -50,17 +50,14 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/webjars/**"),
             new AntPathRequestMatcher("/v3/api-docs/**"),
             new AntPathRequestMatcher("/actuator/**"),
-            new AntPathRequestMatcher("/usuarios/login/**"),
+            new AntPathRequestMatcher("/usuarios/**"),
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
             new AntPathRequestMatcher("/"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/oauth2/authorization/google"),
-            new AntPathRequestMatcher("/dev/token"),
-            new AntPathRequestMatcher("/usuarios/voluntario/**"),
-            new AntPathRequestMatcher("/usuarios/fase1"),
-            new AntPathRequestMatcher("/usuarios/fase2/**")
+            new AntPathRequestMatcher("/dev/token")
     };
 
     @Bean
@@ -97,10 +94,14 @@ public class SecurityConfiguracao {
     }
 
     @Bean
-    public AutenticacaoEntryPoint jwtAuthenticationEntryPointBean() { return new AutenticacaoEntryPoint(); }
+    public AutenticacaoEntryPoint jwtAuthenticationEntryPointBean() {
+        return new AutenticacaoEntryPoint();
+    }
 
     @Bean
-    public GerenciadorTokenJwt jwtAuthenticationUtilBean() { return new GerenciadorTokenJwt(); }
+    public GerenciadorTokenJwt jwtAuthenticationUtilBean() {
+        return new GerenciadorTokenJwt();
+    }
 
     @Bean
     public AutenticacaoFilter jwtAuthenticationFilterBean() {
@@ -139,10 +140,14 @@ public class SecurityConfiguracao {
     }
 
     @Bean
-    public AuthenticationEntryPoint autenticacaoEntryPoint() { return new AutenticacaoEntryPoint(); }
+    public AuthenticationEntryPoint autenticacaoEntryPoint() {
+        return new AutenticacaoEntryPoint();
+    }
 
     @Bean
-    public AutenticacaoServiceImpl autenticacaoService() { return new AutenticacaoServiceImpl(); }
+    public AutenticacaoServiceImpl autenticacaoService() {
+        return new AutenticacaoServiceImpl();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
