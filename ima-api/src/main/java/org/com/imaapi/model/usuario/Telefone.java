@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Setter;
 import org.com.imaapi.model.usuario.input.TelefoneInput;
-
 import java.time.LocalDateTime;
+
 
 @Data
 @Entity
