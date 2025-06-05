@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -34,7 +33,7 @@ public class VoluntarioServiceImpl implements VoluntarioService {
             logger.info("Voluntário cadastrado com sucesso: {}", voluntario);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar voluntário: {}", erro.getMessage());
-            throw erro; 
+            throw erro;
         }
     }    
       public void excluirVoluntario(Integer id) {

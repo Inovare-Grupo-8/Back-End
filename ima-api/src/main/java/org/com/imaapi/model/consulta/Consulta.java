@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
 import org.com.imaapi.model.enums.StatusConsulta;
-import org.com.imaapi.model.usuario.Especialidade;
+import org.com.imaapi.model.especialidade.Especialidade;
 import org.com.imaapi.model.usuario.Usuario;
 
 import java.time.LocalDateTime;
@@ -16,8 +16,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Consulta {
-    @Id
+public class Consulta {    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_consulta")
     private Integer idConsulta;

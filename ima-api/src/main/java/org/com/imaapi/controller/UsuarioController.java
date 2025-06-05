@@ -77,35 +77,60 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<UsuarioTokenOutput> login(@RequestBody @Valid UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
         LOGGER.info("Requisição de login recebida para email: {}", usuarioAutenticacaoInput.getEmail());
+        LOGGER.debug("Dados de login: email={}, senha(tamanho)={}",
+                usuarioAutenticacaoInput.getEmail(),
+                usuarioAutenticacaoInput.getSenha() != null ? usuarioAutenticacaoInput.getSenha().length() : 0);
 
-        // Buscar o usuário pelo email
-        Optional<Usuario> usuarioOpt = usuarioService.buscaUsuarioPorEmail(usuarioAutenticacaoInput.getEmail());
+        try {
+            Optional<Usuario> usuarioOpt = usuarioService.buscaUsuarioPorEmail(usuarioAutenticacaoInput.getEmail());
 
-        if (usuarioOpt.isEmpty()) {
-            LOGGER.warn("Usuário não encontrado para email: {}", usuarioAutenticacaoInput.getEmail());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            if (usuarioOpt.isEmpty()) {
+                LOGGER.warn("Usuário não encontrado para email: {}", usuarioAutenticacaoInput.getEmail());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            Usuario usuario = usuarioOpt.get();
+            LOGGER.debug("Usuário encontrado: ID={}, senha(hash)={}, ficha={}",
+                    usuario.getIdUsuario(), usuario.getSenha(),
+                    usuario.getFicha() != null ? usuario.getFicha().getIdFicha() : "null");
+
+            boolean senhaCorreta = passwordEncoder.matches(usuarioAutenticacaoInput.getSenha(), usuario.getSenha());
+            LOGGER.info("Verificação de senha para {}: {}",
+                    usuarioAutenticacaoInput.getEmail(), senhaCorreta ? "SUCESSO" : "FALHA");
+
+            if (!senhaCorreta) {
+                LOGGER.warn("Senha inválida para email: {}", usuarioAutenticacaoInput.getEmail());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            Ficha ficha = usuario.getFicha();
+            if (ficha == null) {
+                LOGGER.error("Ficha não encontrada para o usuário: {}", usuarioAutenticacaoInput.getEmail());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(null);
+            }
+            LOGGER.debug("Ficha encontrada para o usuário: ID={}", ficha.getIdFicha());            try {
+                LOGGER.info("Iniciando processo de autenticação via UsuarioService para: {}",
+                        usuarioAutenticacaoInput.getEmail());
+                UsuarioTokenOutput usuarioTokenOutput = usuarioService.autenticar(usuario, ficha, usuarioAutenticacaoInput.getSenha());
+
+                if (usuarioTokenOutput == null) {
+                    LOGGER.warn("Falha na autenticação para email (token nulo): {}",
+                            usuarioAutenticacaoInput.getEmail());
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+
+                LOGGER.info("Login bem-sucedido para email: {}", usuarioAutenticacaoInput.getEmail());
+                return ResponseEntity.ok(usuarioTokenOutput);
+            } catch (Exception e) {
+                LOGGER.error("Erro durante autenticação para {}: {}",
+                        usuarioAutenticacaoInput.getEmail(), e.getMessage(), e);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .build();
+            }
+        } catch (Exception e) {
+            LOGGER.error("Erro ao processar login para {}: {}", usuarioAutenticacaoInput.getEmail(), e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        Usuario usuario = usuarioOpt.get();
-
-        // Validar senha (aqui pode-se usar passwordEncoder.matches)
-        if (!passwordEncoder.matches(usuarioAutenticacaoInput.getSenha(), usuario.getSenha())) {
-            LOGGER.warn("Senha inválida para email: {}", usuarioAutenticacaoInput.getEmail());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        // Buscar a ficha associada
-        Ficha ficha = usuario.getFicha();
-
-        UsuarioTokenOutput usuarioTokenOutput = usuarioService.autenticar(usuario, ficha);
-
-        if (usuarioTokenOutput == null) {
-            LOGGER.warn("Falha na autenticação para email: {}", usuarioAutenticacaoInput.getEmail());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        LOGGER.info("Login bem-sucedido para email: {}", usuarioAutenticacaoInput.getEmail());
-        return ResponseEntity.ok(usuarioTokenOutput);
     }
 
 
@@ -128,6 +153,13 @@ public class UsuarioController {
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<Usuario> buscarUsuarioPorEmail(@RequestParam String email) {
         return usuarioService.buscaUsuarioPorEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/por-nome")
+    public ResponseEntity<Usuario> buscarUsuarioPorNome(@RequestParam String nome) {
+        return usuarioService.buscaUsuarioPorNome(nome)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

@@ -51,6 +51,8 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/v3/api-docs/**"),
             new AntPathRequestMatcher("/actuator/**"),
             new AntPathRequestMatcher("/usuarios/**"),
+            new AntPathRequestMatcher("/usuarios/login/***"),
+            new AntPathRequestMatcher("/consulta/**"),
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
@@ -151,7 +153,8 @@ public class SecurityConfiguracao {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        // Wrap the standard password encoder with our logging version
+        return new LoggingPasswordEncoder(new BCryptPasswordEncoder());
     }
 
     @Bean
