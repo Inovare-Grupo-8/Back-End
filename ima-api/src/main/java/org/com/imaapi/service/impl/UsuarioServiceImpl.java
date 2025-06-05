@@ -195,6 +195,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioInputSegundaFase.getTelefone() != null) {
             Telefone telefone = Telefone.of(usuarioInputSegundaFase.getTelefone(), ficha);
             telefoneRepository.save(telefone);
+
             logger.info("Telefone salvo para a ficha ID {}: {}", ficha.getIdFicha(), telefone);
         } else {
             logger.info("Nenhum telefone fornecido para atualização.");

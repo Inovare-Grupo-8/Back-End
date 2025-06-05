@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.Optional;
+import java.util.Optional
+import java.time.LocalDateTime;
 
 @Service
 public class VoluntarioServiceImpl implements VoluntarioService {
