@@ -22,9 +22,6 @@ public class Voluntario {
     private Funcao funcao;
 
     @Column(name = "dt_cadastro", nullable = false)
-    private Funcao funcao;
-
-    @Column(name = "dt_cadastro", nullable = false)
     private LocalDate dataCadastro;
 
     @Column(name = "criado_em")
