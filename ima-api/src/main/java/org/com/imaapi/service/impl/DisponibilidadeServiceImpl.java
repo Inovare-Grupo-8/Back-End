@@ -1,4 +1,5 @@
 package org.com.imaapi.service.impl;
+
 import org.com.imaapi.model.consulta.Consulta;
 import org.com.imaapi.repository.ConsultaRepository;
 import org.com.imaapi.service.DisponibilidadeService;

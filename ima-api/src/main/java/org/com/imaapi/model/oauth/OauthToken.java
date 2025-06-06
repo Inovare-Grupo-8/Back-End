@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @Table(name = "oauth_token")
 @Getter
 @Setter
-public class OauthToken {    @Id
+public class OauthToken {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_oauth_token")
     private Integer id;
@@ -28,8 +29,8 @@ public class OauthToken {    @Id
     private String accessToken;
 
     @Column(length = 512)
-    private String refreshToken;    
-    
+    private String refreshToken;
+
     @Column(name = "expira_em")
     private Instant expiresAt;
 

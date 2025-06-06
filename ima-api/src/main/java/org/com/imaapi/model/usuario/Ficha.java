@@ -1,11 +1,9 @@
 package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 
@@ -35,8 +33,8 @@ public class Ficha {
     private String sobrenome;
 
     @Column(name = "cpf", unique = true, length = 11)
-    private String cpf;    
-    
+    private String cpf;
+
     @Column(name = "renda", precision = 10, scale = 2)
     private BigDecimal renda;
 
@@ -83,7 +81,9 @@ public class Ficha {
     @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-    }    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
+    }
+
+    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
         this.setCpf(input.getCpf());
         this.setDtNascim(input.getDataNascimento());
         this.setRenda(input.getRenda() != null ? BigDecimal.valueOf(input.getRenda()) : null);

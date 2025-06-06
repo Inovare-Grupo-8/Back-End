@@ -35,9 +35,9 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
         return path.startsWith("/usuarios") ||
-               path.equals("/dev/token") ||   
-               path.startsWith("/swagger-ui") ||
-               path.startsWith("/v3/api-docs");
+                path.equals("/dev/token") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs");
     }
 
     @Override

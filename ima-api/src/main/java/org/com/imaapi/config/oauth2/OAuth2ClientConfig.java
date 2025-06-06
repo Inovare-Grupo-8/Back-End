@@ -18,29 +18,28 @@ public class OAuth2ClientConfig {
         return new SpringSecurityOAuth2RefreshTokenResponseClient(webClient);
     }
 
-    // Implementação customizada baseada na nova API
-        private record SpringSecurityOAuth2RefreshTokenResponseClient(WebClient webClient)
-                implements OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> {
+    private record SpringSecurityOAuth2RefreshTokenResponseClient(WebClient webClient)
+            implements OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> {
 
         @Override
-            public OAuth2AccessTokenResponse getTokenResponse(OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest) {
-                ClientRegistration clientRegistration = refreshTokenGrantRequest.getClientRegistration();
+        public OAuth2AccessTokenResponse getTokenResponse(OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest) {
+            ClientRegistration clientRegistration = refreshTokenGrantRequest.getClientRegistration();
 
-                return webClient.post()
-                        .uri(clientRegistration.getProviderDetails().getTokenUri())
-                        .body(BodyInserters.fromFormData(createRequestParameters(refreshTokenGrantRequest)))
-                        .headers(headers -> headers.setBasicAuth(clientRegistration.getClientId(), clientRegistration.getClientSecret()))
-                        .retrieve()
-                        .bodyToMono(OAuth2AccessTokenResponse.class)
-                        .block();
-            }
-
-            private MultiValueMap<String, String> createRequestParameters(OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest) {
-                MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-                parameters.add(OAuth2ParameterNames.GRANT_TYPE, refreshTokenGrantRequest.getGrantType().getValue());
-                parameters.add(OAuth2ParameterNames.REFRESH_TOKEN, refreshTokenGrantRequest.getRefreshToken().getTokenValue());
-                parameters.add(OAuth2ParameterNames.SCOPE, String.join(" ", refreshTokenGrantRequest.getClientRegistration().getScopes()));
-                return parameters;
-            }
+            return webClient.post()
+                    .uri(clientRegistration.getProviderDetails().getTokenUri())
+                    .body(BodyInserters.fromFormData(createRequestParameters(refreshTokenGrantRequest)))
+                    .headers(headers -> headers.setBasicAuth(clientRegistration.getClientId(), clientRegistration.getClientSecret()))
+                    .retrieve()
+                    .bodyToMono(OAuth2AccessTokenResponse.class)
+                    .block();
         }
+
+        private MultiValueMap<String, String> createRequestParameters(OAuth2RefreshTokenGrantRequest refreshTokenGrantRequest) {
+            MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+            parameters.add(OAuth2ParameterNames.GRANT_TYPE, refreshTokenGrantRequest.getGrantType().getValue());
+            parameters.add(OAuth2ParameterNames.REFRESH_TOKEN, refreshTokenGrantRequest.getRefreshToken().getTokenValue());
+            parameters.add(OAuth2ParameterNames.SCOPE, String.join(" ", refreshTokenGrantRequest.getClientRegistration().getScopes()));
+            return parameters;
+        }
+    }
 }
