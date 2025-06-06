@@ -5,8 +5,11 @@ import org.com.imaapi.model.consulta.input.ConsultaInput;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.com.imaapi.service.ConsultaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/consulta")
@@ -45,6 +48,11 @@ public class ConsultaController {
         return consultaService.getConsultasRecentes(user);
     }
 
+    @GetMapping("/consultas/{idUsuario}/proxima")
+    public ResponseEntity<?> getProximaConsulta(@PathVariable Integer idUsuario) {
+        return consultaService.getProximaConsulta(idUsuario);
+    }
+
     @PostMapping("/consultas/{id}/feedback")
     public ResponseEntity<?> adicionarFeedback(
             @PathVariable Long id,
@@ -58,4 +66,13 @@ public class ConsultaController {
             @RequestBody String avaliacao) {
         return consultaService.adicionarAvaliacao(id, avaliacao);
     }
+
+    @GetMapping("/horarios-disponiveis")
+    public ResponseEntity<?> getHorariosDisponiveis(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
+            @RequestParam Integer idVoluntario
+    ) {
+        return consultaService.getHorariosDisponiveis(data, idVoluntario);
+    }
+
 }

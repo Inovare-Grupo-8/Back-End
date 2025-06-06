@@ -15,10 +15,10 @@ public class DisponibilidadeController {
     @Autowired
     private DisponibilidadeServiceImpl disponibilidadeService;
 
-    @GetMapping("/{voluntarioId}/horarios")
+    @GetMapping("/{idUsuario}/horarios")
     public List<LocalTime> getHorariosDisponiveis(
-            @PathVariable Integer voluntarioId,
+            @PathVariable Integer idUsuario,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
-        return disponibilidadeService.buscarHorariosDisponiveis(voluntarioId, data);
+        return disponibilidadeService.buscarHorariosDisponiveis(idUsuario, data);
     }
 }

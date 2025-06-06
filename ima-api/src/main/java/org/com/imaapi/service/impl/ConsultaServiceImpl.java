@@ -20,7 +20,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +75,62 @@ public class ConsultaServiceImpl implements ConsultaService {
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar evento: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<?> getHorariosDisponiveis(LocalDate data, Integer idVoluntario) {
+        try {
+            // Define início e fim do dia
+            LocalDateTime inicioDia = data.atStartOfDay();
+            LocalDateTime fimDia = data.atTime(23, 59, 59);
+
+            // Busca consultas existentes para o voluntário neste dia
+            List<Consulta> consultasMarcadas = consultaRepository
+                    .findByVoluntario_IdUsuarioAndHorarioBetween(idVoluntario, inicioDia, fimDia);
+
+            // Horários padrão de atendimento (exemplo: 9h às 17h, intervalo de 1h)
+            List<LocalTime> horariosDisponiveis = Arrays.asList(
+                    LocalTime.of(0, 0),
+                    LocalTime.of(1, 0),
+                    LocalTime.of(2, 0),
+                    LocalTime.of(3, 0),
+                    LocalTime.of(4, 0),
+                    LocalTime.of(5, 0),
+                    LocalTime.of(6, 0),
+                    LocalTime.of(7, 0),
+                    LocalTime.of(8, 0),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(10, 0),
+                    LocalTime.of(11, 0),
+                    LocalTime.of(12, 0),
+                    LocalTime.of(13, 0),
+                    LocalTime.of(14, 0),
+                    LocalTime.of(15, 0),
+                    LocalTime.of(16, 0),
+                    LocalTime.of(17, 0),
+                    LocalTime.of(18, 0),
+                    LocalTime.of(19, 0),
+                    LocalTime.of(20, 0),
+                    LocalTime.of(21, 0),
+                    LocalTime.of(22, 0),
+                    LocalTime.of(23, 0)
+            );
+
+            // Lista de horários ocupados
+            List<LocalTime> horariosOcupados = consultasMarcadas.stream()
+                    .map(consulta -> consulta.getHorario().toLocalTime())
+                    .collect(Collectors.toList());
+
+            // Filtra os horários disponíveis removendo os ocupados
+            List<LocalDateTime> horariosLivres = horariosDisponiveis.stream()
+                    .filter(horario -> !horariosOcupados.contains(horario))
+                    .map(horario -> LocalDateTime.of(data, horario))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(horariosLivres);
+        } catch (Exception e) {
+            logger.error("Erro ao buscar horários disponíveis: {}", e.getMessage());
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -236,6 +295,52 @@ public class ConsultaServiceImpl implements ConsultaService {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+   @Override
+   public ResponseEntity<ConsultaOutput> getProximaConsulta(Integer idUsuario) {
+       try {
+           // Busca próximas consultas como voluntário e assistido
+           List<Consulta> consultasVoluntario = consultaRepository
+               .findByVoluntario_IdUsuarioAndHorarioAfterOrderByHorarioAsc(idUsuario, LocalDateTime.now());
+
+           List<Consulta> consultasAssistido = consultaRepository
+               .findByAssistido_IdUsuarioAndHorarioAfterOrderByHorarioAsc(idUsuario, LocalDateTime.now());
+
+           // Encontra a próxima consulta mais próxima
+           Consulta proximaConsulta = null;
+
+           if (!consultasVoluntario.isEmpty() && !consultasAssistido.isEmpty()) {
+               proximaConsulta = consultasVoluntario.get(0).getHorario()
+                   .isBefore(consultasAssistido.get(0).getHorario())
+                   ? consultasVoluntario.get(0)
+                   : consultasAssistido.get(0);
+           } else if (!consultasVoluntario.isEmpty()) {
+               proximaConsulta = consultasVoluntario.get(0);
+           } else if (!consultasAssistido.isEmpty()) {
+               proximaConsulta = consultasAssistido.get(0);
+           }
+
+           if (proximaConsulta == null) {
+               return ResponseEntity.notFound().build();
+           }
+
+           ConsultaOutput output = new ConsultaOutput();
+           output.setHorario(proximaConsulta.getHorario());
+           output.setStatus(proximaConsulta.getStatus());
+           output.setModalidade(proximaConsulta.getModalidade());
+           output.setLocal(proximaConsulta.getLocal());
+           output.setObservacoes(proximaConsulta.getObservacoes());
+           output.setEspecialidade(proximaConsulta.getEspecialidade());
+           output.setAssistido(proximaConsulta.getAssistido());
+           output.setVoluntario(proximaConsulta.getVoluntario());
+
+           return ResponseEntity.ok(output);
+
+       } catch (Exception e) {
+           logger.error("Erro ao buscar próxima consulta: {}", e.getMessage());
+           return ResponseEntity.internalServerError().build();
+       }
+   }
 
     @Override
     public ResponseEntity<?> adicionarFeedback(Long id, String feedback) {
