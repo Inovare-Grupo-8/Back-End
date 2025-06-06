@@ -40,24 +40,22 @@ public class UsuarioController {
     private EnderecoService enderecoService;
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioController.class);
-
-    @PostMapping("/fase1")
-    public ResponseEntity<Usuario> cadastrarUsuarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioController.class);    @PostMapping("/fase1")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> cadastrarUsuarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
         Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
-        return new ResponseEntity<>(usuario, HttpStatus.CREATED);
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return new ResponseEntity<>(output, HttpStatus.CREATED);
     }
 
     @PatchMapping("/fase2/{idUsuario}")
     public ResponseEntity<Usuario> completarCadastroUsuario(@PathVariable Integer idUsuario, @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
         Usuario usuario = usuarioService.cadastrarSegundaFase(idUsuario, usuarioInputSegundaFase);
         return ResponseEntity.ok(usuario);
-    }
-
-    @PostMapping("/voluntario/fase1")
-    public ResponseEntity<Usuario> cadastrarVoluntarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
+    }    @PostMapping("/voluntario/fase1")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> cadastrarVoluntarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
         Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
-        return new ResponseEntity<>(usuario, HttpStatus.CREATED);
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return new ResponseEntity<>(output, HttpStatus.CREATED);
     }
 
     @PatchMapping("/voluntario/fase2/{idUsuario}")

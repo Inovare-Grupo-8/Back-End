@@ -20,65 +20,86 @@ public class EmailServiceImpl implements EmailService {
     private JavaMailSender javaMailSender;
 
     @Value("${spring.mail.username}")
-    private String remetente;
-
-    public String enviarEmail(String destinatario, String nome, String assunto) {
+    private String remetente;    public String enviarEmail(String destinatario, String nome, String assunto) {
         if (destinatario == null || destinatario.isEmpty()) {
             logger.error("O destinatário do e-mail está vazio ou nulo.");
             return "Erro: O destinatário do e-mail não pode ser vazio ou nulo.";
         }
 
         logger.info("Enviando e-mail para: {}", destinatario);
-        try {
-            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        
+        int maxTentativas = 3;
+        Exception ultimaExcecao = null;
+        
+        for (int tentativa = 1; tentativa <= maxTentativas; tentativa++) {
+            try {
+                MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-            helper.setFrom(remetente);
-            helper.setTo(destinatario);
+                helper.setFrom(remetente);
+                helper.setTo(destinatario);
 
-            String htmlContent;
-            switch (assunto) {
-                case "continuar cadastro":
-                    logger.info("Enviando email para continuar cadastro");
-                    helper.setSubject("Complete seu cadastro no IMA!");
-                    String[] parts = nome.split("\\|");
-                    String nomeUsuario = parts[0];
-                    Integer idUsuario = Integer.parseInt(parts[1]);
-                    htmlContent = gerarConteudoHtmlContinuarCadastro(nomeUsuario, idUsuario);
-                    break;
-                case "bem vindo":
-                    logger.info("Enviando email de boas-vindas - usuário comum");
-                    helper.setSubject("Bem-vindo ao IMA!");
-                    htmlContent = gerarConteudoHtmlBemVindo(nome);
-                    break;
-                case "bem vindo voluntario":
-                    logger.info("Enviando email de boas-vindas - voluntário");
-                    helper.setSubject("Seja bem-vindo ao IMA Voluntário!");
-                    htmlContent = gerarConteudoHtmlBemVindoVoluntario(nome);
-                    break;
-                case "agendamento realizado":
-                    logger.info("Enviando email agendamento de voluntario");
-                    helper.setSubject("Agendamento Realizado");
-                    htmlContent = gerarConteudoHtmlAgendamento(nome, "Agendamento Realizado");
-                    break;
-                case "agendamento cancelado":
-                    logger.info("Enviando email agendamento cancelado");
-                    helper.setSubject("Agendamento Cancelado");
-                    htmlContent = gerarConteudoHtmlAgendamento(nome, "Agendamento Cancelado");
-                    break;
-                default:
-                    logger.info("Assunto não encontrado");
-                    return "Erro: Assunto não encontrado.";
+                String htmlContent;
+                switch (assunto) {
+                    case "continuar cadastro":
+                        logger.info("Enviando email para continuar cadastro");
+                        helper.setSubject("Complete seu cadastro no IMA!");
+                        String[] parts = nome.split("\\|");
+                        String nomeUsuario = parts[0];
+                        Integer idUsuario = Integer.parseInt(parts[1]);
+                        htmlContent = gerarConteudoHtmlContinuarCadastro(nomeUsuario, idUsuario);
+                        break;
+                    case "bem vindo":
+                        logger.info("Enviando email de boas-vindas - usuário comum");
+                        helper.setSubject("Bem-vindo ao IMA!");
+                        htmlContent = gerarConteudoHtmlBemVindo(nome);
+                        break;
+                    case "bem vindo voluntario":
+                        logger.info("Enviando email de boas-vindas - voluntário");
+                        helper.setSubject("Seja bem-vindo ao IMA Voluntário!");
+                        htmlContent = gerarConteudoHtmlBemVindoVoluntario(nome);
+                        break;
+                    case "agendamento realizado":
+                        logger.info("Enviando email agendamento de voluntario");
+                        helper.setSubject("Agendamento Realizado");
+                        htmlContent = gerarConteudoHtmlAgendamento(nome, "Agendamento Realizado");
+                        break;
+                    case "agendamento cancelado":
+                        logger.info("Enviando email agendamento cancelado");
+                        helper.setSubject("Agendamento Cancelado");
+                        htmlContent = gerarConteudoHtmlAgendamento(nome, "Agendamento Cancelado");
+                        break;
+                    default:
+                        logger.info("Assunto não encontrado");
+                        return "Erro: Assunto não encontrado.";
+                }
+
+                helper.setText(htmlContent, true);
+                javaMailSender.send(mimeMessage);
+                logger.info("E-mail enviado com sucesso para: {} na tentativa {}", destinatario, tentativa);
+                return "E-mail enviado com sucesso!";
+                
+            } catch (MessagingException e) {
+                ultimaExcecao = e;
+                logger.warn("Tentativa {} falhou ao enviar e-mail para {}: {}", tentativa, destinatario, e.getMessage());
+                
+                if (tentativa < maxTentativas) {
+                    try {
+                        // Aguardar antes da próxima tentativa
+                        Thread.sleep(2000 * tentativa); // 2s, 4s, 6s...
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        logger.error("Thread interrompida durante espera entre tentativas");
+                        break;
+                    }
+                }
             }
-
-            helper.setText(htmlContent, true);
-            javaMailSender.send(mimeMessage);
-            logger.info("E-mail enviado com sucesso para: {}", destinatario);
-            return "E-mail enviado com sucesso!";
-        } catch (MessagingException e) {
-            logger.error("Erro ao enviar e-mail para {}: {}", destinatario, e.getMessage(), e);
-            return "Erro ao enviar e-mail: " + e.getMessage();
         }
+        
+        logger.error("Falha ao enviar e-mail para {} após {} tentativas: {}", 
+                destinatario, maxTentativas, ultimaExcecao != null ? ultimaExcecao.getMessage() : "Erro desconhecido");
+        return "Erro ao enviar e-mail após " + maxTentativas + " tentativas: " + 
+               (ultimaExcecao != null ? ultimaExcecao.getMessage() : "Erro desconhecido");
     }
 
     private String gerarConteudoHtmlContinuarCadastro(String nome, Integer idUsuario) {

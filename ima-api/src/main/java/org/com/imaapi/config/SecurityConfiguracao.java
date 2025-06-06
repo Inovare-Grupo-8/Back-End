@@ -36,9 +36,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguracao {
-
-    private static final AntPathRequestMatcher[] URLS_PERMITIDAS = {
+public class SecurityConfiguracao {    private static final AntPathRequestMatcher[] URLS_PERMITIDAS = {
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/swagger-ui.html"),
             new AntPathRequestMatcher("/swagger-resources"),
@@ -52,7 +50,6 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/actuator/**"),
             new AntPathRequestMatcher("/usuarios/**"),
             new AntPathRequestMatcher("/usuarios/login/***"),
-            new AntPathRequestMatcher("/consulta/**"),
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
