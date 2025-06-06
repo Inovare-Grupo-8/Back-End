@@ -26,4 +26,8 @@ public interface ConsultaService {
     ResponseEntity<ConsultaDto> adicionarAvaliacao(Integer id, String avaliacao);
     
     ResponseEntity<List<ConsultaDto>> getTodasConsultas();
+
+    ResponseEntity<List<ConsultaDto>> getConsultasUsuarioLogado();
+
+    public ResponseEntity<ConsultaDto> getConsultaPorId(Integer id);
 }
