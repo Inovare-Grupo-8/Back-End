@@ -35,7 +35,9 @@ public class Voluntario {    @Id
     @Setter
     @ManyToOne
     @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario", insertable = false, updatable = false)
+
     private Usuario usuario;    @Column(name = "fk_usuario", unique = true)
+
     private Integer fkUsuario;
 
     @PrePersist
