@@ -37,7 +37,8 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(destinatario);
 
             String htmlContent;
-            switch (assunto) {                case "continuar cadastro":
+            switch (assunto) {
+                case "continuar cadastro":
                     logger.info("Enviando email para continuar cadastro");
                     helper.setSubject("Complete seu cadastro no IMA!");
                     String[] parts = nome.split("\\|");
@@ -78,7 +79,9 @@ public class EmailServiceImpl implements EmailService {
             logger.error("Erro ao enviar e-mail para {}: {}", destinatario, e.getMessage(), e);
             return "Erro ao enviar e-mail: " + e.getMessage();
         }
-    }    private String gerarConteudoHtmlContinuarCadastro(String nome, Integer idUsuario) {
+    }
+
+    private String gerarConteudoHtmlContinuarCadastro(String nome, Integer idUsuario) {
         return """
                 <!DOCTYPE html>
                 <html lang="pt-BR">

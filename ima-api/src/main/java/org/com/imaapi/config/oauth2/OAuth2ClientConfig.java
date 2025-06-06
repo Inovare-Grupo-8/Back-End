@@ -18,7 +18,6 @@ public class OAuth2ClientConfig {
         return new SpringSecurityOAuth2RefreshTokenResponseClient(webClient);
     }
 
-    // Implementação customizada baseada na nova API
     private record SpringSecurityOAuth2RefreshTokenResponseClient(WebClient webClient)
             implements OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> {
 

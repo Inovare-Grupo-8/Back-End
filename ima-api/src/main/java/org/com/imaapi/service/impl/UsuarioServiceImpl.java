@@ -8,6 +8,7 @@ import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
+import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.repository.EnderecoRepository;
@@ -214,32 +215,49 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public UsuarioTokenOutput autenticar(Usuario usuario, Ficha ficha) {
+    public UsuarioTokenOutput autenticar(Usuario usuario, Ficha ficha, String senha) {
         logger.info("[AUTENTICAR] Iniciando autenticação para email: {}", usuario.getEmail());
+//        logger.debug("[AUTENTICAR] Senha raw do usuário (primeiros 4 caracteres): {}",
+//                senha.length() > 4 ? senha.substring(0, 4) + "..." : "***");
+//        logger.debug("[AUTENTICAR] Ficha associada ao usuário: ID={}",
+//                ficha != null ? ficha.getIdFicha() : "null");
 
-        final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
-                usuario.getEmail(), usuario.getSenha(), UsuarioMapper.ofDetalhes(usuario, ficha).getAuthorities());
+        try {
+//            logger.debug("[AUTENTICAR] Criando token de autenticação com email: {}", usuario.getEmail());
+            UsuarioDetalhesOutput usuarioDetalhes = UsuarioMapper.ofDetalhes(usuario, ficha);
+//            logger.debug("[AUTENTICAR] Autoridades do usuário: {}", usuarioDetalhes.getAuthorities());
 
-        final Authentication authentication = authenticationManager.authenticate(credentials);
-        logger.info("[AUTENTICAR] AuthenticationManager autenticou as credenciais para: {}", usuario.getEmail());
+            final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
+                    usuario.getEmail(), senha, usuarioDetalhes.getAuthorities());
+//            logger.debug("[AUTENTICAR] Token de autenticação criado com sucesso para: {}", usuario.getEmail());
 
-        Usuario usuarioAutenticado = usuarioRepository.findByEmail(usuario.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado: " + usuario.getEmail()));
+//            logger.info("[AUTENTICAR] Enviando credenciais para AuthenticationManager...");
+            final Authentication authentication = authenticationManager.authenticate(credentials);
+//            logger.info("[AUTENTICAR] AuthenticationManager autenticou as credenciais para: {}", usuario.getEmail());
 
-        logger.info("[AUTENTICAR] Usuário autenticado: {} | Tipo: {}", usuarioAutenticado.getEmail(), usuarioAutenticado.getTipo());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            Usuario usuarioAutenticado = usuarioRepository.findByEmail(usuario.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuário não cadastrado: " + usuario.getEmail()));
 
-        if (usuarioAutenticado.getTipo() == null) {
-            logger.warn("[AUTENTICAR] Usuário sem tipo definido: {}", usuarioAutenticado.getEmail());
-            String token = gerenciadorTokenJwt.generateToken(authentication);
-            logger.info("[AUTENTICAR] Token gerado para usuário sem tipo: {}", usuarioAutenticado.getEmail());
+            logger.info("[AUTENTICAR] Usuário autenticado: {} | Tipo: {}",
+                    usuarioAutenticado.getEmail(), usuarioAutenticado.getTipo());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+//            logger.debug("[AUTENTICAR] Contexto de segurança configurado com sucesso");
+
+            if (usuarioAutenticado.getTipo() == null) {
+                logger.warn("[AUTENTICAR] Usuário sem tipo definido: {}", usuarioAutenticado.getEmail());
+                String token = gerenciadorTokenJwt.generateToken(authentication);
+                logger.info("[AUTENTICAR] Token gerado para usuário sem tipo: {}", usuarioAutenticado.getEmail());
+                return UsuarioMapper.of(usuarioAutenticado, token);
+            }
+
+            final String token = gerenciadorTokenJwt.generateToken(authentication);
+            logger.info("[AUTENTICAR] Token gerado para usuário: {} | Tipo retornado: {}", usuarioAutenticado.getEmail(), usuarioAutenticado.getTipo().name());
+
             return UsuarioMapper.of(usuarioAutenticado, token);
+        } catch (Exception e) {
+            logger.error("[AUTENTICAR] Erro durante autenticação: {}", e.getMessage(), e);
+            throw e;
         }
-
-        final String token = gerenciadorTokenJwt.generateToken(authentication);
-        logger.info("[AUTENTICAR] Token gerado para usuário: {} | Tipo retornado: {}", usuarioAutenticado.getEmail(), usuarioAutenticado.getTipo().name());
-
-        return UsuarioMapper.of(usuarioAutenticado, token);
     }
 
     @Override
@@ -268,19 +286,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public Optional<Usuario> buscaUsuarioPorNome(String nome) {
-        logger.info("Buscando usuário com nome: {}", nome);
-        Optional<Usuario> usuario = fichaRepository.findByNome(nome);
+    public Optional<Usuario> buscaUsuarioPorNome(String termo) {
+        logger.info("Buscando usuário com nome ou sobrenome contendo: {}", termo);
+        List<Usuario> usuarios = fichaRepository.findByNomeOrSobrenomeContaining(termo);
 
-        usuario.ifPresentOrElse(
-                usuario1 -> logger.info("Usuário encontrado: ID={}, email={}", usuario1.getIdUsuario(), usuario1.getEmail()),
-                () -> {
-                    logger.error("Erro ao buscar usuário com nome: {}", nome);
-                    throw new UsernameNotFoundException(nome);
-                }
-        );
+        if (usuarios.isEmpty()) {
+            logger.warn("Nenhum usuário encontrado com nome ou sobrenome contendo: {}", termo);
+            return Optional.empty();
+        }
 
-        return usuario;
+        Usuario primeiroUsuario = usuarios.get(0);
+        logger.info("Usuário encontrado: ID={}, email={}", primeiroUsuario.getIdUsuario(), primeiroUsuario.getEmail());
+
+        return Optional.of(primeiroUsuario);
     }
 
     @Override
@@ -312,13 +330,28 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public void deletarUsuario(Integer id) {
-        logger.info("Deletando usuário com ID: {}", id);
+        logger.info("Iniciando deleção do usuário com ID: {}", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com ID: " + id));
 
         voluntarioService.excluirVoluntario(id);
         logger.info("Voluntário excluído para usuário ID: {}", id);
 
-        usuarioRepository.deleteById(id);
-        logger.info("Usuário com ID {} deletado do banco", id);
+        Ficha ficha = usuario.getFicha();
+        if (ficha != null) {
+            telefoneRepository.deleteByFichaIdFicha(ficha.getIdFicha());
+            logger.info("Telefones excluídos para a ficha ID: {}", ficha.getIdFicha());
+
+            usuarioRepository.delete(usuario);
+            logger.info("Usuário com ID {} deletado do banco", id);
+
+            fichaRepository.delete(ficha);
+            logger.info("Ficha ID: {} excluída", ficha.getIdFicha());
+        } else {
+            usuarioRepository.delete(usuario);
+            logger.info("Usuário com ID {} deletado do banco", id);
+        }
     }
 
     @Override

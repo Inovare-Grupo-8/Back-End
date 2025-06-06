@@ -51,8 +51,7 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void testCompletarCadastroUsuario() {
-        Integer id = 1;
+    public void testCompletarCadastroUsuario() {        Integer id = 1;
         UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
         Usuario usuario = new Usuario();
         Mockito.when(usuarioService.cadastrarSegundaFase(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuario);
@@ -64,8 +63,7 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void testAtualizarUsuario() {
-        Integer id = 1;
+    public void testAtualizarUsuario() {        Integer id = 1;
         UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
         UsuarioListarOutput usuarioAtualizado = new UsuarioListarOutput();
         Mockito.when(usuarioService.atualizarUsuario(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuarioAtualizado);
@@ -77,8 +75,7 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void testAtualizarUsuarioNaoEncontrado() {
-        Integer id = 1;
+    public void testAtualizarUsuarioNaoEncontrado() {        Integer id = 1;
         UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
         Mockito.when(usuarioService.atualizarUsuario(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(null);
 
@@ -88,8 +85,7 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void testExcluirUsuario() {
-        Integer id = 1;
+    public void testExcluirUsuario() {        Integer id = 1;
         Mockito.doNothing().when(usuarioService).deletarUsuario(eq(id));
 
         ResponseEntity<Void> response = usuarioController.deletarUsuario(id);
@@ -123,8 +119,7 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void testCompletarCadastroVoluntario() {
-        Integer id = 1;
+    public void testCompletarCadastroVoluntario() {        Integer id = 1;
         UsuarioInputSegundaFase usuarioInputSegundaFase = new UsuarioInputSegundaFase();
         Usuario usuario = new Usuario();
         Mockito.when(usuarioService.cadastrarSegundaFaseVoluntario(eq(id), any(UsuarioInputSegundaFase.class))).thenReturn(usuario);
