@@ -81,10 +81,7 @@ public class Ficha {
     @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-    }
-
-    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
-        this.setCpf(input.getCpf());
+    }    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
         this.setDtNascim(input.getDataNascimento());
         this.setRenda(input.getRenda() != null ? BigDecimal.valueOf(input.getRenda()) : null);
         this.setAreaOrientacao(input.getAreaOrientacao());

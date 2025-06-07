@@ -16,24 +16,22 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 public class UsuarioMapper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioMapper.class);    public static Usuario of(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase, UsuarioInputSegundaFase usuarioInputSegundaFase) {
+        Usuario usuario = new Usuario();
 
-    public static Usuario of(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase, UsuarioInputSegundaFase usuarioInputSegundaFase) {
-        Usuario usuario = new Usuario();        Ficha ficha = new Ficha();
+        Ficha ficha = new Ficha();
         ficha.setNome(usuarioInputPrimeiraFase.getNome());
         ficha.setSobrenome(usuarioInputPrimeiraFase.getSobrenome());
-        ficha.setCpf(usuarioInputSegundaFase.getCpf());
+        ficha.setCpf(usuarioInputPrimeiraFase.getCpf());
         ficha.setDtNascim(usuarioInputSegundaFase.getDataNascimento());
-
         usuario.setEmail(usuarioInputPrimeiraFase.getEmail());
         usuario.setSenha(usuarioInputPrimeiraFase.getSenha());
         usuario.setTipo(TipoUsuario.NAO_CLASSIFICADO);
         usuario.setFicha(ficha);
 
         return usuario;
-    }    public static Usuario of(UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
+    }public static Usuario of(UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
 //        LOGGER.debug("[USUARIO_MAPPER] Criando Usuario a partir de UsuarioAutenticacaoInput para email: {}",
 //                usuarioAutenticacaoInput.getEmail());
                 
