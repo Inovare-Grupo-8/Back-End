@@ -6,6 +6,7 @@ import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.com.imaapi.model.usuario.output.UsuarioClassificacaoOutput;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.List;
@@ -32,7 +33,11 @@ public interface UsuarioService {
 
     void deletarUsuario(Integer id);
     
-    Usuario buscarDadosPrimeiraFase(Integer idUsuario);
+    Usuario buscarDadosPrimeiraFase(Integer idUsuario);    Usuario buscarDadosPrimeiraFase(String email);
 
-    Usuario buscarDadosPrimeiraFase(String email);
+    List<UsuarioClassificacaoOutput> buscarUsuariosNaoClassificados();
+
+    UsuarioListarOutput classificarUsuarioComoGratuidade(Integer id);
+
+    UsuarioListarOutput classificarUsuarioComoValorSocial(Integer id);
 }

@@ -11,6 +11,7 @@ import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.com.imaapi.model.usuario.output.UsuarioClassificacaoOutput;
 import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.repository.FichaRepository;
 import org.com.imaapi.repository.TelefoneRepository;
@@ -35,11 +36,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
 
 @Service
 @Transactional
 public class UsuarioServiceImpl implements UsuarioService {
-    private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);    @Autowired
+    private TelefoneRepository telefoneRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -61,9 +64,6 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private EnderecoRepository enderecoRepository;
-
-    @Autowired
-    private TelefoneRepository telefoneRepository;
 
     @Autowired
     private FichaRepository fichaRepository;
@@ -374,14 +374,74 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Optional<Usuario> buscaUsuarioPorEmail(String email) {
-        logger.info("Buscando usuário com email: {}", email);
-        Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
+        logger.info("Buscando usuário por email: {}", email);
+        return usuarioRepository.findByEmail(email);
+    }    // Implementação dos novos métodos para classificação de usuários
+    @Override
+    public List<UsuarioClassificacaoOutput> buscarUsuariosNaoClassificados() {
+        logger.info("Buscando usuários não classificados");
+        List<Usuario> usuarios = usuarioRepository.findAll();
 
-        usuario.ifPresentOrElse(
-                usuario1 -> logger.info("Usuário encontrado: ID={}, email={}", usuario1.getIdUsuario(), usuario1.getEmail()),
-                () -> logger.warn("Usuário com email {} não encontrado", email)
-        );
+        // Filtrar usuários com tipo NAO_CLASSIFICADO e mapear para DTO completo
+        List<UsuarioClassificacaoOutput> usuariosNaoClassificados = usuarios.stream()
+                .filter(usuario -> usuario.getTipo() == TipoUsuario.NAO_CLASSIFICADO)
+                .map(usuario -> {
+                    // Buscar telefones para este usuário
+                    List<Telefone> telefones = Collections.emptyList();
+                    if (usuario.getFicha() != null) {
+                        telefones = telefoneRepository.findByFichaIdFicha(usuario.getFicha().getIdFicha());
+                    }
+                    return UsuarioMapper.ofClassificacao(usuario, telefones);
+                })
+                .toList();
 
-        return usuario;
+        logger.info("Total de usuários não classificados encontrados: {}", usuariosNaoClassificados.size());
+        return usuariosNaoClassificados;
+    }
+
+    @Override
+    public UsuarioListarOutput classificarUsuarioComoGratuidade(Integer id) {
+        logger.info("Classificando usuário ID {} como GRATUIDADE", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para ID: " + id));
+
+        // Verificar se o usuário está realmente como NAO_CLASSIFICADO
+        if (usuario.getTipo() != TipoUsuario.NAO_CLASSIFICADO) {
+            logger.warn("Tentativa de classificar usuário ID {} que não está como NAO_CLASSIFICADO. Tipo atual: {}",
+                    id, usuario.getTipo());
+            throw new IllegalStateException("Usuário não está pendente de classificação");
+        }
+
+        // Atualizar o tipo para GRATUIDADE
+        usuario.atualizarTipo(TipoUsuario.GRATUIDADE);
+        usuarioRepository.save(usuario);
+
+        logger.info("Usuário ID {} classificado como GRATUIDADE com sucesso", id);
+
+        return UsuarioMapper.of(usuario);
+    }
+
+    @Override
+    public UsuarioListarOutput classificarUsuarioComoValorSocial(Integer id) {
+        logger.info("Classificando usuário ID {} como VALOR_SOCIAL", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para ID: " + id));
+
+        // Verificar se o usuário está realmente como NAO_CLASSIFICADO
+        if (usuario.getTipo() != TipoUsuario.NAO_CLASSIFICADO) {
+            logger.warn("Tentativa de classificar usuário ID {} que não está como NAO_CLASSIFICADO. Tipo atual: {}",
+                    id, usuario.getTipo());
+            throw new IllegalStateException("Usuário não está pendente de classificação");
+        }
+
+        // Atualizar o tipo para VALOR_SOCIAL
+        usuario.atualizarTipo(TipoUsuario.VALOR_SOCIAL);
+        usuarioRepository.save(usuario);
+
+        logger.info("Usuário ID {} classificado como VALOR_SOCIAL com sucesso", id);
+
+        return UsuarioMapper.of(usuario);
     }
 }
