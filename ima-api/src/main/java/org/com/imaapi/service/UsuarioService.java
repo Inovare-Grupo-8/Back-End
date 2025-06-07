@@ -8,6 +8,7 @@ import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.model.usuario.output.UsuarioClassificacaoOutput;
 import org.com.imaapi.model.usuario.output.VoluntarioListagemOutput;
+
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.List;

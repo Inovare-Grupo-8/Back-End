@@ -59,7 +59,9 @@ public class UsuarioController {
         Usuario usuario = usuarioService.cadastrarPrimeiraFaseVoluntario(usuarioInputPrimeiraFase);
         UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
         return new ResponseEntity<>(output, HttpStatus.CREATED);
-    }@PatchMapping("/voluntario/fase2/{idUsuario}")
+    }
+  
+    @PatchMapping("/voluntario/fase2/{idUsuario}")
     public ResponseEntity<Usuario> completarCadastroVoluntario(
             @PathVariable Integer idUsuario,
             @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {

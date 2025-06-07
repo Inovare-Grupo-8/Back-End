@@ -53,7 +53,8 @@ public class EmailServiceImpl implements EmailService {
                         logger.info("Enviando email de boas-vindas - usuário comum");
                         helper.setSubject("Bem-vindo ao IMA!");
                         htmlContent = gerarConteudoHtmlBemVindo(nome);
-                        break;                    case "bem vindo voluntario":
+                        break;                    
+                  case "bem vindo voluntario":
                         logger.info("Enviando email de boas-vindas - voluntário");
                         helper.setSubject("Seja bem-vindo ao IMA Voluntário!");
                         htmlContent = gerarConteudoHtmlBemVindoVoluntario(nome);

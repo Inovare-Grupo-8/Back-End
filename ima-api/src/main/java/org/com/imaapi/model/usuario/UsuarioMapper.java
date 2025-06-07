@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 public class UsuarioMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioMapper.class);    public static Usuario of(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         Usuario usuario = new Usuario();
@@ -26,7 +25,6 @@ public class UsuarioMapper {
         ficha.setSobrenome(usuarioInputPrimeiraFase.getSobrenome());
         ficha.setCpf(usuarioInputPrimeiraFase.getCpf());
         ficha.setDtNascim(usuarioInputSegundaFase.getDataNascimento());
-
         usuario.setEmail(usuarioInputPrimeiraFase.getEmail());
         usuario.setSenha(usuarioInputPrimeiraFase.getSenha());
         usuario.setTipo(TipoUsuario.NAO_CLASSIFICADO);
