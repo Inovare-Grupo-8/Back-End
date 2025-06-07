@@ -13,6 +13,7 @@ import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.model.usuario.output.UsuarioClassificacaoOutput;
+import org.com.imaapi.model.usuario.output.VoluntarioListagemOutput;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.UsuarioService;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -54,12 +56,10 @@ public class UsuarioController {
         return ResponseEntity.ok(usuario);
     }    @PostMapping("/voluntario/fase1")
     public ResponseEntity<UsuarioPrimeiraFaseOutput> cadastrarVoluntarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
-        Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
+        Usuario usuario = usuarioService.cadastrarPrimeiraFaseVoluntario(usuarioInputPrimeiraFase);
         UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
         return new ResponseEntity<>(output, HttpStatus.CREATED);
-    }
-
-    @PatchMapping("/voluntario/fase2/{idUsuario}")
+    }@PatchMapping("/voluntario/fase2/{idUsuario}")
     public ResponseEntity<Usuario> completarCadastroVoluntario(
             @PathVariable Integer idUsuario,
             @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
@@ -70,6 +70,26 @@ public class UsuarioController {
             return ResponseEntity.badRequest().build();
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/voluntario/enviar-credenciais")
+    public ResponseEntity<String> enviarCredenciaisVoluntario(@RequestBody Map<String, String> dados) {
+        try {
+            String email = dados.get("email");
+            String nome = dados.get("nome");
+            String senha = dados.get("senha");
+            
+            if (email == null || nome == null || senha == null) {
+                return ResponseEntity.badRequest().body("Dados incompletos");
+            }
+            
+            String resultado = usuarioService.enviarCredenciaisVoluntario(email, nome, senha);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao enviar credenciais: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao enviar credenciais: " + e.getMessage());
         }
     }
 
@@ -131,13 +151,23 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-
     @GetMapping
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<List<UsuarioListarOutput>> listarUsuarios() {
         List<UsuarioListarOutput> usuarios = usuarioService.buscarUsuarios();
         return ResponseEntity.ok(usuarios);
+    }
+    
+    @GetMapping("/voluntarios")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<List<VoluntarioListagemOutput>> listarVoluntarios() {
+        try {
+            List<VoluntarioListagemOutput> voluntarios = usuarioService.listarVoluntarios();
+            return ResponseEntity.ok(voluntarios);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao listar voluntários: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")
