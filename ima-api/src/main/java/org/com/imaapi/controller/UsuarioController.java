@@ -12,6 +12,7 @@ import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.com.imaapi.model.usuario.output.UsuarioClassificacaoOutput;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.UsuarioService;
 import org.slf4j.Logger;
@@ -211,6 +212,37 @@ public class UsuarioController {
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }    @GetMapping("/nao-classificados")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<List<UsuarioClassificacaoOutput>> listarUsuariosNaoClassificados() {
+        List<UsuarioClassificacaoOutput> usuariosNaoClassificados = usuarioService.buscarUsuariosNaoClassificados();
+        return ResponseEntity.ok(usuariosNaoClassificados);
+    }
+
+    @PatchMapping("/{id}/classificar/aprovar")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<UsuarioListarOutput> aprovarUsuario(@PathVariable Integer id) {
+        try {
+            UsuarioListarOutput usuarioClassificado = usuarioService.classificarUsuarioComoGratuidade(id);
+            return ResponseEntity.ok(usuarioClassificado);
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PatchMapping("/{id}/classificar/rejeitar")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<UsuarioListarOutput> rejeitarUsuario(@PathVariable Integer id) {
+        try {
+            UsuarioListarOutput usuarioClassificado = usuarioService.classificarUsuarioComoValorSocial(id);
+            return ResponseEntity.ok(usuarioClassificado);
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

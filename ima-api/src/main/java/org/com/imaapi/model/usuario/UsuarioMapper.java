@@ -9,8 +9,12 @@ import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.com.imaapi.model.usuario.output.UsuarioClassificacaoOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class UsuarioMapper {
@@ -85,5 +89,78 @@ public class UsuarioMapper {
 //        LOGGER.debug("[USUARIO_MAPPER] Autoridades concedidas: {}", details.getAuthorities());
         
         return details;
+    }    public static UsuarioClassificacaoOutput ofClassificacao(Usuario usuario) {
+        return ofClassificacao(usuario, null);
+    }
+
+    public static UsuarioClassificacaoOutput ofClassificacao(Usuario usuario, List<Telefone> telefones) {
+        UsuarioClassificacaoOutput output = new UsuarioClassificacaoOutput();
+        
+        // Dados básicos do usuário
+        output.setId(usuario.getIdUsuario());
+        output.setEmail(usuario.getEmail());
+        output.setTipo(usuario.getTipo());
+        output.setDataCadastro(usuario.getDataCadastro());
+        
+        // Dados da ficha
+        if (usuario.getFicha() != null) {
+            Ficha ficha = usuario.getFicha();
+            output.setNome(ficha.getNome());
+            output.setSobrenome(ficha.getSobrenome());
+            output.setCpf(ficha.getCpf());
+            output.setDataNascimento(ficha.getDtNascim());
+            output.setRenda(ficha.getRenda());
+            output.setGenero(ficha.getGenero());
+            output.setAreaInteresse(ficha.getAreaOrientacao());
+            output.setProfissao(ficha.getProfissao());
+            
+            // Dados do endereço
+            if (ficha.getEndereco() != null) {
+                Endereco endereco = ficha.getEndereco();
+                output.setLogradouro(endereco.getLogradouro());
+                output.setNumero(endereco.getNumero());
+                output.setComplemento(endereco.getComplemento());
+                output.setBairro(endereco.getBairro());
+                output.setCidade(endereco.getCidade());
+                output.setUf(endereco.getUf());
+                output.setCep(endereco.getCep());
+            }
+            
+            // Telefones
+            if (telefones != null && !telefones.isEmpty()) {
+                List<UsuarioClassificacaoOutput.TelefoneOutput> telefonesOutput = telefones.stream()
+                    .map(telefone -> new UsuarioClassificacaoOutput.TelefoneOutput(
+                        formatarNumeroTelefone(telefone),
+                        telefone.getWhatsapp() != null && telefone.getWhatsapp() ? "WhatsApp" : "Telefone"
+                    ))
+                    .collect(Collectors.toList());
+                output.setTelefones(telefonesOutput);
+            }
+        }
+        
+        return output;
+    }
+
+    private static String formatarNumeroTelefone(Telefone telefone) {
+        StringBuilder numero = new StringBuilder();
+        if (telefone.getDdd() != null) {
+            numero.append("(").append(telefone.getDdd()).append(") ");
+        }
+        if (telefone.getPrefixo() != null) {
+            numero.append(telefone.getPrefixo());
+        }
+        if (telefone.getSufixo() != null) {
+            if (telefone.getPrefixo() != null) {
+                numero.append("-");
+            }
+            numero.append(telefone.getSufixo());
+        }
+        return numero.toString();
+    }
+
+    public static List<UsuarioClassificacaoOutput> ofClassificacaoList(List<Usuario> usuarios) {
+        return usuarios.stream()
+                .map(usuario -> ofClassificacao(usuario))
+                .collect(Collectors.toList());
     }
 }
