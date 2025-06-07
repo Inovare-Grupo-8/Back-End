@@ -31,11 +31,13 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
 
 @Service
 @Transactional
 public class UsuarioServiceImpl implements UsuarioService {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
+    
     @Autowired
     private TelefoneRepository telefoneRepository;
 

@@ -7,6 +7,7 @@ import org.com.imaapi.model.enums.Funcao;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -18,12 +19,18 @@ public class Voluntario {    @Id
     @Enumerated(EnumType.STRING)
     @Column(name = "funcao")
     private Funcao funcao;
-    
+
     @Column(name = "dt_cadastro", nullable = false)
     private LocalDate dataCadastro;
 
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
+
+    @Column(name = "registro_profissional")
+    private String registroProfissional;
+
+    @Column(name = "biografia_profissional", length = 500)
+    private String biografiaProfissional;
 
     @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
@@ -39,6 +46,9 @@ public class Voluntario {    @Id
     private Usuario usuario;    @Column(name = "fk_usuario", unique = true)
 
     private Integer fkUsuario;
+
+    @OneToMany(mappedBy = "voluntario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Disponibilidade> disponibilidades;
 
     @PrePersist
     public void prePersist() {
