@@ -47,6 +47,10 @@ public class Usuario {    @Id
     @Column(name = "versao")
     private Integer versao;
 
+    @Column(name = "foto_url")
+    private String fotoUrl;
+
+    //para gerar a data de cadastro no banco
     @PrePersist
     public void prePersist() {
         if (this.dataCadastro == null) {
