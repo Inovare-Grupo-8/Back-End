@@ -75,6 +75,7 @@ public class AssistenteSocialService {
         telefone.setWhatsapp(true); // Default assumption for social workers
         
         telefoneRepository.save(telefone);        // Create and set up Usuario
+
         Usuario usuario = new Usuario();
         usuario.setFicha(ficha);
         usuario.setEmail(input.getEmail());
@@ -149,6 +150,7 @@ public class AssistenteSocialService {
         fichaRepository.save(ficha);
         
         // Update usuario
+
         usuario.setEmail(input.getEmail());
         if (input.getSenha() != null && !input.getSenha().isEmpty()) {
             usuario.setSenha(passwordEncoder.encode(input.getSenha()));
@@ -178,7 +180,10 @@ public class AssistenteSocialService {
                 .orElseThrow(() -> new RuntimeException("Assistente Social não encontrado"));
                 
         return converterParaOutput(usuario);
-    }    private AssistenteSocialOutput converterParaOutput(Usuario usuario) {
+    }    
+  
+  private AssistenteSocialOutput converterParaOutput(Usuario usuario) {
+
         AssistenteSocialOutput output = new AssistenteSocialOutput();
         output.setIdUsuario(usuario.getIdUsuario());
         output.setNome(usuario.getFicha().getNome());
