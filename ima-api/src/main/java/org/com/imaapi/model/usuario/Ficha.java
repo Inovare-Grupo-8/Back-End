@@ -1,4 +1,4 @@
-package org.com.imaapi.model.usuario;
+/*package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -114,3 +114,4 @@ public class Ficha {
         }
     }
 }
+*/

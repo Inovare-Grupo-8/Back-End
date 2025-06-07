@@ -1,9 +1,9 @@
-package org.com.imaapi.service.impl;
+/*package org.com.imaapi.service.impl;
 
-import org.com.imaapi.model.usuario.Ficha;
+//import org.com.imaapi.model.usuario.Ficha;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
-import org.com.imaapi.repository.FichaRepository;
+//import org.com.imaapi.repository.FichaRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +26,11 @@ public class AutenticacaoServiceImpl implements UserDetailsService {
     private FichaRepository fichaRepository;
 
     @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return null;
+    }
+
+   /* @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 //        LOGGER.info("[AUTENTICAR_SERVICE] Buscando usuário para autenticação: {}", username);
 
@@ -64,6 +69,5 @@ public class AutenticacaoServiceImpl implements UserDetailsService {
                     username, e.getMessage(), e);
             throw e;
         }
-    }
+        */
 
-}

@@ -2,11 +2,9 @@ package org.com.imaapi.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.com.imaapi.model.consulta.AvaliacaoConsulta;
-import org.com.imaapi.model.consulta.AvaliacaoConsulta;
 import org.com.imaapi.model.consulta.Consulta;
 import org.com.imaapi.model.consulta.MotivoCancelamento;
 import org.com.imaapi.model.consulta.RemarcarConsulta;
-import org.com.imaapi.model.consulta.FeedbackConsulta;
 import org.com.imaapi.model.consulta.FeedbackConsulta;
 import org.com.imaapi.model.consulta.dto.ConsultaDto;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
@@ -15,20 +13,20 @@ import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.com.imaapi.model.enums.StatusConsulta;
 import org.com.imaapi.model.especialidade.Especialidade;
 import org.com.imaapi.model.usuario.Usuario;
-import org.com.imaapi.model.enums.StatusConsulta;
-import org.com.imaapi.repository.AvaliacaoConsultaRepository;
+import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.repository.AvaliacaoConsultaRepository;
 import org.com.imaapi.repository.ConsultaRepository;
 import org.com.imaapi.repository.EspecialidadeRepository;
 import org.com.imaapi.repository.FeedbackConsultaRepository;
 import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.repository.*;
 import org.com.imaapi.service.ConsultaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -37,17 +35,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,23 +52,16 @@ public class ConsultaServiceImpl implements ConsultaService {
     @Autowired
     private EspecialidadeRepository especialidadeRepository;
 
+    @Autowired
+    private FeedbackConsultaRepository feedbackRepository;
+
+    @Autowired
+    private AvaliacaoConsultaRepository avaliacaoRepository;
+
     @Override
     public ResponseEntity<ConsultaOutput> detalhar(Integer id) {
         return ConsultaService.super.detalhar(id);
     }
-
-    @Override
-    @Autowired
-    private FeedbackConsultaRepository feedbackRepository;
-
-    @Autowired
-    private AvaliacaoConsultaRepository avaliacaoRepository;
-
-    @Autowired
-    private FeedbackConsultaRepository feedbackRepository;
-
-    @Autowired
-    private AvaliacaoConsultaRepository avaliacaoRepository;
 
     @Override
     public ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput) {
@@ -181,12 +162,12 @@ public class ConsultaServiceImpl implements ConsultaService {
                         logger.error("ID do voluntário é nulo");
                         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                     }
-            if (consultaInput.getIdEspecialidade() == null ||
-                    consultaInput.getIdAssistido() == null ||
-                    consultaInput.getIdVoluntario() == null) {
-                logger.error("Campos obrigatórios não podem ser nulos.");
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
+                    if (consultaInput.getIdEspecialidade() == null ||
+                            consultaInput.getIdAssistido() == null ||
+                            consultaInput.getIdVoluntario() == null) {
+                        logger.error("Campos obrigatórios não podem ser nulos.");
+                        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                    }
 
                     consulta.setVoluntario(usuarioRepository.findById(consultaInput.getIdVoluntario())
                             .orElseThrow(() -> new RuntimeException("Usuário voluntário não encontrado com ID " + consultaInput.getIdVoluntario())));
@@ -254,9 +235,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 
                 output.setIdConsulta(consultaSalva.getIdConsulta());
 
-            ConsultaOutput eventoResponse = gerarObjetoEventoOutput(salvarConsulta);
-            return new ResponseEntity<>(eventoResponse, HttpStatus.CREATED);
-                logger.debug("Output da consulta criada: {}", output);
+                return new ResponseEntity<>(output, HttpStatus.CREATED);
             } catch (Exception e) {
                 logger.error("Erro ao carregar detalhes completos para resposta: {}", e.getMessage());
 
@@ -270,8 +249,9 @@ public class ConsultaServiceImpl implements ConsultaService {
                 output.setEspecialidade(consultaSalva.getEspecialidade());
                 output.setAssistido(consultaSalva.getAssistido());
                 output.setVoluntario(consultaSalva.getVoluntario());
+
+                return new ResponseEntity<>(output, HttpStatus.CREATED);
             }
-            return new ResponseEntity<>(output, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar evento: {}", erro.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -288,6 +268,7 @@ public class ConsultaServiceImpl implements ConsultaService {
         output.setEspecialidade(salvarConsulta.getEspecialidade());
         output.setAssistido(salvarConsulta.getAssistido());
         output.setVoluntario(salvarConsulta.getVoluntario());
+        output.setIdConsulta(salvarConsulta.getIdConsulta());
         return output;
     }
 
@@ -368,6 +349,7 @@ public class ConsultaServiceImpl implements ConsultaService {
         ConsultaOutput output = gerarObjetoEventoOutput(consultaOptional.get());
         return ResponseEntity.ok(output);
     }
+
     @Override
     public List<ConsultaOutput> listarHistoricoPorAssistido(Integer idAssistido) {
         List<Consulta> consultas = consultaRepository.findByAssistidoId(idAssistido);
@@ -391,8 +373,6 @@ public class ConsultaServiceImpl implements ConsultaService {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-
-
     @Override
     public List<ConsultaOutput> listarConsultasPorDia(Integer voluntarioId, LocalDateTime data) {
         LocalDateTime startOfDay = data.toLocalDate().atStartOfDay();
@@ -414,6 +394,7 @@ public class ConsultaServiceImpl implements ConsultaService {
                 ))
                 .collect(Collectors.toList());
     }
+
     @Override
     public List<ConsultaOutput> listarHistoricoConsultas(Integer voluntarioId) {
         LocalDateTime agora = LocalDateTime.now();
@@ -451,6 +432,7 @@ public class ConsultaServiceImpl implements ConsultaService {
                 consulta.getVoluntario()
         );
     }
+
     @Override
     public List<ConsultaOutput> listarProximasConsultas(Integer voluntarioId) {
         LocalDateTime agora = LocalDateTime.now();
@@ -488,6 +470,7 @@ public class ConsultaServiceImpl implements ConsultaService {
                 consulta.getVoluntario()
         );
     }
+
     @Override
     public List<ConsultaOutput> listarProximasConsultasAssistido(Integer assistidoId) {
         LocalDateTime agora = LocalDateTime.now();
@@ -510,233 +493,42 @@ public class ConsultaServiceImpl implements ConsultaService {
 
     @Override
     public ConsultaOutput remarcarConsulta(Integer id, RemarcarConsulta dto) {
-        Consulta consulta = consultaRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Consulta não encontrada"));
+        try {
+            Consulta consulta = consultaRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Consulta não encontrada"));
 
-        if (dto.getHorario() != null) {
-            consulta.setHorario(dto.getHorario());
-        }
-        if (dto.getLocal() != null) {
-            consulta.setLocal(dto.getLocal());
-        }
-        if (dto.getModalidade() != null) {
-            consulta.setModalidade(dto.getModalidade());
-        }
+            if (dto.getHorario() != null) {
+                consulta.setHorario(dto.getHorario());
+            }
+            if (dto.getLocal() != null) {
+                consulta.setLocal(dto.getLocal());
+            }
+            if (dto.getModalidade() != null) {
+                consulta.setModalidade(dto.getModalidade());
+            }
 
-        consultaRepository.save(consulta);
-            erro.printStackTrace();
+            consultaRepository.save(consulta);
 
+            return new ConsultaOutput(
+                    consulta.getIdConsulta(),
+                    consulta.getHorario(),
+                    consulta.getStatus(),
+                    consulta.getModalidade(),
+                    consulta.getLocal(),
+                    consulta.getObservacoes(),
+                    consulta.getEspecialidade(),
+                    consulta.getAssistido(),
+                    consulta.getVoluntario()
+            );
+        } catch (Exception erro) {
+            logger.error("Erro ao remarcar consulta: {}", erro.getMessage());
             ConsultaOutput errorOutput = new ConsultaOutput();
-            errorOutput.setObservacoes("Erro ao cadastrar evento: " + erro.getMessage());
-        return new ConsultaOutput(
-                consulta.getIdConsulta(),
-                consulta.getHorario(),
-                consulta.getStatus(),
-                consulta.getModalidade(),
-                consulta.getLocal(),
-                consulta.getObservacoes(),
-                consulta.getEspecialidade(),
-                consulta.getAssistido(),
-                consulta.getVoluntario()
-        );
-    }
-
-            return new ResponseEntity<>(errorOutput, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-}
-
-
-    @Override
-    public ResponseEntity<?> getConsultasDia(String user) {
-        try {
-            if (!user.equals("voluntario") && !user.equals("assistido")) {
-                return ResponseEntity.badRequest().body("Tipo de usuário inválido");
-            }
-
-            LocalDateTime inicio = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-            LocalDateTime fim = inicio.plusDays(1);
-
-            List<Consulta> consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(
-                    user.equals("voluntario") ? getUsuarioLogado().getIdUsuario() : null,
-                    inicio,
-                    fim
-            );
-
-            return ResponseEntity.ok(consultas);
-        } catch (Exception e) {
-            logger.error("Erro ao buscar consultas do dia: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
+            errorOutput.setObservacoes("Erro ao remarcar consulta: " + erro.getMessage());
+            return errorOutput;
         }
     }
 
-    @Override
-    public ResponseEntity<?> getConsultasSemana(String user) {
-        try {
-            if (!user.equals("voluntario") && !user.equals("assistido")) {
-                return ResponseEntity.badRequest().body("Tipo de usuário inválido");
-            }
-
-            LocalDateTime inicio = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-            LocalDateTime fim = inicio.plusWeeks(1);
-
-            List<Consulta> consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(
-                    user.equals("voluntario") ? getUsuarioLogado().getIdUsuario() : null,
-                    inicio,
-                    fim
-            );
-
-            return ResponseEntity.ok(consultas);
-        } catch (Exception e) {
-            logger.error("Erro ao buscar consultas da semana: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> getConsultasMes(String user) {
-        try {
-            if (!user.equals("voluntario") && !user.equals("assistido")) {
-                return ResponseEntity.badRequest().body("Tipo de usuário inválido");
-            }
-
-            LocalDateTime inicio = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-            LocalDateTime fim = inicio.plusMonths(1);
-
-            List<Consulta> consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(
-                    user.equals("voluntario") ? getUsuarioLogado().getIdUsuario() : null,
-                    inicio,
-                    fim
-            );
-
-            return ResponseEntity.ok(consultas);
-        } catch (Exception e) {
-            logger.error("Erro ao buscar consultas do mês: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> getAvaliacoesFeedback(String user) {
-        try {
-            if (!user.equals("voluntario") && !user.equals("assistido")) {
-                return ResponseEntity.badRequest().body("Tipo de usuário inválido");
-            }
-
-            Integer userId = getUsuarioLogado().getIdUsuario();
-
-            List<FeedbackConsulta> feedbacks;
-            List<AvaliacaoConsulta> avaliacoes;
-
-            if (user.equals("voluntario")) {
-                feedbacks = feedbackRepository.findByConsulta_Voluntario_IdUsuario(userId);
-                avaliacoes = avaliacaoRepository.findByConsulta_Voluntario_IdUsuario(userId);
-            } else {
-                feedbacks = feedbackRepository.findByConsulta_Assistido_IdUsuario(userId);
-                avaliacoes = avaliacaoRepository.findByConsulta_Assistido_IdUsuario(userId);
-            }
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("feedbacks", feedbacks);
-            response.put("avaliacoes", avaliacoes);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Erro ao buscar avaliações e feedbacks: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> getConsultasRecentes(String user) {
-        try {
-            if (!user.equals("voluntario") && !user.equals("assistido")) {
-                return ResponseEntity.badRequest().body("Tipo de usuário inválido");
-            }
-
-            LocalDateTime inicio = LocalDateTime.now().minusMonths(1);
-            LocalDateTime fim = LocalDateTime.now();
-
-            List<Consulta> consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(
-                    user.equals("voluntario") ? getUsuarioLogado().getIdUsuario() : null,
-                    inicio,
-                    fim
-            );
-
-            return ResponseEntity.ok(consultas.stream().map(Consulta::getIdConsulta).collect(Collectors.toList()));
-        } catch (Exception e) {
-            logger.error("Erro ao buscar consultas recentes: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> adicionarFeedback(Long id, String feedback) {
-        try {
-            if (id == null || feedback == null || feedback.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("ID e feedback são obrigatórios");
-            }
-
-            Consulta consulta = consultaRepository.findById(id.intValue())
-                    .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
-
-            FeedbackConsulta feedbackConsulta = new FeedbackConsulta();
-            feedbackConsulta.setConsulta(consulta);
-            feedbackConsulta.setComentario(feedback);
-            feedbackConsulta.setDtFeedback(LocalDateTime.now());
-
-            feedbackRepository.save(feedbackConsulta);
-
-            consulta.setFeedbackStatus("ENVIADO");
-            consultaRepository.save(consulta);
-
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            logger.error("Erro ao adicionar feedback: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> adicionarAvaliacao(Long id, String avaliacao) {
-        try {
-            if (id == null || avaliacao == null || avaliacao.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("ID e avaliação são obrigatórios");
-            }
-
-            int nota;
-            try {
-                nota = Integer.parseInt(avaliacao.trim());
-                if (nota < 1 || nota > 5) {
-                    return ResponseEntity.badRequest().body("A nota deve estar entre 1 e 5");
-                }
-            } catch (NumberFormatException e) {
-                return ResponseEntity.badRequest().body("A avaliação deve ser um número entre 1 e 5");
-            }
-
-            Consulta consulta = consultaRepository.findById(id.intValue())
-                    .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
-
-            AvaliacaoConsulta avaliacaoConsulta = new AvaliacaoConsulta();
-            avaliacaoConsulta.setConsulta(consulta);
-            avaliacaoConsulta.setNota(nota);
-            avaliacaoConsulta.setDtAvaliacao(LocalDateTime.now());
-
-            avaliacaoRepository.save(avaliacaoConsulta);
-
-            consulta.setAvaliacaoStatus("ENVIADO");
-            consultaRepository.save(consulta);
-
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            logger.error("Erro ao adicionar avaliação: {}", e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    private Usuario getUsuarioLogado() {
-        return null;
-    }
+    // Métodos para consultas por período e avaliações/feedbacks
 
     @Override
     public ResponseEntity<List<ConsultaDto>> getConsultasDia(String user) {
@@ -771,7 +563,7 @@ public class ConsultaServiceImpl implements ConsultaService {
             logger.debug("Encontradas {} consultas do dia para {} com ID: {}",
                     consultas.size(), user, userId);
             List<ConsultaDto> dtos = consultas.stream()
-                    .map(consulta -> ConsultaMapper.toDto(consulta))
+                    .map(ConsultaMapper::toDto)
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(dtos);
@@ -821,7 +613,7 @@ public class ConsultaServiceImpl implements ConsultaService {
                     consultas.size(), user, userId);
             List<ConsultaDto> dtos = consultas.stream()
                     .sorted(Comparator.comparing(Consulta::getHorario))
-                    .map(consulta -> ConsultaMapper.toDto(consulta))
+                    .map(ConsultaMapper::toDto)
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(dtos);
@@ -861,7 +653,7 @@ public class ConsultaServiceImpl implements ConsultaService {
                     consultas.size(), user, userId);
             List<ConsultaDto> dtos = consultas.stream()
                     .sorted(Comparator.comparing(Consulta::getHorario).reversed())
-                    .map(consulta -> ConsultaMapper.toDto(consulta))
+                    .map(ConsultaMapper::toDto)
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(dtos);
@@ -954,7 +746,7 @@ public class ConsultaServiceImpl implements ConsultaService {
             logger.info("Retornando {} consultas recentes para {} com ID: {}", consultasOrdenadas.size(), user, userId);
 
             List<ConsultaDto> dtos = consultasOrdenadas.stream()
-                    .map(consulta -> ConsultaMapper.toDto(consulta))
+                    .map(ConsultaMapper::toDto)
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(dtos);
@@ -963,6 +755,16 @@ public class ConsultaServiceImpl implements ConsultaService {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @Override
+    public ResponseEntity<?> adicionarFeedback(Long id, String feedback) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<?> adicionarAvaliacao(Long id, String avaliacao) {
+        return null;
     }
 
     @Override
@@ -1056,12 +858,12 @@ public class ConsultaServiceImpl implements ConsultaService {
 
     private Usuario getUsuarioLogado() {
         try {
-            org.springframework.security.core.Authentication authentication =
-                    org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            Authentication authentication =
+                    SecurityContextHolder.getContext().getAuthentication();
 
-            if (authentication != null && authentication.getPrincipal() instanceof org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput) {
-                org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput userDetails =
-                        (org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput) authentication.getPrincipal();
+            if (authentication != null && authentication.getPrincipal() instanceof UsuarioDetalhesOutput) {
+                UsuarioDetalhesOutput userDetails =
+                        (UsuarioDetalhesOutput) authentication.getPrincipal();
 
                 Usuario usuario = new Usuario();
                 usuario.setIdUsuario(userDetails.getIdUsuario());
@@ -1083,6 +885,7 @@ public class ConsultaServiceImpl implements ConsultaService {
             Usuario usuario = new Usuario();
             usuario.setIdUsuario(1);
             return usuario;
+
         }
     }
 }

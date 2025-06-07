@@ -150,30 +150,6 @@ public class ConsultaController {
         return consultaService.adicionarAvaliacao(id, avaliacao);
     }
 
-    @GetMapping("/consultas/dia")
-    public ResponseEntity<List<ConsultaDto>> getConsultasDia(@RequestParam String user) {
-        return consultaService.getConsultasDia(user);
-    }
-
-    @GetMapping("/consultas/semana")
-    public ResponseEntity<List<ConsultaDto>> getConsultasSemana(@RequestParam String user) {
-        return consultaService.getConsultasSemana(user);
-    }
-
-    @GetMapping("/consultas/mes")
-    public ResponseEntity<List<ConsultaDto>> getConsultasMes(@RequestParam String user) {
-        return consultaService.getConsultasMes(user);
-    }
-
-    @GetMapping("/consultas/avaliacoes-feedback")
-    public ResponseEntity<Map<String, Object>> getAvaliacoesFeedback(@RequestParam String user) {
-        return consultaService.getAvaliacoesFeedback(user);
-    }
-
-    @GetMapping("/consultas/recentes")
-    public ResponseEntity<List<ConsultaDto>> getConsultasRecentes(@RequestParam String user) {
-        return consultaService.getConsultasRecentes(user);
-    }
 
     @GetMapping("/consultas/todas")
     public ResponseEntity<List<ConsultaDto>> getTodasConsultas() {

@@ -1,4 +1,4 @@
-package org.com.imaapi.repository;
+/*package org.com.imaapi.repository;
 
 import org.com.imaapi.model.usuario.Ficha;
 import org.com.imaapi.model.usuario.Usuario;
@@ -15,3 +15,4 @@ public interface FichaRepository extends JpaRepository<Ficha, Integer> {
            nativeQuery = true)
     List<Usuario> findByNomeOrSobrenomeContaining(@Param("termo") String termo);
 }
+*/

@@ -1,6 +1,6 @@
-package org.com.imaapi.config;
+/*package org.com.imaapi.config;
 
-import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
+//import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -29,7 +29,7 @@ public class AutenticacaoProvider implements AuthenticationProvider {
         
 //        LOGGER.info("[AUTENTICAR_PROVIDER] Tentando autenticar usuário: {}", username);
         
-        try {
+       /* try {
             UserDetails userDetails = this.autenticacaoService.loadUserByUsername(username);
 //            LOGGER.debug("[AUTENTICAR_PROVIDER] UserDetails carregado para: {}", username);
 //            LOGGER.debug("[AUTENTICAR_PROVIDER] Senha fornecida (primeiros 4 caracteres): {}",
@@ -57,3 +57,4 @@ public class AutenticacaoProvider implements AuthenticationProvider {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
 }
+*/

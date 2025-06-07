@@ -15,7 +15,8 @@ import java.time.LocalDateTime;
 @Table(name = "usuario")
 @Getter
 @Setter
-public class Usuario {    @Id
+public class Usuario {
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Integer idUsuario;
@@ -65,8 +66,9 @@ public class Usuario {    @Id
             this.tipo = TipoUsuario.NAO_CLASSIFICADO;
         }
     }
+}
 
-    @PreUpdate
+  /*  @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
     }
@@ -87,4 +89,4 @@ public class Usuario {    @Id
     public void atualizarTipo(TipoUsuario tipo) {
         this.setTipo(tipo);
     }
-}
+}*/

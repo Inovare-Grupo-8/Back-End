@@ -29,19 +29,6 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Integer> {
     List<Consulta> findTop3ByAssistidoIdAndHorarioAfterOrderByHorarioAsc(Integer assistidoId, LocalDateTime dataAtual);
 
 
-    List<Consulta> findByVoluntario_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
-    List<Consulta> findByAssistido_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
-    List<Consulta> findByVoluntario_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
-    List<Consulta> findByAssistido_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
-    // Métodos existentes
-    List<Consulta> findByVoluntario_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
-
-    List<Consulta> findByAssistido_IdUsuarioAndHorarioBetween(Integer idUsuario, LocalDateTime inicio, LocalDateTime fim);
-
-    List<Consulta> findByVoluntario_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
-
-    List<Consulta> findByAssistido_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
-
     // Métodos para buscar todas as consultas de um usuário
     List<Consulta> findByVoluntario_IdUsuario(Integer idUsuario);
 

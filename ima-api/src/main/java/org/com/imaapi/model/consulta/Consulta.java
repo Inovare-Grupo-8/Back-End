@@ -60,10 +60,4 @@ public class Consulta {    @Id
 
     @Column(name = "avaliacao_status")
     private String avaliacaoStatus = "PENDENTE";
-
-    @Column(name = "feedback_status")
-    private String feedbackStatus = "PENDENTE";
-
-    @Column(name = "avaliacao_status")
-    private String avaliacaoStatus = "PENDENTE";
 }
