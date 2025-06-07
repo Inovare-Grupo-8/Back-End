@@ -100,6 +100,7 @@ public class EmailServiceImpl implements EmailService {
                 destinatario, maxTentativas, ultimaExcecao != null ? ultimaExcecao.getMessage() : "Erro desconhecido");
         return "Erro ao enviar e-mail após " + maxTentativas + " tentativas: " + 
                (ultimaExcecao != null ? ultimaExcecao.getMessage() : "Erro desconhecido");
+
     }
 
     private String gerarConteudoHtmlContinuarCadastro(String nome, Integer idUsuario) {
