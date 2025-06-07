@@ -17,7 +17,9 @@ public class UsuarioInputPrimeiraFase {
 
     @NotBlank(message = "Nome não pode estar em branco")
     @Size(min = 3, message = "O nome deve ter entre 3 e 50 caracteres")
-    private String sobrenome;    @NotNull(message = "Email não pode ser nulo")
+    private String sobrenome;    
+    
+    @NotNull(message = "Email não pode ser nulo")
     @Email(message = "Email inválido")
     private String email;
 
