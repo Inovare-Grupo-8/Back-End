@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Data
-@Getter
-@Setter
 @Table(name = "enderecos")
 public class EnderecoOutput {
     private String cep;

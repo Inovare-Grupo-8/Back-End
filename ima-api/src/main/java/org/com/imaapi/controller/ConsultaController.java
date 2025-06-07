@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import org.com.imaapi.model.consulta.dto.ConsultaDto;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
+import org.com.imaapi.model.consulta.input.ConsultaRemarcarInput;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
 import org.com.imaapi.model.enums.StatusConsulta;
@@ -86,13 +87,33 @@ public class ConsultaController {
             @PathVariable Integer id,
             @RequestBody String feedback) {
         return consultaService.adicionarFeedback(id, feedback);
-    }
-
-    @PostMapping("/consultas/{id}/avaliacao")
+    }    @PostMapping("/consultas/{id}/avaliacao")
     public ResponseEntity<ConsultaDto> adicionarAvaliacao(
             @PathVariable Integer id,
             @RequestBody String avaliacao) {
         return consultaService.adicionarAvaliacao(id, avaliacao);
+    }
+    
+    @GetMapping("/consultas/historico")
+    public ResponseEntity<List<ConsultaOutput>> listarHistoricoConsultasVoluntario(
+            @RequestParam("user") String user) {
+        List<ConsultaOutput> historico = consultaService.buscarHistoricoConsultas(user);
+        return ResponseEntity.ok(historico);
+    }
+    
+    @GetMapping("/consultas/3-proximas")
+    public ResponseEntity<List<ConsultaOutput>> listarProximasConsultas(
+            @RequestParam("user") String user) {
+        List<ConsultaOutput> proximasConsultas = consultaService.buscarProximasConsultas(user);
+        return ResponseEntity.ok(proximasConsultas);
+    }
+    
+    @PatchMapping("/consultas/{id}/remarcar")
+    public ResponseEntity<Void> remarcarConsulta(
+            @PathVariable Integer id,
+            @RequestBody ConsultaRemarcarInput input) {
+        consultaService.remarcarConsulta(id, input);
+        return ResponseEntity.noContent().build();
     }
     
     @PostMapping("/validate")

@@ -6,11 +6,9 @@ import org.com.imaapi.model.usuario.output.EnderecoOutput;
 
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name = "endereco")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Endereco {
