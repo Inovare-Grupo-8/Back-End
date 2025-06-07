@@ -11,8 +11,10 @@ import org.com.imaapi.model.enums.StatusConsulta;
 import org.com.imaapi.service.ConsultaService;
 import org.com.imaapi.util.JsonValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -57,7 +59,12 @@ public class ConsultaController {
     public ResponseEntity<List<ConsultaDto>> getConsultasRecentes(@RequestParam String user) {
         return consultaService.getConsultasRecentes(user);
     }
-    
+
+    @GetMapping("/consultas/{idUsuario}/proxima")
+    public ResponseEntity<?> getProximaConsulta(@PathVariable Integer idUsuario) {
+        return consultaService.getProximaConsulta(idUsuario);
+    }
+
     @GetMapping("/consultas/todas")
     public ResponseEntity<List<ConsultaDto>> getTodasConsultas() {
         return consultaService.getTodasConsultas();
@@ -73,19 +80,20 @@ public class ConsultaController {
         return consultaService.getConsultaPorId(id);
     }
 
+
     @PostMapping("/consultas/{id}/feedback")
     public ResponseEntity<ConsultaDto> adicionarFeedback(
             @PathVariable Integer id,
             @RequestBody String feedback) {
         return consultaService.adicionarFeedback(id, feedback);
-    }    
+    }
 
     @PostMapping("/consultas/{id}/avaliacao")
     public ResponseEntity<ConsultaDto> adicionarAvaliacao(
             @PathVariable Integer id,
             @RequestBody String avaliacao) {
         return consultaService.adicionarAvaliacao(id, avaliacao);
-    }   
+    }
     
     @PostMapping("/validate")
     public ResponseEntity<Map<String, Object>> validateConsultaInput(@RequestBody String rawJson) {
@@ -165,4 +173,13 @@ public class ConsultaController {
             return ResponseEntity.ok(response);
         }
     }
+
+    @GetMapping("/horarios-disponiveis")
+    public ResponseEntity<?> getHorariosDisponiveis(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
+            @RequestParam Integer idVoluntario
+    ) {
+        return consultaService.getHorariosDisponiveis(data, idVoluntario);
+    }
+
 }
