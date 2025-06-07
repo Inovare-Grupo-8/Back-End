@@ -2,6 +2,7 @@ package org.com.imaapi.model.consulta;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Data

@@ -9,8 +9,10 @@ import java.math.BigDecimal;
 @Data
 @Entity
 @Table(name = "doacao")
-public class Doacao {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class Doacao {    
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_doacao")
     private Integer idDoacao;
 

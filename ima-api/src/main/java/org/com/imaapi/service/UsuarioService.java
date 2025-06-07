@@ -12,13 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioService {
-    Usuario cadastrarPrimeiraFase(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase);
-    
-    Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
+    Usuario cadastrarPrimeiraFase(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase);    Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
     
     Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
 
-    UsuarioTokenOutput autenticar(Usuario usuario, Ficha ficha);
+    UsuarioTokenOutput autenticar(Usuario usuario, Ficha ficha, String senha);
 
     List<UsuarioListarOutput> buscarUsuarios();
 

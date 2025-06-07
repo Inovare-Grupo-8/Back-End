@@ -2,16 +2,15 @@ package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Setter;
 import org.com.imaapi.model.usuario.input.TelefoneInput;
+
 import java.time.LocalDateTime;
 
 
 @Data
 @Entity
 @Table(name = "telefone")
-public class Telefone {
-    @Id
+public class Telefone {    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_telefone")
     private Integer idTelefone;
@@ -55,7 +54,9 @@ public class Telefone {
     @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-    }    public static Telefone of(TelefoneInput telefoneInput, Ficha ficha) {
+    }
+
+    public static Telefone of(TelefoneInput telefoneInput, Ficha ficha) {
         Telefone telefone = new Telefone();
         telefone.setFicha(ficha);
         telefone.setDdd(telefoneInput.getDdd());

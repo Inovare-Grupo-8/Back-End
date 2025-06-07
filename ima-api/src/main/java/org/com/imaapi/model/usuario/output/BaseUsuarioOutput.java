@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Data
-@Getter @Setter
+@Getter
+@Setter
 public abstract class BaseUsuarioOutput {
     private Integer idUsuario;
     private String nome;

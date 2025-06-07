@@ -1,23 +1,22 @@
 package org.com.imaapi.model.consulta.input;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
 import org.com.imaapi.model.enums.StatusConsulta;
+import org.com.imaapi.model.especialidade.Especialidade;
+import org.com.imaapi.model.usuario.Usuario;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConsultaInput {
+    @NotNull(message = "O horário da consulta é obrigatório")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime horario;
 
@@ -31,7 +30,19 @@ public class ConsultaInput {
     private String local;
 
     private String observacoes;
+
     private Integer idEspecialidade;
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Especialidade especialidade;
+
     private Integer idAssistido;
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "senha", "tipo", "ficha.endereco"})
+    private Usuario assistido;
+
     private Integer idVoluntario;
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "senha", "tipo", "ficha.endereco"})
+    private Usuario voluntario;
 }

@@ -4,6 +4,8 @@ public enum StatusConsulta {
     AGENDADA("agendada"),
     REAGENDADA("reagendada"),
     REALIZADA("realizada"),
+    EM_ANDAMENTO("em_andamento"),
+    CONCLUIDA("concluida"),
     CANCELADA("cancelada");
 
     private final String value;

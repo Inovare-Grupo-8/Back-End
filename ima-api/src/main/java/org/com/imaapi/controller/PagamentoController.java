@@ -4,13 +4,13 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.com.imaapi.model.pagamento.dto.Charge;
-
 import org.com.imaapi.model.pagamento.dto.TEDPaymentResponse;
 import org.com.imaapi.service.pagamento.PixService;
 import org.com.imaapi.service.pagamento.TEDService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 @Data
 @Getter
 @Setter
