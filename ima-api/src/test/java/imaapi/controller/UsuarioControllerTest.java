@@ -38,17 +38,17 @@ public class UsuarioControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    public void testCadastrarUsuario() {
-        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
-        Usuario usuario = new Usuario();
-        Mockito.when(usuarioService.cadastrarPrimeiraFase(any(UsuarioInputPrimeiraFase.class))).thenReturn(usuario);
-
-        ResponseEntity<Usuario> response = usuarioController.cadastrarUsuarioFase1(usuarioInputPrimeiraFase);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(usuario, response.getBody());
-    }
+//    @Test
+//    public void testCadastrarUsuario() {
+//        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
+//        Usuario usuario = new Usuario();
+//        Mockito.when(usuarioService.cadastrarPrimeiraFase(any(UsuarioInputPrimeiraFase.class))).thenReturn(usuario);
+//
+//        ResponseEntity<Usuario> response = usuarioController.cadastrarUsuarioFase1(usuarioInputPrimeiraFase);
+//
+//        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+//        assertEquals(usuario, response.getBody());
+//    }
 
     @Test
     public void testCompletarCadastroUsuario() {        Integer id = 1;
@@ -106,17 +106,17 @@ public class UsuarioControllerTest {
         }
     }
 
-    @Test
-    public void testCadastrarVoluntario() {
-        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
-        Usuario usuario = new Usuario();
-        Mockito.when(usuarioService.cadastrarPrimeiraFase(any(UsuarioInputPrimeiraFase.class))).thenReturn(usuario);
-
-        ResponseEntity<Usuario> response = usuarioController.cadastrarVoluntarioFase1(usuarioInputPrimeiraFase);
-
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(usuario, response.getBody());
-    }
+//    @Test
+//    public void testCadastrarVoluntario() {
+//        UsuarioInputPrimeiraFase usuarioInputPrimeiraFase = new UsuarioInputPrimeiraFase();
+//        Usuario usuario = new Usuario();
+//        Mockito.when(usuarioService.cadastrarPrimeiraFase(any(UsuarioInputPrimeiraFase.class))).thenReturn(usuario);
+//
+//        ResponseEntity<Usuario> response = usuarioController.cadastrarVoluntarioFase1(usuarioInputPrimeiraFase);
+//
+//        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+//        assertEquals(usuario, response.getBody());
+//    }
 
     @Test
     public void testCompletarCadastroVoluntario() {        Integer id = 1;

@@ -529,6 +529,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 
             logger.info("Retornando {} consultas recentes para {} com ID: {}", consultasOrdenadas.size(), user, userId);
 
+
             List<ConsultaDto> dtos = consultasOrdenadas.stream()
                     .map(consulta -> ConsultaMapper.toDto(consulta))
                     .collect(Collectors.toList());
@@ -671,6 +672,63 @@ public class ConsultaServiceImpl implements ConsultaService {
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
             logger.error("Erro ao buscar todas as consultas: {}", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<List<ConsultaDto>> getConsultasUsuarioLogado() {
+        try {
+            Integer userId = getUsuarioLogado().getIdUsuario();
+            logger.info("Buscando todas as consultas do usuário logado com ID: {}", userId);
+
+            List<Consulta> consultas = consultaRepository.findByAssistido_IdUsuarioOrVoluntario_IdUsuario(userId, userId);
+            
+            logger.debug("Encontradas {} consultas para o usuário {}", consultas.size(), userId);
+            
+            List<ConsultaDto> dtos = consultas.stream()
+                    .sorted(Comparator.comparing(Consulta::getHorario).reversed())
+                    .map(ConsultaMapper::toDto)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            logger.error("Erro ao buscar consultas do usuário: {}", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<ConsultaDto> getConsultaPorId(Integer id) {
+        try {
+            if (id == null) {
+                logger.error("ID da consulta é obrigatório");
+                return ResponseEntity.badRequest().build();
+            }
+
+            Integer userId = getUsuarioLogado().getIdUsuario();
+            logger.info("Buscando consulta com ID: {} para usuário: {}", id, userId);
+
+            Consulta consulta = consultaRepository.findById(id)
+                    .orElse(null);
+
+            if (consulta == null) {
+                logger.error("Consulta não encontrada com ID: {}", id);
+                return ResponseEntity.notFound().build();
+            }
+
+            // Verifica se o usuário logado é o assistido ou voluntário da consulta
+            if (!consulta.getAssistido().getIdUsuario().equals(userId) && 
+                !consulta.getVoluntario().getIdUsuario().equals(userId)) {
+                logger.error("Usuário {} não tem permissão para acessar a consulta {}", userId, id);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            return ResponseEntity.ok(ConsultaMapper.toDto(consulta));
+        } catch (Exception e) {
+            logger.error("Erro ao buscar consulta por ID: {}", e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }

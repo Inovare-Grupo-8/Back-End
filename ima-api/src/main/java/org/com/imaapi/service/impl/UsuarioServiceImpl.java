@@ -7,14 +7,8 @@ import org.com.imaapi.model.usuario.*;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
-import org.com.imaapi.model.usuario.output.EnderecoOutput;
-import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
-import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
-import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
-import org.com.imaapi.repository.EnderecoRepository;
-import org.com.imaapi.repository.FichaRepository;
-import org.com.imaapi.repository.TelefoneRepository;
-import org.com.imaapi.repository.UsuarioRepository;
+import org.com.imaapi.model.usuario.output.*;
+import org.com.imaapi.repository.*;
 import org.com.imaapi.service.EmailService;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.UsuarioService;
@@ -33,22 +27,30 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
 
 @Service
 @Transactional
 public class UsuarioServiceImpl implements UsuarioService {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
+    
+    @Autowired
+    private TelefoneRepository telefoneRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
     @Autowired
     private VoluntarioService voluntarioService;
+
+    @Autowired
+    private VoluntarioRepository voluntarioRepository;
 
     @Autowired
     private EmailService emailService;
@@ -63,9 +65,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     private EnderecoRepository enderecoRepository;
 
     @Autowired
-    private TelefoneRepository telefoneRepository;
-
-    @Autowired
     private FichaRepository fichaRepository;
 
     @Autowired
@@ -75,12 +74,22 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Usuario cadastrarPrimeiraFase(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
         logger.info("Iniciando cadastro da primeira fase do usuário. Dados recebidos: {}", usuarioInputPrimeiraFase);
 
+        // Validar se CPF já existe
+        String cpfInput = usuarioInputPrimeiraFase.getCpf().replaceAll("\\D", "");
+        Optional<Ficha> fichaExistente = fichaRepository.findByCpf(cpfInput);
+        if (fichaExistente.isPresent()) {
+            logger.warn("Tentativa de cadastro com CPF já existente: {}", cpfInput);
+            throw new IllegalArgumentException("CPF já cadastrado no sistema");
+        }
+
         String senhaCriptografada = passwordEncoder.encode(usuarioInputPrimeiraFase.getSenha());
         logger.debug("Senha criptografada para o email {}: {}", usuarioInputPrimeiraFase.getEmail(), senhaCriptografada);
+
         Ficha ficha = new Ficha();
         ficha.setNome(usuarioInputPrimeiraFase.getNome());
         ficha.setSobrenome(usuarioInputPrimeiraFase.getSobrenome());
-        logger.info("Ficha criada com nome: {}", ficha);
+        ficha.setCpf(cpfInput);
+        logger.info("Ficha criada com nome: {} e CPF: {}", ficha.getNome(), cpfInput);
 
         Ficha fichaSalva = fichaRepository.save(ficha);
         logger.info("Ficha salva com ID: {}", fichaSalva.getIdFicha());
@@ -101,8 +110,52 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuarioSalvo.getFicha().getNome() + "|" + usuarioSalvo.getIdUsuario(),
                 "continuar cadastro");
         logger.info("Email enviado para o usuário {} para continuar cadastro", usuarioSalvo.getEmail());
-
         return usuarioSalvo;
+    }
+
+    @Override
+    public Usuario cadastrarPrimeiraFaseVoluntario(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
+        logger.info("Iniciando cadastro da primeira fase do voluntário. Dados recebidos: {}", usuarioInputPrimeiraFase);
+
+        // Validar se CPF já existe
+        String cpfInput = usuarioInputPrimeiraFase.getCpf().replaceAll("\\D", "");
+        Optional<Ficha> fichaExistente = fichaRepository.findByCpf(cpfInput);
+        if (fichaExistente.isPresent()) {
+            logger.warn("Tentativa de cadastro com CPF já existente: {}", cpfInput);
+            throw new IllegalArgumentException("CPF já cadastrado no sistema");
+        }
+
+        String senhaCriptografada = passwordEncoder.encode(usuarioInputPrimeiraFase.getSenha());
+        logger.debug("Senha criptografada para o email {}: {}", usuarioInputPrimeiraFase.getEmail(), senhaCriptografada);
+
+        Ficha ficha = new Ficha();
+        ficha.setNome(usuarioInputPrimeiraFase.getNome());
+        ficha.setSobrenome(usuarioInputPrimeiraFase.getSobrenome());
+        ficha.setCpf(cpfInput);
+        logger.info("Ficha criada com nome: {} e CPF: {}", ficha.getNome(), cpfInput);
+
+        Ficha fichaSalva = fichaRepository.save(ficha);
+        logger.info("Ficha salva com ID: {}", fichaSalva.getIdFicha());
+
+        Usuario novoVoluntario = Usuario.criarVoluntario(
+                usuarioInputPrimeiraFase.getEmail(),
+                senhaCriptografada,
+                fichaSalva);
+
+        logger.info("Voluntário criado com email: {} e ficha associada com nome: {}",
+                novoVoluntario.getEmail(),
+                novoVoluntario.getFicha().getNome());
+
+        Usuario voluntarioSalvo = usuarioRepository.save(novoVoluntario);
+        logger.info("Voluntário fase 1 salvo no banco com ID: {} e email: {} e tipo: {}",
+                voluntarioSalvo.getIdUsuario(), voluntarioSalvo.getEmail(), voluntarioSalvo.getTipo());
+
+        emailService.enviarEmail(voluntarioSalvo.getEmail(),
+                voluntarioSalvo.getFicha().getNome() + "|" + voluntarioSalvo.getIdUsuario(),
+                "continuar cadastro");
+        logger.info("Email enviado para o voluntário {} para continuar cadastro", voluntarioSalvo.getEmail());
+
+        return voluntarioSalvo;
     }
 
     @Override
@@ -374,14 +427,148 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Optional<Usuario> buscaUsuarioPorEmail(String email) {
-        logger.info("Buscando usuário com email: {}", email);
-        Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
+        logger.info("Buscando usuário por email: {}", email);
+        return usuarioRepository.findByEmail(email);
+    }    // Implementação dos novos métodos para classificação de usuários
 
-        usuario.ifPresentOrElse(
-                usuario1 -> logger.info("Usuário encontrado: ID={}, email={}", usuario1.getIdUsuario(), usuario1.getEmail()),
-                () -> logger.warn("Usuário com email {} não encontrado", email)
-        );
+    @Override
+    public List<UsuarioClassificacaoOutput> buscarUsuariosNaoClassificados() {
+        logger.info("Buscando usuários não classificados");
+        List<Usuario> usuarios = usuarioRepository.findAll();
 
-        return usuario;
+        // Filtrar usuários com tipo NAO_CLASSIFICADO e mapear para DTO completo
+        List<UsuarioClassificacaoOutput> usuariosNaoClassificados = usuarios.stream()
+                .filter(usuario -> usuario.getTipo() == TipoUsuario.NAO_CLASSIFICADO)
+                .map(usuario -> {
+                    // Buscar telefones para este usuário
+                    List<Telefone> telefones = Collections.emptyList();
+                    if (usuario.getFicha() != null) {
+                        telefones = telefoneRepository.findByFichaIdFicha(usuario.getFicha().getIdFicha());
+                    }
+                    return UsuarioMapper.ofClassificacao(usuario, telefones);
+                })
+                .toList();
+
+        logger.info("Total de usuários não classificados encontrados: {}", usuariosNaoClassificados.size());
+        return usuariosNaoClassificados;
+    }
+
+    @Override
+    public UsuarioListarOutput classificarUsuarioComoGratuidade(Integer id) {
+        logger.info("Classificando usuário ID {} como GRATUIDADE", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para ID: " + id));
+
+        // Verificar se o usuário está realmente como NAO_CLASSIFICADO
+        if (usuario.getTipo() != TipoUsuario.NAO_CLASSIFICADO) {
+            logger.warn("Tentativa de classificar usuário ID {} que não está como NAO_CLASSIFICADO. Tipo atual: {}",
+                    id, usuario.getTipo());
+            throw new IllegalStateException("Usuário não está pendente de classificação");
+        }
+
+        // Atualizar o tipo para GRATUIDADE
+        usuario.atualizarTipo(TipoUsuario.GRATUIDADE);
+        usuarioRepository.save(usuario);
+
+        logger.info("Usuário ID {} classificado como GRATUIDADE com sucesso", id);
+
+        return UsuarioMapper.of(usuario);
+    }
+
+    @Override
+    public UsuarioListarOutput classificarUsuarioComoValorSocial(Integer id) {
+        logger.info("Classificando usuário ID {} como VALOR_SOCIAL", id);
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para ID: " + id));
+
+        // Verificar se o usuário está realmente como NAO_CLASSIFICADO
+        if (usuario.getTipo() != TipoUsuario.NAO_CLASSIFICADO) {
+            logger.warn("Tentativa de classificar usuário ID {} que não está como NAO_CLASSIFICADO. Tipo atual: {}",
+                    id, usuario.getTipo());
+            throw new IllegalStateException("Usuário não está pendente de classificação");
+        }
+
+        // Atualizar o tipo para VALOR_SOCIAL
+        usuario.atualizarTipo(TipoUsuario.VALOR_SOCIAL);
+        usuarioRepository.save(usuario);
+
+        logger.info("Usuário ID {} classificado como VALOR_SOCIAL com sucesso", id);
+        return UsuarioMapper.of(usuario);
+    }
+
+    @Override
+    public String enviarCredenciaisVoluntario(String email, String nome, String senha) {
+        logger.info("Enviando credenciais para voluntário {} com email: {}", nome, email);
+
+        try {
+            // O EmailService espera as credenciais no formato "nome|email|senha"
+            String credenciaisString = nome + "|" + email + "|" + senha;
+            String resultado = emailService.enviarEmail(email, credenciaisString, "credenciais voluntario");
+            logger.info("Credenciais enviadas com sucesso para o email: {}", email);
+            return resultado;
+        } catch (Exception e) {
+            logger.error("Erro ao enviar credenciais para o email: {}", email, e);
+            throw new RuntimeException("Erro ao enviar email com credenciais: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<VoluntarioListagemOutput> listarVoluntarios() {
+        logger.info("Listando todos os voluntários cadastrados");
+
+        try {
+            List<Voluntario> voluntarios = voluntarioRepository.findAll();
+            logger.info("Total de voluntários encontrados: {}", voluntarios.size());
+
+            List<VoluntarioListagemOutput> resultado = voluntarios.stream()
+                    .map(voluntario -> {
+                        VoluntarioListagemOutput output = new VoluntarioListagemOutput();
+
+                        // Dados básicos do voluntário
+                        output.setIdUsuario(voluntario.getFkUsuario());
+                        output.setIdVoluntario(voluntario.getIdVoluntario());
+                        output.setDataCadastro(voluntario.getDataCadastro());
+
+                        // Função (especialidade)
+                        if (voluntario.getFuncao() != null) {
+                            output.setFuncao(voluntario.getFuncao().toString());
+                        }
+
+                        // Buscar dados do usuário associado
+                        if (voluntario.getUsuario() != null) {
+                            Usuario usuario = voluntario.getUsuario();
+                            output.setEmail(usuario.getEmail());
+                            output.setUltimoAcesso(usuario.getUltimoAcesso());
+
+                            // Calcular se está ativo (últimos 30 dias)
+                            boolean ativo = false;
+                            if (usuario.getUltimoAcesso() != null) {
+                                LocalDateTime trintaDiasAtras = LocalDateTime.now().minusDays(30);
+                                ativo = usuario.getUltimoAcesso().isAfter(trintaDiasAtras);
+                            }
+                            output.setAtivo(ativo);
+
+                            // Dados da ficha
+                            if (usuario.getFicha() != null) {
+                                Ficha ficha = usuario.getFicha();
+                                output.setNome(ficha.getNome());
+                                output.setSobrenome(ficha.getSobrenome());
+                                output.setAreaOrientacao(ficha.getAreaOrientacao());
+                            }
+                        }
+
+                        return output;
+                    })
+                    .toList();
+
+            logger.info("Voluntários mapeados com sucesso: {} registros", resultado.size());
+            return resultado;
+
+        } catch (Exception e) {
+            logger.error("Erro ao listar voluntários: {}", e.getMessage(), e);
+            throw new RuntimeException("Erro ao buscar lista de voluntários: " + e.getMessage());
+        }
     }
 }

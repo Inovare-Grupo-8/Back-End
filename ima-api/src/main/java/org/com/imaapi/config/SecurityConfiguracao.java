@@ -36,9 +36,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguracao {
-
-    private static final AntPathRequestMatcher[] URLS_PERMITIDAS = {
+public class SecurityConfiguracao {    private static final AntPathRequestMatcher[] URLS_PERMITIDAS = {
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/swagger-ui.html"),
             new AntPathRequestMatcher("/swagger-resources"),
@@ -52,14 +50,13 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/actuator/**"),
             new AntPathRequestMatcher("/usuarios/**"),
             new AntPathRequestMatcher("/usuarios/login/***"),
-            new AntPathRequestMatcher("/consulta/**"),
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/error/**"),
             new AntPathRequestMatcher("/"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/oauth2/authorization/google"),
-            new AntPathRequestMatcher("/dev/token")
+            new AntPathRequestMatcher("/dev/token"),
     };
 
     @Bean
@@ -156,7 +153,7 @@ public class SecurityConfiguracao {
         // Wrap the standard password encoder with our logging version
         return new LoggingPasswordEncoder(new BCryptPasswordEncoder());
     }
-
+                                   
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuracao = new CorsConfiguration();
@@ -174,7 +171,8 @@ public class SecurityConfiguracao {
                 )
         );
 
-        configuracao.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // Allow all headers to fix CORS issues
+        configuracao.setAllowedHeaders(List.of("*"));
         configuracao.setAllowCredentials(true);
 
         configuracao.setExposedHeaders(List.of(

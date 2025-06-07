@@ -38,15 +38,20 @@ public class Usuario {    @Id
     private LocalDate dataCadastro;
 
     @Column(name = "criado_em")
-    private LocalDateTime criadoEm;
-
-    @Column(name = "atualizado_em")
+    private LocalDateTime criadoEm;    @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
+
+    @Column(name = "ultimo_acesso")
+    private LocalDateTime ultimoAcesso;
 
     @Version
     @Column(name = "versao")
     private Integer versao;
 
+    @Column(name = "foto_url")
+    private String fotoUrl;
+
+    //para gerar a data de cadastro no banco
     @PrePersist
     public void prePersist() {
         if (this.dataCadastro == null) {
@@ -69,9 +74,7 @@ public class Usuario {    @Id
     @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-    }
-
-    public static Usuario criarUsuarioBasico(String email, String senha, Ficha ficha) {
+    }    public static Usuario criarUsuarioBasico(String email, String senha, Ficha ficha) {
         Usuario usuario = new Usuario();
         usuario.setEmail(email);
         usuario.setSenha(senha);
@@ -79,6 +82,21 @@ public class Usuario {    @Id
         usuario.setDataCadastro(LocalDate.now());
         usuario.setCriadoEm(LocalDateTime.now());
         usuario.setAtualizadoEm(LocalDateTime.now());
+        usuario.setUltimoAcesso(LocalDateTime.now());
+        usuario.setVersao(0);
+        usuario.setFicha(ficha);
+        return usuario;
+    }
+
+    public static Usuario criarVoluntario(String email, String senha, Ficha ficha) {
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setSenha(senha);
+        usuario.setTipo(TipoUsuario.VOLUNTARIO);
+        usuario.setDataCadastro(LocalDate.now());
+        usuario.setCriadoEm(LocalDateTime.now());
+        usuario.setAtualizadoEm(LocalDateTime.now());
+        usuario.setUltimoAcesso(LocalDateTime.now());
         usuario.setVersao(0);
         usuario.setFicha(ficha);
         return usuario;

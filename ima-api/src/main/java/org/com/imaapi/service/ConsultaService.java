@@ -32,4 +32,8 @@ public interface ConsultaService {
     ResponseEntity<?> getHorariosDisponiveis(LocalDate data, Integer idVoluntario);
 
     ResponseEntity<List<ConsultaDto>> getTodasConsultas();
+
+    ResponseEntity<List<ConsultaDto>> getConsultasUsuarioLogado();
+
+    public ResponseEntity<ConsultaDto> getConsultaPorId(Integer id);
 }

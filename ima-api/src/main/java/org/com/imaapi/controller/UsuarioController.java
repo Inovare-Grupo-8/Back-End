@@ -12,6 +12,8 @@ import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.com.imaapi.model.usuario.output.UsuarioClassificacaoOutput;
+import org.com.imaapi.model.usuario.output.VoluntarioListagemOutput;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.UsuarioService;
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -40,26 +43,24 @@ public class UsuarioController {
     private EnderecoService enderecoService;
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioController.class);
-
-    @PostMapping("/fase1")
-    public ResponseEntity<Usuario> cadastrarUsuarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioController.class);    @PostMapping("/fase1")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> cadastrarUsuarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
         Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
-        return new ResponseEntity<>(usuario, HttpStatus.CREATED);
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return new ResponseEntity<>(output, HttpStatus.CREATED);
     }
 
     @PatchMapping("/fase2/{idUsuario}")
     public ResponseEntity<Usuario> completarCadastroUsuario(@PathVariable Integer idUsuario, @RequestBody @Valid UsuarioInputSegundaFase usuarioInputSegundaFase) {
         Usuario usuario = usuarioService.cadastrarSegundaFase(idUsuario, usuarioInputSegundaFase);
         return ResponseEntity.ok(usuario);
+    }    @PostMapping("/voluntario/fase1")
+    public ResponseEntity<UsuarioPrimeiraFaseOutput> cadastrarVoluntarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
+        Usuario usuario = usuarioService.cadastrarPrimeiraFaseVoluntario(usuarioInputPrimeiraFase);
+        UsuarioPrimeiraFaseOutput output = UsuarioMapper.ofPrimeiraFase(usuario);
+        return new ResponseEntity<>(output, HttpStatus.CREATED);
     }
-
-    @PostMapping("/voluntario/fase1")
-    public ResponseEntity<Usuario> cadastrarVoluntarioFase1(@RequestBody @Valid UsuarioInputPrimeiraFase usuarioInputPrimeiraFase) {
-        Usuario usuario = usuarioService.cadastrarPrimeiraFase(usuarioInputPrimeiraFase);
-        return new ResponseEntity<>(usuario, HttpStatus.CREATED);
-    }
-
+  
     @PatchMapping("/voluntario/fase2/{idUsuario}")
     public ResponseEntity<Usuario> completarCadastroVoluntario(
             @PathVariable Integer idUsuario,
@@ -71,6 +72,26 @@ public class UsuarioController {
             return ResponseEntity.badRequest().build();
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/voluntario/enviar-credenciais")
+    public ResponseEntity<String> enviarCredenciaisVoluntario(@RequestBody Map<String, String> dados) {
+        try {
+            String email = dados.get("email");
+            String nome = dados.get("nome");
+            String senha = dados.get("senha");
+            
+            if (email == null || nome == null || senha == null) {
+                return ResponseEntity.badRequest().body("Dados incompletos");
+            }
+            
+            String resultado = usuarioService.enviarCredenciaisVoluntario(email, nome, senha);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao enviar credenciais: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao enviar credenciais: " + e.getMessage());
         }
     }
 
@@ -132,13 +153,23 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-
     @GetMapping
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<List<UsuarioListarOutput>> listarUsuarios() {
         List<UsuarioListarOutput> usuarios = usuarioService.buscarUsuarios();
         return ResponseEntity.ok(usuarios);
+    }
+    
+    @GetMapping("/voluntarios")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<List<VoluntarioListagemOutput>> listarVoluntarios() {
+        try {
+            List<VoluntarioListagemOutput> voluntarios = usuarioService.listarVoluntarios();
+            return ResponseEntity.ok(voluntarios);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao listar voluntários: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")
@@ -213,6 +244,37 @@ public class UsuarioController {
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }    @GetMapping("/nao-classificados")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<List<UsuarioClassificacaoOutput>> listarUsuariosNaoClassificados() {
+        List<UsuarioClassificacaoOutput> usuariosNaoClassificados = usuarioService.buscarUsuariosNaoClassificados();
+        return ResponseEntity.ok(usuariosNaoClassificados);
+    }
+
+    @PatchMapping("/{id}/classificar/aprovar")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<UsuarioListarOutput> aprovarUsuario(@PathVariable Integer id) {
+        try {
+            UsuarioListarOutput usuarioClassificado = usuarioService.classificarUsuarioComoGratuidade(id);
+            return ResponseEntity.ok(usuarioClassificado);
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PatchMapping("/{id}/classificar/rejeitar")
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<UsuarioListarOutput> rejeitarUsuario(@PathVariable Integer id) {
+        try {
+            UsuarioListarOutput usuarioClassificado = usuarioService.classificarUsuarioComoValorSocial(id);
+            return ResponseEntity.ok(usuarioClassificado);
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.enums.TipoUsuario;
+import org.com.imaapi.model.usuario.Usuario;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,4 +25,12 @@ public class UsuarioOutput {
     private Funcao funcao;
     private LocalDateTime dataCadastro;
     private EnderecoOutput endereco;
+
+    public UsuarioOutput(String nome, String cpf, String email, LocalDate dataNascimento, TipoUsuario tipo) {
+        this.nome = nome;
+        this.cpf = cpf;
+        this.email = email;
+        this.dataNascimento = dataNascimento;
+        this.tipo = tipo;
+    }
 }
