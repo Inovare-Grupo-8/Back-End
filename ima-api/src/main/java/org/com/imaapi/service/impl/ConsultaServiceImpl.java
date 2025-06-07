@@ -5,6 +5,7 @@ import org.com.imaapi.model.consulta.Consulta;
 import org.com.imaapi.model.consulta.FeedbackConsulta;
 import org.com.imaapi.model.consulta.dto.ConsultaDto;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
+import org.com.imaapi.model.consulta.input.ConsultaRemarcarInput;
 import org.com.imaapi.model.consulta.mapper.ConsultaMapper;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.com.imaapi.model.enums.StatusConsulta;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -763,6 +765,213 @@ public class ConsultaServiceImpl implements ConsultaService {
             Usuario usuario = new Usuario();
             usuario.setIdUsuario(1);
             return usuario;
+        }    }
+    
+    // Implementação dos novos métodos
+    @Override
+    public List<ConsultaOutput> buscarConsultasPorDia(String user, LocalDate data) {
+        logger.info("Buscando consultas para o usuário {} na data {}", user, data);
+        
+        // Obter o ID do usuário a partir do username
+        Usuario usuario = obterUsuarioPorTipo(user);
+        if (usuario == null) {
+            logger.error("Usuário não encontrado: {}", user);
+            return Collections.emptyList();
         }
+        
+        LocalDateTime inicioDia = data.atStartOfDay();
+        LocalDateTime fimDia = data.atTime(23, 59, 59);
+        
+        List<Consulta> consultas;
+        if (user.equalsIgnoreCase("voluntario")) {
+            consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(
+                    usuario.getIdUsuario(), inicioDia, fimDia);
+        } else if (user.equalsIgnoreCase("assistido")) {
+            consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioBetween(
+                    usuario.getIdUsuario(), inicioDia, fimDia);
+        } else {
+            logger.error("Tipo de usuário não suportado: {}", user);
+            return Collections.emptyList();
+        }
+        
+        return mapConsultasToConsultaOutput(consultas);
+    }
+
+    @Override
+    public List<ConsultaOutput> buscarHistoricoConsultas(String user) {
+        logger.info("Buscando histórico de consultas para o usuário {}", user);
+        
+        // Obter o ID do usuário a partir do username
+        Usuario usuario = obterUsuarioPorTipo(user);
+        if (usuario == null) {
+            logger.error("Usuário não encontrado: {}", user);
+            return Collections.emptyList();
+        }
+          List<StatusConsulta> statusConcluidos = Arrays.asList(
+                StatusConsulta.REALIZADA, 
+                StatusConsulta.CONCLUIDA,
+                StatusConsulta.CANCELADA);
+        
+        List<Consulta> consultas;
+        if (user.equalsIgnoreCase("voluntario")) {
+            consultas = consultaRepository.findByVoluntario_IdUsuarioAndStatusIn(
+                    usuario.getIdUsuario(), statusConcluidos);
+        } else if (user.equalsIgnoreCase("assistido")) {
+            consultas = consultaRepository.findByAssistido_IdUsuarioAndStatusIn(
+                    usuario.getIdUsuario(), statusConcluidos);
+        } else {
+            logger.error("Tipo de usuário não suportado: {}", user);
+            return Collections.emptyList();
+        }
+        
+        return mapConsultasToConsultaOutput(consultas);
+    }
+
+    @Override
+    public ConsultaOutput buscarConsultaPorIdEUsuario(Integer consultaId, String user) {
+        logger.info("Buscando consulta com ID {} para o usuário {}", consultaId, user);
+        
+        // Obter o ID do usuário a partir do username
+        Usuario usuario = obterUsuarioPorTipo(user);
+        if (usuario == null) {
+            logger.error("Usuário não encontrado: {}", user);
+            return null;
+        }
+        
+        // Buscar a consulta pelo ID
+        Consulta consulta = consultaRepository.findById(consultaId)
+                .orElse(null);
+        
+        if (consulta == null) {
+            logger.error("Consulta não encontrada com ID: {}", consultaId);
+            return null;
+        }
+        
+        // Verificar se o usuário tem permissão para ver essa consulta
+        boolean autorizado = false;
+        if (user.equalsIgnoreCase("voluntario") && 
+                usuario.getIdUsuario().equals(consulta.getVoluntario().getIdUsuario())) {
+            autorizado = true;
+        } else if (user.equalsIgnoreCase("assistido") && 
+                usuario.getIdUsuario().equals(consulta.getAssistido().getIdUsuario())) {
+            autorizado = true;
+        }
+        
+        if (!autorizado) {
+            logger.error("Usuário {} não tem permissão para acessar a consulta {}", user, consultaId);
+            return null;
+        }
+        
+        return mapConsultaToConsultaOutput(consulta);
+    }
+
+    @Override
+    public List<ConsultaOutput> buscarProximasConsultas(String user) {
+        logger.info("Buscando próximas 3 consultas para o usuário {}", user);
+        
+        // Obter o ID do usuário a partir do username
+        Usuario usuario = obterUsuarioPorTipo(user);
+        if (usuario == null) {
+            logger.error("Usuário não encontrado: {}", user);
+            return Collections.emptyList();
+        }
+        
+        LocalDateTime agora = LocalDateTime.now();        List<StatusConsulta> statusPendentes = Arrays.asList(
+                StatusConsulta.AGENDADA, 
+                StatusConsulta.REAGENDADA,
+                StatusConsulta.EM_ANDAMENTO);
+        
+        List<Consulta> consultas;
+        if (user.equalsIgnoreCase("voluntario")) {
+            consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioAfterOrderByHorarioAsc(
+                    usuario.getIdUsuario(), agora);
+        } else if (user.equalsIgnoreCase("assistido")) {
+            consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioAfterOrderByHorarioAsc(
+                    usuario.getIdUsuario(), agora);
+        } else {
+            logger.error("Tipo de usuário não suportado: {}", user);
+            return Collections.emptyList();
+        }
+        
+        // Filtrar apenas consultas com status pendentes e limitar a 3
+        List<Consulta> consultasFiltradas = consultas.stream()
+                .filter(c -> statusPendentes.contains(c.getStatus()))
+                .limit(3)
+                .collect(Collectors.toList());
+        
+        return mapConsultasToConsultaOutput(consultasFiltradas);
+    }
+
+    @Override
+    public void remarcarConsulta(Integer id, ConsultaRemarcarInput input) {
+        logger.info("Remarcando consulta com ID {} para um novo horário {}", id, input.getNovoHorario());
+        
+        // Buscar a consulta pelo ID
+        Consulta consulta = consultaRepository.findById(id)
+                .orElseThrow(() -> {
+                    logger.error("Consulta não encontrada com ID: {}", id);
+                    return new RuntimeException("Consulta não encontrada");
+                });
+        
+        // Atualizar os dados da consulta
+        consulta.setHorario(input.getNovoHorario());
+        
+        if (input.getModalidade() != null) {
+            consulta.setModalidade(input.getModalidade());
+        }
+        
+        if (input.getLocal() != null && !input.getLocal().isEmpty()) {
+            consulta.setLocal(input.getLocal());
+        }
+        
+        if (input.getObservacoes() != null && !input.getObservacoes().isEmpty()) {
+            consulta.setObservacoes(input.getObservacoes());
+        }
+          // Alterar o status para REAGENDADA
+        consulta.setStatus(StatusConsulta.REAGENDADA);
+        
+        // Salvar a consulta atualizada
+        consultaRepository.save(consulta);
+        
+        logger.info("Consulta remarcada com sucesso para {}", input.getNovoHorario());
+    }
+    
+    // Método auxiliar para mapear Lista de Consultas para Lista de ConsultaOutput
+    private List<ConsultaOutput> mapConsultasToConsultaOutput(List<Consulta> consultas) {
+        return consultas.stream()
+                .map(this::mapConsultaToConsultaOutput)
+                .collect(Collectors.toList());
+    }
+    
+    // Método auxiliar para mapear uma Consulta para ConsultaOutput
+    private ConsultaOutput mapConsultaToConsultaOutput(Consulta consulta) {
+        ConsultaOutput output = new ConsultaOutput();
+        output.setIdConsulta(consulta.getIdConsulta());
+        output.setHorario(consulta.getHorario());
+        output.setStatus(consulta.getStatus());
+        output.setModalidade(consulta.getModalidade());
+        output.setLocal(consulta.getLocal());
+        output.setObservacoes(consulta.getObservacoes());
+        output.setEspecialidade(consulta.getEspecialidade());
+        output.setAssistido(consulta.getAssistido());
+        output.setVoluntario(consulta.getVoluntario());
+        return output;
+    }
+    
+    // Método auxiliar para obter um usuário por tipo
+    private Usuario obterUsuarioPorTipo(String tipoUsuario) {
+        Usuario usuarioLogado = getUsuarioLogado();
+        if (usuarioLogado == null) {
+            return null;
+        }
+        
+        // Se o tipo do usuário logado coincide com o tipo solicitado, retorna o usuário logado
+        if ((tipoUsuario.equalsIgnoreCase("voluntario") && usuarioLogado.isVoluntario()) ||
+            (tipoUsuario.equalsIgnoreCase("assistido") && !usuarioLogado.isVoluntario())) {
+            return usuarioLogado;
+        }
+        
+        // Caso contrário, retorna nulo
+        return null;
     }
 }
