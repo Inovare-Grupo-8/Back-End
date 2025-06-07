@@ -455,6 +455,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 
             logger.info("Retornando {} consultas recentes para {} com ID: {}", consultasOrdenadas.size(), user, userId);
 
+
             List<ConsultaDto> dtos = consultasOrdenadas.stream()
                     .map(consulta -> ConsultaMapper.toDto(consulta))
                     .collect(Collectors.toList());

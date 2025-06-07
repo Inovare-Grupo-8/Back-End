@@ -74,7 +74,9 @@ public class UsuarioMapper {
         output.setCpf(usuario.getFicha().getCpf());
         output.setDataNascimento(usuario.getFicha().getDtNascim());
         return output;
-    }public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario, Ficha ficha) {
+    }
+  
+  public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario, Ficha ficha) {
 //        LOGGER.info("[USUARIO_MAPPER] Criando UsuarioDetalhesOutput para autenticação do usuário: {}", usuario.getEmail());
 //        LOGGER.debug("[USUARIO_MAPPER] Ficha associada: ID={}", ficha != null ? ficha.getIdFicha() : "null");
 //        LOGGER.debug("[USUARIO_MAPPER] Tipo do usuário: {}", usuario.getTipo());

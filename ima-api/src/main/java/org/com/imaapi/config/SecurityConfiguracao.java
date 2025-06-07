@@ -152,8 +152,8 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
     public PasswordEncoder passwordEncoder() {
         // Wrap the standard password encoder with our logging version
         return new LoggingPasswordEncoder(new BCryptPasswordEncoder());
-    }    
-    
+    }
+                                   
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuracao = new CorsConfiguration();

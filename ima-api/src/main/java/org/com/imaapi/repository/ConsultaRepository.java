@@ -35,4 +35,5 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Integer> {
 
     // Método para buscar consultas por assistido ou voluntario
     List<Consulta> findByAssistido_IdUsuarioOrVoluntario_IdUsuario(Integer idAssistido, Integer idVoluntario);
+
 }
