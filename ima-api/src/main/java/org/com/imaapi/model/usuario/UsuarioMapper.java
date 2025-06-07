@@ -17,10 +17,9 @@ public class UsuarioMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioMapper.class);
 
     public static Usuario of(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase, UsuarioInputSegundaFase usuarioInputSegundaFase) {
-        Usuario usuario = new Usuario();
-
-        Ficha ficha = new Ficha();
+        Usuario usuario = new Usuario();        Ficha ficha = new Ficha();
         ficha.setNome(usuarioInputPrimeiraFase.getNome());
+        ficha.setSobrenome(usuarioInputPrimeiraFase.getSobrenome());
         ficha.setCpf(usuarioInputSegundaFase.getCpf());
         ficha.setDtNascim(usuarioInputSegundaFase.getDataNascimento());
 
@@ -66,16 +65,18 @@ public class UsuarioMapper {
         voluntario.setFkUsuario(idUsuario);
         voluntario.setFuncao(usuarioInputSegundaFase.getFuncao());
         return voluntario;
-    }
-
-    public static UsuarioPrimeiraFaseOutput ofPrimeiraFase(Usuario usuario) {
+    }    public static UsuarioPrimeiraFaseOutput ofPrimeiraFase(Usuario usuario) {
         UsuarioPrimeiraFaseOutput output = new UsuarioPrimeiraFaseOutput();
+        output.setIdUsuario(usuario.getIdUsuario());
         output.setNome(usuario.getFicha().getNome());
+        output.setSobrenome(usuario.getFicha().getSobrenome());
         output.setEmail(usuario.getEmail());
         output.setCpf(usuario.getFicha().getCpf());
         output.setDataNascimento(usuario.getFicha().getDtNascim());
         return output;
-    }    public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario, Ficha ficha) {
+    }
+  
+  public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario, Ficha ficha) {
 //        LOGGER.info("[USUARIO_MAPPER] Criando UsuarioDetalhesOutput para autenticação do usuário: {}", usuario.getEmail());
 //        LOGGER.debug("[USUARIO_MAPPER] Ficha associada: ID={}", ficha != null ? ficha.getIdFicha() : "null");
 //        LOGGER.debug("[USUARIO_MAPPER] Tipo do usuário: {}", usuario.getTipo());
