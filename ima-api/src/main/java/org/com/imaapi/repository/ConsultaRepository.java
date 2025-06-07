@@ -16,22 +16,27 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Integer> {
     List<Consulta> findByVoluntario_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
 
     List<Consulta> findByAssistido_IdUsuarioAndStatusOrderByHorarioDesc(Integer idUsuario, String status);
-    
+
     // Métodos para buscar todas as consultas de um usuário
     List<Consulta> findByVoluntario_IdUsuario(Integer idUsuario);
-    
+
     List<Consulta> findByAssistido_IdUsuario(Integer idUsuario);
-    
+
     // Novos métodos para filtrar por status
     List<Consulta> findByVoluntario_IdUsuarioAndStatusIn(Integer idUsuario, List<StatusConsulta> statusList);
-    
+
     List<Consulta> findByAssistido_IdUsuarioAndStatusIn(Integer idUsuario, List<StatusConsulta> statusList);
-    
+
     List<Consulta> findByVoluntario_IdUsuarioAndHorarioBetweenAndStatusIn(
             Integer idUsuario, LocalDateTime inicio, LocalDateTime fim, List<StatusConsulta> statusList);
-    
+
     List<Consulta> findByAssistido_IdUsuarioAndHorarioBetweenAndStatusIn(
             Integer idUsuario, LocalDateTime inicio, LocalDateTime fim, List<StatusConsulta> statusList);
+
+   List<Consulta> findByAssistido_IdUsuarioAndHorarioAfterOrderByHorarioAsc(Integer idUsuario, LocalDateTime horario);
+    List<Consulta> findByVoluntario_IdUsuarioAndHorarioAfterOrderByHorarioAsc(Integer idUsuario, LocalDateTime horario);
+    List<Consulta> findByHorarioBetween(LocalDateTime inicio, LocalDateTime fim);
+
 
     // Método para buscar consultas por assistido ou voluntario
     List<Consulta> findByAssistido_IdUsuarioOrVoluntario_IdUsuario(Integer idAssistido, Integer idVoluntario);

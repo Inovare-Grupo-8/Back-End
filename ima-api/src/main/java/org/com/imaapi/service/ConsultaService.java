@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 import java.util.Map;
 
+import java.time.LocalDate;
+
 public interface ConsultaService {
     ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput);
 
@@ -24,7 +26,11 @@ public interface ConsultaService {
     ResponseEntity<ConsultaDto> adicionarFeedback(Integer id, String feedback);
 
     ResponseEntity<ConsultaDto> adicionarAvaliacao(Integer id, String avaliacao);
-    
+
+    ResponseEntity<ConsultaOutput> getProximaConsulta(Integer idUsuario);
+
+    ResponseEntity<?> getHorariosDisponiveis(LocalDate data, Integer idVoluntario);
+
     ResponseEntity<List<ConsultaDto>> getTodasConsultas();
 
     ResponseEntity<List<ConsultaDto>> getConsultasUsuarioLogado();
