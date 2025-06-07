@@ -152,8 +152,8 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
     public PasswordEncoder passwordEncoder() {
         // Wrap the standard password encoder with our logging version
         return new LoggingPasswordEncoder(new BCryptPasswordEncoder());
-    }
-
+    }    
+    
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuracao = new CorsConfiguration();
@@ -171,7 +171,8 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
                 )
         );
 
-        configuracao.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // Allow all headers to fix CORS issues
+        configuracao.setAllowedHeaders(List.of("*"));
         configuracao.setAllowCredentials(true);
 
         configuracao.setExposedHeaders(List.of(
