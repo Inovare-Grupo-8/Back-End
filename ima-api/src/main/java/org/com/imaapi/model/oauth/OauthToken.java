@@ -1,8 +1,7 @@
 package org.com.imaapi.model.oauth;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.com.imaapi.model.usuario.Usuario;
 
 import java.time.Instant;
@@ -10,8 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "oauth_token")
-@Getter
-@Setter
+@Data
 public class OauthToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

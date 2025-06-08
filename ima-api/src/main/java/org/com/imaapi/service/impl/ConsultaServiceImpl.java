@@ -5,6 +5,7 @@ import org.com.imaapi.model.consulta.Consulta;
 import org.com.imaapi.model.consulta.FeedbackConsulta;
 import org.com.imaapi.model.consulta.dto.ConsultaDto;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
+import org.com.imaapi.model.consulta.input.ConsultaRemarcarInput;
 import org.com.imaapi.model.consulta.mapper.ConsultaMapper;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.com.imaapi.model.enums.StatusConsulta;
@@ -20,7 +21,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +52,6 @@ public class ConsultaServiceImpl implements ConsultaService {
     @Autowired
     private AvaliacaoConsultaRepository avaliacaoRepository;
 
-    @Override
     public ResponseEntity<ConsultaOutput> criarEvento(ConsultaInput consultaInput) {
         try {
             if (consultaInput == null) {
@@ -231,12 +235,84 @@ public class ConsultaServiceImpl implements ConsultaService {
             return new ResponseEntity<>(output, HttpStatus.CREATED);
         } catch (Exception erro) {
             logger.error("Erro ao cadastrar evento: {}", erro.getMessage());
-            erro.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-            ConsultaOutput errorOutput = new ConsultaOutput();
-            errorOutput.setObservacoes("Erro ao cadastrar evento: " + erro.getMessage());
+    public ResponseEntity<?> getHorariosDisponiveis(LocalDate data, Integer idVoluntario) {
+        try {
+            // Define início e fim do dia
+            LocalDateTime inicioDia = data.atStartOfDay();
+            LocalDateTime fimDia = data.atTime(23, 59, 59);
 
-            return new ResponseEntity<>(errorOutput, HttpStatus.INTERNAL_SERVER_ERROR);
+            // Busca consultas existentes para o voluntário neste dia
+            List<Consulta> consultasMarcadas = consultaRepository
+                    .findByVoluntario_IdUsuarioAndHorarioBetween(idVoluntario, inicioDia, fimDia);
+
+            // Horários padrão de atendimento (exemplo: 9h às 17h, intervalo de 1h)
+            List<LocalTime> horariosDisponiveis = Arrays.asList(
+                    LocalTime.of(0, 0),
+                    LocalTime.of(1, 0),
+                    LocalTime.of(2, 0),
+                    LocalTime.of(3, 0),
+                    LocalTime.of(4, 0),
+                    LocalTime.of(5, 0),
+                    LocalTime.of(6, 0),
+                    LocalTime.of(7, 0),
+                    LocalTime.of(8, 0),
+                    LocalTime.of(9, 0),
+                    LocalTime.of(10, 0),
+                    LocalTime.of(11, 0),
+                    LocalTime.of(12, 0),
+                    LocalTime.of(13, 0),
+                    LocalTime.of(14, 0),
+                    LocalTime.of(15, 0),
+                    LocalTime.of(16, 0),
+                    LocalTime.of(17, 0),
+                    LocalTime.of(18, 0),
+                    LocalTime.of(19, 0),
+                    LocalTime.of(20, 0),
+                    LocalTime.of(21, 0),
+                    LocalTime.of(22, 0),
+                    LocalTime.of(23, 0)
+            );
+
+            // Lista de horários ocupados
+            List<LocalTime> horariosOcupados = consultasMarcadas.stream()
+                    .map(consulta -> consulta.getHorario().toLocalTime())
+                    .collect(Collectors.toList());
+
+            // Filtra os horários disponíveis removendo os ocupados
+            List<LocalDateTime> horariosLivres = horariosDisponiveis.stream()
+                    .filter(horario -> !horariosOcupados.contains(horario))
+                    .map(horario -> LocalDateTime.of(data, horario))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(horariosLivres);
+        } catch (Exception e) {
+            logger.error("Erro ao buscar horários disponíveis: {}", e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    private Consulta gerarObjetoEvento(ConsultaInput consultaInput) {
+        try {
+            Consulta consulta = new Consulta();
+            consulta.setHorario(consultaInput.getHorario());
+            consulta.setStatus(consultaInput.getStatus());
+            consulta.setModalidade(consultaInput.getModalidade());
+            consulta.setLocal(consultaInput.getLocal());
+            consulta.setObservacoes(consultaInput.getObservacoes());
+
+            // Busca a especialidade pelo ID
+            Especialidade especialidade = especialidadeRepository.findById(consultaInput.getIdEspecialidade())
+                    .orElseThrow(() -> new RuntimeException("Especialidade não encontrada"));
+            consulta.setEspecialidade(especialidade);
+
+            return consulta;
+        } catch (Exception e) {
+            logger.error("Erro ao gerar objeto evento: {}", e.getMessage());
+            throw new RuntimeException("Erro ao gerar objeto evento: " + e.getMessage());
         }
     }
 
@@ -455,6 +531,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 
             logger.info("Retornando {} consultas recentes para {} com ID: {}", consultasOrdenadas.size(), user, userId);
 
+
             List<ConsultaDto> dtos = consultasOrdenadas.stream()
                     .map(consulta -> ConsultaMapper.toDto(consulta))
                     .collect(Collectors.toList());
@@ -466,6 +543,52 @@ public class ConsultaServiceImpl implements ConsultaService {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+   @Override
+   public ResponseEntity<ConsultaOutput> getProximaConsulta(Integer idUsuario) {
+       try {
+           // Busca próximas consultas como voluntário e assistido
+           List<Consulta> consultasVoluntario = consultaRepository
+               .findByVoluntario_IdUsuarioAndHorarioAfterOrderByHorarioAsc(idUsuario, LocalDateTime.now());
+
+           List<Consulta> consultasAssistido = consultaRepository
+               .findByAssistido_IdUsuarioAndHorarioAfterOrderByHorarioAsc(idUsuario, LocalDateTime.now());
+
+           // Encontra a próxima consulta mais próxima
+           Consulta proximaConsulta = null;
+
+           if (!consultasVoluntario.isEmpty() && !consultasAssistido.isEmpty()) {
+               proximaConsulta = consultasVoluntario.get(0).getHorario()
+                   .isBefore(consultasAssistido.get(0).getHorario())
+                   ? consultasVoluntario.get(0)
+                   : consultasAssistido.get(0);
+           } else if (!consultasVoluntario.isEmpty()) {
+               proximaConsulta = consultasVoluntario.get(0);
+           } else if (!consultasAssistido.isEmpty()) {
+               proximaConsulta = consultasAssistido.get(0);
+           }
+
+           if (proximaConsulta == null) {
+               return ResponseEntity.notFound().build();
+           }
+
+           ConsultaOutput output = new ConsultaOutput();
+           output.setHorario(proximaConsulta.getHorario());
+           output.setStatus(proximaConsulta.getStatus());
+           output.setModalidade(proximaConsulta.getModalidade());
+           output.setLocal(proximaConsulta.getLocal());
+           output.setObservacoes(proximaConsulta.getObservacoes());
+           output.setEspecialidade(proximaConsulta.getEspecialidade());
+           output.setAssistido(proximaConsulta.getAssistido());
+           output.setVoluntario(proximaConsulta.getVoluntario());
+
+           return ResponseEntity.ok(output);
+
+       } catch (Exception e) {
+           logger.error("Erro ao buscar próxima consulta: {}", e.getMessage());
+           return ResponseEntity.internalServerError().build();
+       }
+   }
 
     @Override
     public ResponseEntity<ConsultaDto> adicionarFeedback(Integer id, String feedback) {
@@ -556,6 +679,63 @@ public class ConsultaServiceImpl implements ConsultaService {
         }
     }
 
+    @Override
+    public ResponseEntity<List<ConsultaDto>> getConsultasUsuarioLogado() {
+        try {
+            Integer userId = getUsuarioLogado().getIdUsuario();
+            logger.info("Buscando todas as consultas do usuário logado com ID: {}", userId);
+
+            List<Consulta> consultas = consultaRepository.findByAssistido_IdUsuarioOrVoluntario_IdUsuario(userId, userId);
+            
+            logger.debug("Encontradas {} consultas para o usuário {}", consultas.size(), userId);
+            
+            List<ConsultaDto> dtos = consultas.stream()
+                    .sorted(Comparator.comparing(Consulta::getHorario).reversed())
+                    .map(ConsultaMapper::toDto)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            logger.error("Erro ao buscar consultas do usuário: {}", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<ConsultaDto> getConsultaPorId(Integer id) {
+        try {
+            if (id == null) {
+                logger.error("ID da consulta é obrigatório");
+                return ResponseEntity.badRequest().build();
+            }
+
+            Integer userId = getUsuarioLogado().getIdUsuario();
+            logger.info("Buscando consulta com ID: {} para usuário: {}", id, userId);
+
+            Consulta consulta = consultaRepository.findById(id)
+                    .orElse(null);
+
+            if (consulta == null) {
+                logger.error("Consulta não encontrada com ID: {}", id);
+                return ResponseEntity.notFound().build();
+            }
+
+            // Verifica se o usuário logado é o assistido ou voluntário da consulta
+            if (!consulta.getAssistido().getIdUsuario().equals(userId) && 
+                !consulta.getVoluntario().getIdUsuario().equals(userId)) {
+                logger.error("Usuário {} não tem permissão para acessar a consulta {}", userId, id);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            return ResponseEntity.ok(ConsultaMapper.toDto(consulta));
+        } catch (Exception e) {
+            logger.error("Erro ao buscar consulta por ID: {}", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     private Usuario getUsuarioLogado() {
         try {
             org.springframework.security.core.Authentication authentication =
@@ -585,6 +765,213 @@ public class ConsultaServiceImpl implements ConsultaService {
             Usuario usuario = new Usuario();
             usuario.setIdUsuario(1);
             return usuario;
+        }    }
+    
+    // Implementação dos novos métodos
+    @Override
+    public List<ConsultaOutput> buscarConsultasPorDia(String user, LocalDate data) {
+        logger.info("Buscando consultas para o usuário {} na data {}", user, data);
+        
+        // Obter o ID do usuário a partir do username
+        Usuario usuario = obterUsuarioPorTipo(user);
+        if (usuario == null) {
+            logger.error("Usuário não encontrado: {}", user);
+            return Collections.emptyList();
         }
+        
+        LocalDateTime inicioDia = data.atStartOfDay();
+        LocalDateTime fimDia = data.atTime(23, 59, 59);
+        
+        List<Consulta> consultas;
+        if (user.equalsIgnoreCase("voluntario")) {
+            consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(
+                    usuario.getIdUsuario(), inicioDia, fimDia);
+        } else if (user.equalsIgnoreCase("assistido")) {
+            consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioBetween(
+                    usuario.getIdUsuario(), inicioDia, fimDia);
+        } else {
+            logger.error("Tipo de usuário não suportado: {}", user);
+            return Collections.emptyList();
+        }
+        
+        return mapConsultasToConsultaOutput(consultas);
+    }
+
+    @Override
+    public List<ConsultaOutput> buscarHistoricoConsultas(String user) {
+        logger.info("Buscando histórico de consultas para o usuário {}", user);
+        
+        // Obter o ID do usuário a partir do username
+        Usuario usuario = obterUsuarioPorTipo(user);
+        if (usuario == null) {
+            logger.error("Usuário não encontrado: {}", user);
+            return Collections.emptyList();
+        }
+          List<StatusConsulta> statusConcluidos = Arrays.asList(
+                StatusConsulta.REALIZADA, 
+                StatusConsulta.CONCLUIDA,
+                StatusConsulta.CANCELADA);
+        
+        List<Consulta> consultas;
+        if (user.equalsIgnoreCase("voluntario")) {
+            consultas = consultaRepository.findByVoluntario_IdUsuarioAndStatusIn(
+                    usuario.getIdUsuario(), statusConcluidos);
+        } else if (user.equalsIgnoreCase("assistido")) {
+            consultas = consultaRepository.findByAssistido_IdUsuarioAndStatusIn(
+                    usuario.getIdUsuario(), statusConcluidos);
+        } else {
+            logger.error("Tipo de usuário não suportado: {}", user);
+            return Collections.emptyList();
+        }
+        
+        return mapConsultasToConsultaOutput(consultas);
+    }
+
+    @Override
+    public ConsultaOutput buscarConsultaPorIdEUsuario(Integer consultaId, String user) {
+        logger.info("Buscando consulta com ID {} para o usuário {}", consultaId, user);
+        
+        // Obter o ID do usuário a partir do username
+        Usuario usuario = obterUsuarioPorTipo(user);
+        if (usuario == null) {
+            logger.error("Usuário não encontrado: {}", user);
+            return null;
+        }
+        
+        // Buscar a consulta pelo ID
+        Consulta consulta = consultaRepository.findById(consultaId)
+                .orElse(null);
+        
+        if (consulta == null) {
+            logger.error("Consulta não encontrada com ID: {}", consultaId);
+            return null;
+        }
+        
+        // Verificar se o usuário tem permissão para ver essa consulta
+        boolean autorizado = false;
+        if (user.equalsIgnoreCase("voluntario") && 
+                usuario.getIdUsuario().equals(consulta.getVoluntario().getIdUsuario())) {
+            autorizado = true;
+        } else if (user.equalsIgnoreCase("assistido") && 
+                usuario.getIdUsuario().equals(consulta.getAssistido().getIdUsuario())) {
+            autorizado = true;
+        }
+        
+        if (!autorizado) {
+            logger.error("Usuário {} não tem permissão para acessar a consulta {}", user, consultaId);
+            return null;
+        }
+        
+        return mapConsultaToConsultaOutput(consulta);
+    }
+
+    @Override
+    public List<ConsultaOutput> buscarProximasConsultas(String user) {
+        logger.info("Buscando próximas 3 consultas para o usuário {}", user);
+        
+        // Obter o ID do usuário a partir do username
+        Usuario usuario = obterUsuarioPorTipo(user);
+        if (usuario == null) {
+            logger.error("Usuário não encontrado: {}", user);
+            return Collections.emptyList();
+        }
+        
+        LocalDateTime agora = LocalDateTime.now();        List<StatusConsulta> statusPendentes = Arrays.asList(
+                StatusConsulta.AGENDADA, 
+                StatusConsulta.REAGENDADA,
+                StatusConsulta.EM_ANDAMENTO);
+        
+        List<Consulta> consultas;
+        if (user.equalsIgnoreCase("voluntario")) {
+            consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioAfterOrderByHorarioAsc(
+                    usuario.getIdUsuario(), agora);
+        } else if (user.equalsIgnoreCase("assistido")) {
+            consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioAfterOrderByHorarioAsc(
+                    usuario.getIdUsuario(), agora);
+        } else {
+            logger.error("Tipo de usuário não suportado: {}", user);
+            return Collections.emptyList();
+        }
+        
+        // Filtrar apenas consultas com status pendentes e limitar a 3
+        List<Consulta> consultasFiltradas = consultas.stream()
+                .filter(c -> statusPendentes.contains(c.getStatus()))
+                .limit(3)
+                .collect(Collectors.toList());
+        
+        return mapConsultasToConsultaOutput(consultasFiltradas);
+    }
+
+    @Override
+    public void remarcarConsulta(Integer id, ConsultaRemarcarInput input) {
+        logger.info("Remarcando consulta com ID {} para um novo horário {}", id, input.getNovoHorario());
+        
+        // Buscar a consulta pelo ID
+        Consulta consulta = consultaRepository.findById(id)
+                .orElseThrow(() -> {
+                    logger.error("Consulta não encontrada com ID: {}", id);
+                    return new RuntimeException("Consulta não encontrada");
+                });
+        
+        // Atualizar os dados da consulta
+        consulta.setHorario(input.getNovoHorario());
+        
+        if (input.getModalidade() != null) {
+            consulta.setModalidade(input.getModalidade());
+        }
+        
+        if (input.getLocal() != null && !input.getLocal().isEmpty()) {
+            consulta.setLocal(input.getLocal());
+        }
+        
+        if (input.getObservacoes() != null && !input.getObservacoes().isEmpty()) {
+            consulta.setObservacoes(input.getObservacoes());
+        }
+          // Alterar o status para REAGENDADA
+        consulta.setStatus(StatusConsulta.REAGENDADA);
+        
+        // Salvar a consulta atualizada
+        consultaRepository.save(consulta);
+        
+        logger.info("Consulta remarcada com sucesso para {}", input.getNovoHorario());
+    }
+    
+    // Método auxiliar para mapear Lista de Consultas para Lista de ConsultaOutput
+    private List<ConsultaOutput> mapConsultasToConsultaOutput(List<Consulta> consultas) {
+        return consultas.stream()
+                .map(this::mapConsultaToConsultaOutput)
+                .collect(Collectors.toList());
+    }
+    
+    // Método auxiliar para mapear uma Consulta para ConsultaOutput
+    private ConsultaOutput mapConsultaToConsultaOutput(Consulta consulta) {
+        ConsultaOutput output = new ConsultaOutput();
+        output.setIdConsulta(consulta.getIdConsulta());
+        output.setHorario(consulta.getHorario());
+        output.setStatus(consulta.getStatus());
+        output.setModalidade(consulta.getModalidade());
+        output.setLocal(consulta.getLocal());
+        output.setObservacoes(consulta.getObservacoes());
+        output.setEspecialidade(consulta.getEspecialidade());
+        output.setAssistido(consulta.getAssistido());
+        output.setVoluntario(consulta.getVoluntario());
+        return output;
+    }
+    
+    // Método auxiliar para obter um usuário por tipo
+    private Usuario obterUsuarioPorTipo(String tipoUsuario) {
+        Usuario usuarioLogado = getUsuarioLogado();
+        if (usuarioLogado == null) {
+            return null;
+        }
+        
+        // Se o tipo do usuário logado coincide com o tipo solicitado, retorna o usuário logado
+        if ((tipoUsuario.equalsIgnoreCase("voluntario") && usuarioLogado.isVoluntario()) ||
+            (tipoUsuario.equalsIgnoreCase("assistido") && !usuarioLogado.isVoluntario())) {
+            return usuarioLogado;
+        }
+        
+        // Caso contrário, retorna nulo
+        return null;
     }
 }

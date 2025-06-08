@@ -1,17 +1,25 @@
 package org.com.imaapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import org.com.imaapi.model.consulta.dto.ConsultaDto;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
+import org.com.imaapi.model.consulta.input.ConsultaRemarcarInput;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
+import org.com.imaapi.model.enums.ModalidadeConsulta;
+import org.com.imaapi.model.enums.StatusConsulta;
 import org.com.imaapi.service.ConsultaService;
 import org.com.imaapi.util.JsonValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,11 +60,29 @@ public class ConsultaController {
     public ResponseEntity<List<ConsultaDto>> getConsultasRecentes(@RequestParam String user) {
         return consultaService.getConsultasRecentes(user);
     }
-    
+
+    @GetMapping("/consultas/{idUsuario}/proxima")
+    public ResponseEntity<?> getProximaConsulta(@PathVariable Integer idUsuario) {
+        return consultaService.getProximaConsulta(idUsuario);
+    }
+
     @GetMapping("/consultas/todas")
     public ResponseEntity<List<ConsultaDto>> getTodasConsultas() {
         return consultaService.getTodasConsultas();
-    }@PostMapping("/consultas/{id}/feedback")
+    }
+
+    @GetMapping("/consultas/minhas")
+    public ResponseEntity<List<ConsultaDto>> getMinhasConsultas() {
+        return consultaService.getConsultasUsuarioLogado();
+    }
+
+    @GetMapping("/consultas/{id}")
+    public ResponseEntity<ConsultaDto> getConsultaPorId(@PathVariable Integer id) {
+        return consultaService.getConsultaPorId(id);
+    }
+
+
+    @PostMapping("/consultas/{id}/feedback")
     public ResponseEntity<ConsultaDto> adicionarFeedback(
             @PathVariable Integer id,
             @RequestBody String feedback) {
@@ -66,93 +92,115 @@ public class ConsultaController {
             @PathVariable Integer id,
             @RequestBody String avaliacao) {
         return consultaService.adicionarAvaliacao(id, avaliacao);
-    }   
+    }
+    
+    @GetMapping("/consultas/historico")
+    public ResponseEntity<List<ConsultaOutput>> listarHistoricoConsultasVoluntario(
+            @RequestParam("user") String user) {
+        List<ConsultaOutput> historico = consultaService.buscarHistoricoConsultas(user);
+        return ResponseEntity.ok(historico);
+    }
+    
+    @GetMapping("/consultas/3-proximas")
+    public ResponseEntity<List<ConsultaOutput>> listarProximasConsultas(
+            @RequestParam("user") String user) {
+        List<ConsultaOutput> proximasConsultas = consultaService.buscarProximasConsultas(user);
+        return ResponseEntity.ok(proximasConsultas);
+    }
+    
+    @PatchMapping("/consultas/{id}/remarcar")
+    public ResponseEntity<Void> remarcarConsulta(
+            @PathVariable Integer id,
+            @RequestBody ConsultaRemarcarInput input) {
+        consultaService.remarcarConsulta(id, input);
+        return ResponseEntity.noContent().build();
+    }
     
     @PostMapping("/validate")
     public ResponseEntity<Map<String, Object>> validateConsultaInput(@RequestBody String rawJson) {
-        Map<String, Object> response = new HashMap<>();
-        
-        // First validate the basic JSON structure
-        if (!JsonValidator.isValidJson(rawJson)) {
-            response.put("status", "invalid");
-            response.put("error", "JsonSyntaxError");
-            response.put("message", JsonValidator.getJsonErrors(rawJson));
-            return ResponseEntity.badRequest().body(response);
-        }
-        
-        // If JSON is valid, validate against our DTO
         try {
             ObjectMapper mapper = new ObjectMapper();
-            // Configure mapper for proper handling of dates and enums
-            mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
-            mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-            
-            // Parse into our DTO to validate structure
-            ConsultaInput consultaInput = mapper.readValue(rawJson, ConsultaInput.class);
-            
-            // Perform business validation checks
-            List<String> validationErrors = new ArrayList<>();
-            
-            // Check for required fields
-            if (consultaInput.getHorario() == null) {
-                validationErrors.add("O campo 'horario' é obrigatório");
-            }
-            if (consultaInput.getStatus() == null) {
-                validationErrors.add("O campo 'status' é obrigatório");
-            }
-            if (consultaInput.getModalidade() == null) {
-                validationErrors.add("O campo 'modalidade' é obrigatório");
-            }
-            if (consultaInput.getLocal() == null || consultaInput.getLocal().trim().isEmpty()) {
-                validationErrors.add("O campo 'local' é obrigatório");
-            }
-            
-            // Check for entity references - either ID or object must be present
-            boolean hasEspecialidadeRef = consultaInput.getIdEspecialidade() != null || 
-                                         (consultaInput.getEspecialidade() != null && 
-                                          consultaInput.getEspecialidade().getId() != null);
-            if (!hasEspecialidadeRef) {
-                validationErrors.add("Informe 'idEspecialidade' ou 'especialidade' com ID válido");
-            }
-            
-            boolean hasAssistidoRef = consultaInput.getIdAssistido() != null || 
-                                     (consultaInput.getAssistido() != null && 
-                                      consultaInput.getAssistido().getIdUsuario() != null);
-            if (!hasAssistidoRef) {
-                validationErrors.add("Informe 'idAssistido' ou 'assistido' com ID válido");
-            }
-            
-            boolean hasVoluntarioRef = consultaInput.getIdVoluntario() != null || 
-                                      (consultaInput.getVoluntario() != null && 
-                                       consultaInput.getVoluntario().getIdUsuario() != null);
-            if (!hasVoluntarioRef) {
-                validationErrors.add("Informe 'idVoluntario' ou 'voluntario' com ID válido");
-            }
-            
-            // Return validation results
-            if (validationErrors.isEmpty()) {
-                response.put("status", "valid");
-                response.put("message", "JSON é válido e pode ser processado");
-                return ResponseEntity.ok(response);
+            JsonNode jsonNode = mapper.readTree(rawJson);
+
+            Map<String, Object> response = new HashMap<>();
+            Map<String, List<String>> errors = new HashMap<>();
+            boolean hasErrors = false;
+
+            // Horário é obrigatório
+            if (!jsonNode.has("horario") || jsonNode.get("horario").isNull() || jsonNode.get("horario").asText().isEmpty()) {
+                errors.put("horario", Collections.singletonList("Horário é obrigatório"));
+                hasErrors = true;
             } else {
-                response.put("status", "invalid");
-                response.put("error", "ValidationError");
-                response.put("message", "Existem erros de validação no JSON");
-                response.put("errors", validationErrors);
-                return ResponseEntity.badRequest().body(response);
+                try {
+                    LocalDateTime.parse(jsonNode.get("horario").asText());
+                } catch (DateTimeParseException e) {
+                    errors.put("horario", Collections.singletonList("Horário inválido"));
+                    hasErrors = true;
+                }
             }
-            
+
+            // Status é obrigatório e deve ser válido
+            if (!jsonNode.has("status") || jsonNode.get("status").isNull() || jsonNode.get("status").asText().isEmpty()) {
+                errors.put("status", Collections.singletonList("Status é obrigatório"));
+                hasErrors = true;
+            } else {
+                try {
+                    StatusConsulta.valueOf(jsonNode.get("status").asText());
+                } catch (IllegalArgumentException e) {
+                    errors.put("status", Collections.singletonList("Status inválido"));
+                    hasErrors = true;
+                }
+            }
+
+            // Verifica se a modalidade é válida
+            if (!jsonNode.has("modalidade") || jsonNode.get("modalidade").isNull() || jsonNode.get("modalidade").asText().isEmpty()) {
+                errors.put("modalidade", Collections.singletonList("Modalidade é obrigatória"));
+                hasErrors = true;
+            } else {
+                try {
+                    ModalidadeConsulta.valueOf(jsonNode.get("modalidade").asText());
+                } catch (IllegalArgumentException e) {
+                    errors.put("modalidade", Collections.singletonList("Modalidade inválida"));
+                    hasErrors = true;
+                }
+            }
+
+            // Local é obrigatório
+            if (!jsonNode.has("local") || jsonNode.get("local").isNull() || jsonNode.get("local").asText().isEmpty()) {
+                errors.put("local", Collections.singletonList("Local é obrigatório"));
+                hasErrors = true;
+            }
+
+            // Verifica referências de entidade
+            boolean hasEspecialidadeRef = jsonNode.has("idEspecialidade") && !jsonNode.get("idEspecialidade").isNull();
+            boolean hasAssistidoRef = jsonNode.has("idAssistido") && !jsonNode.get("idAssistido").isNull();
+            boolean hasVoluntarioRef = jsonNode.has("idVoluntario") && !jsonNode.get("idVoluntario").isNull();
+
+            if (!hasEspecialidadeRef && !hasAssistidoRef && !hasVoluntarioRef) {
+                errors.put("especialidade", Collections.singletonList("Pelo menos uma referência (especialidade, assistido ou voluntario) deve ser fornecida"));
+                hasErrors = true;
+            }
+
+            response.put("hasErrors", hasErrors);
+            if (hasErrors) {
+                response.put("errors", errors);
+            }
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            response.put("status", "invalid");
-            response.put("error", e.getClass().getSimpleName());
-            
-            if (e.getMessage() != null && e.getMessage().contains("Unexpected end of")) {
-                response.put("message", "JSON incompleto. Verifique se todas as chaves e colchetes foram fechados corretamente.");
-            } else {
-                response.put("message", e.getMessage());
-            }
-            
-            return ResponseEntity.badRequest().body(response);
+            Map<String, Object> response = new HashMap<>();
+            response.put("hasErrors", true);
+            response.put("errors", Collections.singletonMap("global", Collections.singletonList("Erro ao validar input")));
+            return ResponseEntity.ok(response);
         }
     }
+
+    @GetMapping("/horarios-disponiveis")
+    public ResponseEntity<?> getHorariosDisponiveis(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
+            @RequestParam Integer idVoluntario
+    ) {
+        return consultaService.getHorariosDisponiveis(data, idVoluntario);
+    }
+
 }

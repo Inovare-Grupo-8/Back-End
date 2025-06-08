@@ -6,13 +6,18 @@ import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.com.imaapi.model.usuario.output.UsuarioClassificacaoOutput;
+import org.com.imaapi.model.usuario.output.VoluntarioListagemOutput;
+
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioService {
-    Usuario cadastrarPrimeiraFase(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase);    Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
+    Usuario cadastrarPrimeiraFase(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase);
+    
+    Usuario cadastrarPrimeiraFaseVoluntario(UsuarioInputPrimeiraFase usuarioInputPrimeiraFase);    Usuario cadastrarSegundaFase(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
     
     Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
 
@@ -31,8 +36,14 @@ public interface UsuarioService {
     UsuarioListarOutput atualizarUsuario(Integer id, UsuarioInputSegundaFase usuarioInputSegundaFase);
 
     void deletarUsuario(Integer id);
-    
-    Usuario buscarDadosPrimeiraFase(Integer idUsuario);
+      
+    Usuario buscarDadosPrimeiraFase(Integer idUsuario);    Usuario buscarDadosPrimeiraFase(String email);
 
-    Usuario buscarDadosPrimeiraFase(String email);
+    String enviarCredenciaisVoluntario(String email, String nome, String senha);
+
+    List<UsuarioClassificacaoOutput> buscarUsuariosNaoClassificados();    UsuarioListarOutput classificarUsuarioComoGratuidade(Integer id);
+
+    UsuarioListarOutput classificarUsuarioComoValorSocial(Integer id);
+    
+    List<VoluntarioListagemOutput> listarVoluntarios();
 }

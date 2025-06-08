@@ -4,6 +4,7 @@ public enum Funcao {
     JURIDICA("juridica"),
     PSICOLOGIA("psicologia"),
     PSICOPEDAGOGIA("psicopedagogia"),
+    ASSISTENCIA_SOCIAL("assistência social"),
     CONTABIL("contabil"),
     FINANCEIRA("financeira"),
     PEDIATRIA("pediatria"),

@@ -10,11 +10,9 @@ import org.com.imaapi.model.enums.converter.TipoUsuarioConverter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name = "usuario")
-@Getter
-@Setter
+@Data
 public class Usuario {    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
@@ -38,10 +36,11 @@ public class Usuario {    @Id
     private LocalDate dataCadastro;
 
     @Column(name = "criado_em")
-    private LocalDateTime criadoEm;
-
-    @Column(name = "atualizado_em")
+    private LocalDateTime criadoEm;    @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
+
+    @Column(name = "ultimo_acesso")
+    private LocalDateTime ultimoAcesso;
 
     @Version
     @Column(name = "versao")
@@ -68,13 +67,14 @@ public class Usuario {    @Id
         if (this.tipo == null) {
             this.tipo = TipoUsuario.NAO_CLASSIFICADO;
         }
-    }
-
-    @PreUpdate
+    }    @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
     }
-
+      public boolean isVoluntario() {
+        return this.tipo == TipoUsuario.VOLUNTARIO;
+    }
+    
     public static Usuario criarUsuarioBasico(String email, String senha, Ficha ficha) {
         Usuario usuario = new Usuario();
         usuario.setEmail(email);
@@ -83,6 +83,21 @@ public class Usuario {    @Id
         usuario.setDataCadastro(LocalDate.now());
         usuario.setCriadoEm(LocalDateTime.now());
         usuario.setAtualizadoEm(LocalDateTime.now());
+        usuario.setUltimoAcesso(LocalDateTime.now());
+        usuario.setVersao(0);
+        usuario.setFicha(ficha);
+        return usuario;
+    }
+
+    public static Usuario criarVoluntario(String email, String senha, Ficha ficha) {
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setSenha(senha);
+        usuario.setTipo(TipoUsuario.VOLUNTARIO);
+        usuario.setDataCadastro(LocalDate.now());
+        usuario.setCriadoEm(LocalDateTime.now());
+        usuario.setAtualizadoEm(LocalDateTime.now());
+        usuario.setUltimoAcesso(LocalDateTime.now());
         usuario.setVersao(0);
         usuario.setFicha(ficha);
         return usuario;

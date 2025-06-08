@@ -17,10 +17,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @ToString
 public class UsuarioInputSegundaFase {
-    @NotNull(message = "CPF não pode ser nulo")
-    @Pattern(regexp = "\\d{11}", message = "CPF deve ter 11 dígitos")
-    private String cpf;
-
     @NotNull(message = "Data de nascimento não pode ser nula")
     @PastOrPresent(message = "Data de nascimento inválida")
     private LocalDate dataNascimento;
