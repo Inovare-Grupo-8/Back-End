@@ -2,6 +2,7 @@ package org.com.imaapi.service;
 
 import org.com.imaapi.model.consulta.dto.ConsultaDto;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
+import org.com.imaapi.model.consulta.input.ConsultaRemarcarInput;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.springframework.http.ResponseEntity;
 
@@ -36,4 +37,15 @@ public interface ConsultaService {
     ResponseEntity<List<ConsultaDto>> getConsultasUsuarioLogado();
 
     public ResponseEntity<ConsultaDto> getConsultaPorId(Integer id);
+    
+    // Novos métodos
+    List<ConsultaOutput> buscarConsultasPorDia(String user, LocalDate data);
+    
+    List<ConsultaOutput> buscarHistoricoConsultas(String user);
+    
+    ConsultaOutput buscarConsultaPorIdEUsuario(Integer consultaId, String user);
+    
+    List<ConsultaOutput> buscarProximasConsultas(String user);
+    
+    void remarcarConsulta(Integer id, ConsultaRemarcarInput input);
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import org.com.imaapi.model.consulta.dto.ConsultaDto;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
+import org.com.imaapi.model.consulta.input.ConsultaRemarcarInput;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.com.imaapi.model.enums.ModalidadeConsulta;
 import org.com.imaapi.model.enums.StatusConsulta;
@@ -12,6 +13,7 @@ import org.com.imaapi.service.ConsultaService;
 import org.com.imaapi.util.JsonValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
@@ -22,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/consulta")
@@ -86,13 +89,40 @@ public class ConsultaController {
             @PathVariable Integer id,
             @RequestBody String feedback) {
         return consultaService.adicionarFeedback(id, feedback);
+
     }
 
     @PostMapping("/consultas/{id}/avaliacao")
+
+    }    @PostMapping("/consultas/{id}/avaliacao")
+
     public ResponseEntity<ConsultaDto> adicionarAvaliacao(
             @PathVariable Integer id,
             @RequestBody String avaliacao) {
         return consultaService.adicionarAvaliacao(id, avaliacao);
+    }
+
+    
+    @GetMapping("/consultas/historico")
+    public ResponseEntity<List<ConsultaOutput>> listarHistoricoConsultasVoluntario(
+            @RequestParam("user") String user) {
+        List<ConsultaOutput> historico = consultaService.buscarHistoricoConsultas(user);
+        return ResponseEntity.ok(historico);
+    }
+    
+    @GetMapping("/consultas/3-proximas")
+    public ResponseEntity<List<ConsultaOutput>> listarProximasConsultas(
+            @RequestParam("user") String user) {
+        List<ConsultaOutput> proximasConsultas = consultaService.buscarProximasConsultas(user);
+        return ResponseEntity.ok(proximasConsultas);
+    }
+    
+    @PatchMapping("/consultas/{id}/remarcar")
+    public ResponseEntity<Void> remarcarConsulta(
+            @PathVariable Integer id,
+            @RequestBody ConsultaRemarcarInput input) {
+        consultaService.remarcarConsulta(id, input);
+        return ResponseEntity.noContent().build();
     }
     
     @PostMapping("/validate")
@@ -182,4 +212,27 @@ public class ConsultaController {
         return consultaService.getHorariosDisponiveis(data, idVoluntario);
     }
 
+
+    @GetMapping("/consultas/hoje")
+    public ResponseEntity<Map<String, Object>> getConsultasHoje(@RequestParam String user) {
+        try {
+            List<ConsultaDto> consultasDia = consultaService.getConsultasDia(user).getBody();
+            if (consultasDia == null) {
+                consultasDia = new ArrayList<>();
+            }
+
+            // Count appointments by status
+            Map<String, Long> statusCount = consultasDia.stream()
+                .collect(Collectors.groupingBy(ConsultaDto::getStatus, Collectors.counting()));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("consultas", consultasDia);
+            response.put("total", consultasDia.size());
+            response.put("statusCount", statusCount);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

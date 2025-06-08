@@ -49,14 +49,16 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
             new AntPathRequestMatcher("/v3/api-docs/**"),
             new AntPathRequestMatcher("/actuator/**"),
             new AntPathRequestMatcher("/usuarios/**"),
-            new AntPathRequestMatcher("/usuarios/login/***"),
+            new AntPathRequestMatcher("/assistentes-sociais/**"),            new AntPathRequestMatcher("/usuarios/login/***"),
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
+            new AntPathRequestMatcher("/perfil/**"),
             new AntPathRequestMatcher("/error/**"),
             new AntPathRequestMatcher("/"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/oauth2/authorization/google"),
             new AntPathRequestMatcher("/dev/token"),
+            new AntPathRequestMatcher("/uploads/**")  // Add this line
     };
 
     @Bean
@@ -157,7 +159,7 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuracao = new CorsConfiguration();
-        configuracao.setAllowedOrigins(List.of("http://localhost:3030"));
+        configuracao.setAllowedOrigins(Arrays.asList("http://localhost:3030", "http://localhost:5173"));
         configuracao.setAllowedMethods(
                 Arrays.asList(
                         HttpMethod.GET.name(),

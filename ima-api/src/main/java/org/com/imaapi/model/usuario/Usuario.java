@@ -10,11 +10,9 @@ import org.com.imaapi.model.enums.converter.TipoUsuarioConverter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name = "usuario")
-@Getter
-@Setter
+@Data
 public class Usuario {    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
@@ -69,12 +67,15 @@ public class Usuario {    @Id
         if (this.tipo == null) {
             this.tipo = TipoUsuario.NAO_CLASSIFICADO;
         }
-    }
-
-    @PreUpdate
+    }    @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-    }    public static Usuario criarUsuarioBasico(String email, String senha, Ficha ficha) {
+    }
+      public boolean isVoluntario() {
+        return this.tipo == TipoUsuario.VOLUNTARIO;
+    }
+    
+    public static Usuario criarUsuarioBasico(String email, String senha, Ficha ficha) {
         Usuario usuario = new Usuario();
         usuario.setEmail(email);
         usuario.setSenha(senha);

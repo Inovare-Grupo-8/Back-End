@@ -76,12 +76,12 @@ public class Ficha {
         if (this.versao == null) {
             this.versao = 0;
         }
-    }
-
-    @PreUpdate
+    }    @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-    }    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
+    }
+    
+    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
         this.setDtNascim(input.getDataNascimento());
         this.setRenda(input.getRenda() != null ? BigDecimal.valueOf(input.getRenda()) : null);
         this.setAreaOrientacao(input.getAreaOrientacao());

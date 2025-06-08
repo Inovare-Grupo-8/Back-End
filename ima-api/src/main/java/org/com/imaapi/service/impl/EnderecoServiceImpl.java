@@ -1,6 +1,7 @@
 package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.usuario.Endereco;
+import org.com.imaapi.model.usuario.input.EnderecoInput;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.service.EnderecoService;
@@ -94,8 +95,53 @@ public class EnderecoServiceImpl implements EnderecoService {
         endereco.setCidade(enderecoOutput.getLocalidade());
         endereco.setComplemento(complemento);
         return enderecoRepository.save(endereco);
-    }
+    }    @Override
+    public Endereco criarOuAtualizarEndereco(EnderecoInput enderecoInput) {
+        if (enderecoInput == null) {
+            throw new IllegalArgumentException("O objeto EnderecoInput não pode ser nulo.");
+        }
+        
+        LOGGER.info("Iniciando criação/atualização de endereço com CEP: {}", enderecoInput.getCep());
+        
+        String cep = formatarCep(enderecoInput.getCep());
+        String numero = enderecoInput.getNumero();
+        String complemento = enderecoInput.getComplemento();
 
+        if (!isValidCep(cep)) {
+            throw new IllegalArgumentException("CEP inválido. Deve conter 8 dígitos.");
+        }
+        
+        // Primeiro verifica se já existe um endereço com esse CEP e número
+        Optional<Endereco> enderecoExistente = enderecoRepository.findByCepAndNumero(cep, numero);
+        
+        if (enderecoExistente.isPresent()) {
+            Endereco endereco = enderecoExistente.get();
+            if (complemento != null && !complemento.equals(endereco.getComplemento())) {
+                endereco.setComplemento(complemento);
+                endereco = enderecoRepository.save(endereco);
+                LOGGER.info("Endereço atualizado com sucesso: {}", endereco);
+            }
+            return endereco;
+        }
+
+        // Se não existe, busca o endereço na API do ViaCEP e cria um novo
+        EnderecoOutput enderecoDetalhes = null;
+        try {
+            ResponseEntity<EnderecoOutput> response = buscaEndereco(cep, numero, complemento);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                enderecoDetalhes = response.getBody();
+            }
+        } catch (Exception e) {
+            LOGGER.error("Erro ao buscar detalhes do CEP: {}", e.getMessage());
+        }
+        
+        if (enderecoDetalhes == null) {
+            LOGGER.error("Não foi possível obter os dados do endereço para o CEP: {}", cep);
+            throw new RuntimeException("Não foi possível obter os dados do endereço");
+        }
+        
+        return cadastrarEndereco(enderecoDetalhes, complemento);
+    }
 
     private EnderecoOutput converterParaEnderecoOutput(Endereco endereco) {
         EnderecoOutput output = new EnderecoOutput();
@@ -112,9 +158,7 @@ public class EnderecoServiceImpl implements EnderecoService {
     private String formatarCep(String cep) {
         if (cep == null) return null;
         return cep.replaceAll("\\D", "");
-    }
-
-    private boolean isValidCep(String cep) {
+    }    private boolean isValidCep(String cep) {
         return cep != null && cep.matches("\\d{8}");
     }
 }

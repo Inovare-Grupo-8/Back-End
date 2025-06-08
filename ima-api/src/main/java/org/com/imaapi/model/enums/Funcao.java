@@ -4,12 +4,13 @@ public enum Funcao {
     JURIDICA("juridica"),
     PSICOLOGIA("psicologia"),
     PSICOPEDAGOGIA("psicopedagogia"),
+    ASSISTENCIA_SOCIAL("assistencia_social"), 
     CONTABIL("contabil"),
     FINANCEIRA("financeira"),
     PEDIATRIA("pediatria"),
     FISIOTERAPIA("fisioterapia"),
-    QUIROPRAXIA("quiropráxia"),
-    NUTRICAO("nutrição");
+    QUIROPRAXIA("quiropraxia"),
+    NUTRICAO("nutricao");
 
     private final String value;
 
@@ -21,9 +22,45 @@ public enum Funcao {
         return value;
     }
 
+    public static String normalizeValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.trim()
+            .toLowerCase()
+            .replace(" ", "_")
+            .replace("-", "_")
+            .replace(".", "_")
+            .replace("á", "a")
+            .replace("ã", "a")
+            .replace("à", "a")
+            .replace("é", "e")
+            .replace("ê", "e")
+            .replace("í", "i")
+            .replace("ó", "o")
+            .replace("ô", "o")
+            .replace("ú", "u")
+            .replace("â", "a")
+            .replace("ê", "e")
+            .replace("î", "i")
+            .replace("ô", "o")
+            .replace("û", "u")
+            .replace("ç", "c");
+    }
+
     public static Funcao fromValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        
+        String normalizedInput = normalizeValue(value);
+        
         for (Funcao funcao : Funcao.values()) {
-            if (funcao.value.equalsIgnoreCase(value)) {
+            String normalizedEnum = normalizeValue(funcao.value);
+            String normalizedName = normalizeValue(funcao.name());
+            
+            if (normalizedEnum.equals(normalizedInput) || 
+                normalizedName.equals(normalizedInput)) {
                 return funcao;
             }
         }

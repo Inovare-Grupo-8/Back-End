@@ -2,24 +2,28 @@ package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
+import org.com.imaapi.model.especialidade.Especialidade;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
-@Table(name = "disponibilidade_voluntario")
-public class Disponibilidade {
+@Data
+@Table(name = "voluntario_especialidade")
+public class VoluntarioEspecialidade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_disponibilidade")
-    private Integer idDisponibilidade;
-
-    @Column(name = "data_horario", nullable = false)
-    private LocalDateTime dataHorario;
+    @Column(name = "id_voluntario_especialidade")
+    private Integer idVoluntarioEspecialidade;
 
     @ManyToOne
-    @JoinColumn(name = "fk_voluntario", referencedColumnName = "id_voluntario")
+    @JoinColumn(name = "fk_voluntario", nullable = false)
     private Voluntario voluntario;
+
+    @ManyToOne
+    @JoinColumn(name = "fk_especialidade", nullable = false)
+    private Especialidade especialidade;
+
+    @Column(name = "principal")
+    private Boolean principal;
 
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
