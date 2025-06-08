@@ -13,6 +13,7 @@ import org.com.imaapi.service.ConsultaService;
 import org.com.imaapi.util.JsonValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
@@ -23,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/consulta")
@@ -201,6 +203,29 @@ public class ConsultaController {
             @RequestParam Integer idVoluntario
     ) {
         return consultaService.getHorariosDisponiveis(data, idVoluntario);
+    }
+
+    @GetMapping("/consultas/hoje")
+    public ResponseEntity<Map<String, Object>> getConsultasHoje(@RequestParam String user) {
+        try {
+            List<ConsultaDto> consultasDia = consultaService.getConsultasDia(user).getBody();
+            if (consultasDia == null) {
+                consultasDia = new ArrayList<>();
+            }
+
+            // Count appointments by status
+            Map<String, Long> statusCount = consultasDia.stream()
+                .collect(Collectors.groupingBy(ConsultaDto::getStatus, Collectors.counting()));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("consultas", consultasDia);
+            response.put("total", consultasDia.size());
+            response.put("statusCount", statusCount);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }

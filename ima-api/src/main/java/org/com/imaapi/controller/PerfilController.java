@@ -17,6 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.com.imaapi.service.AssistenteSocialService;
+import org.com.imaapi.model.usuario.output.AssistenteSocialOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.Map;
@@ -30,6 +35,10 @@ public class PerfilController {
     private PerfilService perfilService;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private AssistenteSocialService assistenteSocialService;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PerfilController.class);
 
     @GetMapping("/{tipo}/dados-pessoais")
     public ResponseEntity<UsuarioDadosPessoaisOutput> buscarDadosPessoais(
@@ -130,5 +139,19 @@ public class PerfilController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/assistente-social")
+    public ResponseEntity<AssistenteSocialOutput> buscarPerfilAssistenteSocial(@RequestParam Integer usuarioId) {
+        try {
+            AssistenteSocialOutput perfil = assistenteSocialService.buscarAssistenteSocial(usuarioId);
+            if (perfil == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(perfil);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao buscar perfil do assistente social: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
