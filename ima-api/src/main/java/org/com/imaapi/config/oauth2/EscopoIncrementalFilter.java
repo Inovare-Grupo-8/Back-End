@@ -65,13 +65,11 @@ public class EscopoIncrementalFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                if (!(authentication instanceof OAuth2AuthenticationToken)) {
+                if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
                     logger.warn("Tipo de autenticação inválido: {}", authentication.getClass());
                     filterChain.doFilter(request, response);
                     return;
                 }
-
-                OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
 
                 OAuth2User usuarioOauth = (OAuth2User) oauthToken.getPrincipal();
                 String email = usuarioOauth.getAttribute("email");
@@ -95,7 +93,7 @@ public class EscopoIncrementalFilter extends OncePerRequestFilter {
                                     authorizedClient.getAccessToken(),
                                     authorizedClient.getRefreshToken()
                             );
-                            logger.info("Tokens de calendário salvos para: {}", email);
+                            logger.info("Tokens de calendário salvos: {}", authorizedClient.getAccessToken().getScopes());
                         });
                     } else {
                         logger.error("Falha ao obter cliente autorizado");

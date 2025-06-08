@@ -5,6 +5,7 @@ import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,7 @@ public interface UsuarioService {
     
     Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase);
 
-    UsuarioTokenOutput autenticar(Usuario usuario);
+    UsuarioTokenOutput autenticar(Usuario usuario, OAuth2AuthenticationToken oAuth2AuthenticationToken);
 
     List<UsuarioListarOutput> buscarUsuarios();
 

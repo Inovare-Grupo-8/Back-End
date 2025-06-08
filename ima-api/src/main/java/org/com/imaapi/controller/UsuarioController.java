@@ -55,7 +55,7 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<UsuarioTokenOutput> login(@RequestBody @Valid UsuarioAutenticacaoInput usuarioAutenticacaoInput) {
             Usuario usuario = UsuarioMapper.of(usuarioAutenticacaoInput);
-            UsuarioTokenOutput usuarioTokenOutput = usuarioService.autenticar(usuario);
+            UsuarioTokenOutput usuarioTokenOutput = usuarioService.autenticar(usuario, null);
 
             if (usuarioTokenOutput == null) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

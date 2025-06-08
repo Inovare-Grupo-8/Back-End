@@ -3,7 +3,6 @@ package org.com.imaapi.config.oauth2;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.com.imaapi.config.GerenciadorTokenJwt;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.repository.UsuarioRepository;
@@ -21,24 +20,20 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
 
     private final UsuarioRepository usuarioRepository;
-    private final GerenciadorTokenJwt gerenciadorTokenJwt;
     private final UsuarioServiceImpl usuarioService;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
     private final OauthTokenServiceImpl oauthTokenService;
 
     public AutenticacaoSucessHandler(UsuarioRepository usuarioRepository,
-                                     GerenciadorTokenJwt gerenciadorTokenJwt,
                                      UsuarioServiceImpl usuarioService,
                                      @Qualifier("googleAuthorizedClientManager") OAuth2AuthorizedClientManager authorizedClientManager,
                                      OauthTokenServiceImpl oauthTokenService) {
         this.usuarioRepository = usuarioRepository;
-        this.gerenciadorTokenJwt = gerenciadorTokenJwt;
         this.usuarioService = usuarioService;
         this.authorizedClientManager = authorizedClientManager;
         this.oauthTokenService = oauthTokenService;
@@ -50,20 +45,13 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
         System.out.println("=== INICIANDO onAuthenticationSuccess ===");
 
         OAuth2AuthenticationToken authenticationToken = (OAuth2AuthenticationToken) authentication;
+        authenticationToken.getAuthorizedClientRegistrationId();
         OAuth2User usuarioOauth = (OAuth2User) authenticationToken.getPrincipal();
         String email = usuarioOauth.getAttribute("email");
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
 
-        if (email == null) {
-            if (usuarioOptional.isEmpty()) {
-                usuarioService.cadastrarUsuarioOAuth(usuarioOauth);
-                usuarioOptional = usuarioRepository.findByEmail(email);
-
-                if (usuarioOptional.isEmpty()) {
-                    throw new ServletException("Erro ao cadastrar usuário");
-                }
-            }
-        }
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseGet(
+                () -> usuarioService.cadastrarUsuarioOauth(usuarioOauth)
+        );
 
         OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
                 .withClientRegistrationId(authenticationToken.getAuthorizedClientRegistrationId())
@@ -75,7 +63,6 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
         OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
 
         if(authorizedClient != null) {
-            Usuario usuario = usuarioOptional.get();
             OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
             OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
 
@@ -84,18 +71,16 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
                     (refreshToken != null ? refreshToken.getTokenValue() : "null"));
 
             if(refreshToken == null) {
-                System.out.println("Não foi recebido um refresh token");
+                System.out.println("Não foi recebido um refresh token!");
             }
 
             oauthTokenService.salvarToken(usuario, accessToken, refreshToken);
+            UsuarioTokenOutput tokenOutput = usuarioService.autenticar(usuario, authenticationToken);
+            response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
+
+            System.out.println("=== FINALIZANDO onAuthenticationSuccess ===");
         } else {
             throw new ServletException("Erro ao obter tokens autorizados com o google");
         }
-
-        UsuarioTokenOutput tokenOutput = usuarioService.autenticar(usuarioOptional.get());
-        response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
-
-        System.out.println("=== FINALIZANDO onAuthenticationSuccess ===");
     }
-
 }

@@ -113,7 +113,6 @@ public class SecurityConfiguracao {
 
         return new AutenticacaoSucessHandler(
                 usuarioRepository,
-                gerenciadorTokenJwt,
                 usuarioService,
                 authorizedClientManager,
                 oauthTokenService

@@ -24,11 +24,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -81,18 +80,20 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioSalvo;
     }
 
-    public void cadastrarUsuarioOAuth(OAuth2User usuario) {
+    public Usuario cadastrarUsuarioOauth(OAuth2User usuarioOauth) {
 
-        String nome = usuario.getAttribute("nome");
-        String email = usuario.getAttribute("email");
+        String nome = usuarioOauth.getAttribute("name");
+        String email = usuarioOauth.getAttribute("email");
 
         Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(nome);
         novoUsuario.setEmail(email);
-        novoUsuario.setSenha("");
+        novoUsuario.setSenha(null);
+        novoUsuario.setTipo(TipoUsuario.VOLUNTARIO);
         novoUsuario.setDataCadastro(LocalDateTime.now());
-
         usuarioRepository.save(novoUsuario);
+
+        return novoUsuario;
     }
 
     @Override
@@ -148,7 +149,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public UsuarioTokenOutput autenticar(Usuario usuario) {
+    public UsuarioTokenOutput autenticar(Usuario usuario, OAuth2AuthenticationToken oAuth2AuthenticationToken) {
+
+        if (oAuth2AuthenticationToken != null) {
+            OAuth2AuthenticationToken credentials = new OAuth2AuthenticationToken(
+                    oAuth2AuthenticationToken.getPrincipal(),
+                    UsuarioMapper.ofDetalhes(usuario).getAuthorities(),
+                    oAuth2AuthenticationToken.getAuthorizedClientRegistrationId()
+            );
+            SecurityContextHolder.getContext().setAuthentication(credentials);
+            final String token = gerenciadorTokenJwt.generateToken(credentials);
+            return UsuarioMapper.of(usuario, token);
+        }
+
         final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
                 usuario.getEmail(), usuario.getSenha(), UsuarioMapper.ofDetalhes(usuario).getAuthorities());
 

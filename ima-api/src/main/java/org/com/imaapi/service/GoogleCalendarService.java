@@ -14,9 +14,10 @@ public interface GoogleCalendarService {
     String criarCalendario(Calendar service);
     Event criarEvento(String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim) throws GeneralSecurityException, IOException;
     void inserirEvento(Calendar service, String idCalendario, Event evento) throws IOException;
-    void criarEventoParaUsuario(Integer idUsuario, String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim);
+    void criarEventoParaUsuario(Integer idUsuario, String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim) throws GeneralSecurityException, IOException;
     Event criarEventoComMeet(String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim);
     Event inserirEventoComMeet(Calendar service, String idCalendario, Event evento) throws IOException;
-    String criarEventoComMeetParaUsuario(Integer idUsuario, String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim);
+    String criarEventoComMeetParaUsuario(Integer idUsuario, String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim) throws GeneralSecurityException, IOException;
     String extrairLinkMeet(Event evento);
+    boolean usuarioTemEscopoCalendar(Integer idUsuario) throws GeneralSecurityException, IOException;
 }

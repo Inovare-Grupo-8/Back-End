@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import javax.crypto.SecretKey;
@@ -24,7 +25,9 @@ public class GerenciadorTokenJwt {
     @Value("${jwt.validity}")
     private long jwtTokenValidity;
 
-    public String getUsernameFromToken(String token) {return getClaimForToken(token, Claims::getSubject);}
+    public String getUsernameFromToken(String token) {
+        return getClaimForToken(token, Claims::getSubject);
+    }
 
     public Date getExpirationDateFromToken(String token) {return getClaimForToken(token, Claims::getExpiration);}
 
@@ -34,8 +37,12 @@ public class GerenciadorTokenJwt {
         final String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
+        String subject = authentication instanceof OAuth2AuthenticationToken ?
+                ((OAuth2AuthenticationToken) authentication).getPrincipal().getAttribute("email") :
+                authentication.getName();
+
         return Jwts.builder()
-                .subject(authentication.getName())
+                .subject(subject)
                 .claim("authorities", authorities)
                 .signWith(parseSecret())
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -58,6 +65,7 @@ public class GerenciadorTokenJwt {
     }
 
     private Claims getAllClaimsFromToken(String token) {
+
         return Jwts.parser()
                 .setSigningKey(parseSecret())
                 .build()

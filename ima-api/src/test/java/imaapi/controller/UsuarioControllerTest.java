@@ -157,7 +157,7 @@ public class UsuarioControllerTest {
         UsuarioAutenticacaoInput usuarioAutenticacaoInput = new UsuarioAutenticacaoInput();
         Usuario usuario = new Usuario();
         UsuarioTokenOutput tokenOutput = new UsuarioTokenOutput();
-        Mockito.when(usuarioService.autenticar(any(Usuario.class))).thenReturn(tokenOutput);
+        Mockito.when(usuarioService.autenticar(any(Usuario.class), null)).thenReturn(tokenOutput);
 
         ResponseEntity<UsuarioTokenOutput> response = usuarioController.login(usuarioAutenticacaoInput);
 
@@ -169,7 +169,7 @@ public class UsuarioControllerTest {
     public void testAutenticarUsuarioNaoAutorizado() {
         UsuarioAutenticacaoInput usuarioAutenticacaoInput = new UsuarioAutenticacaoInput();
         Usuario usuario = new Usuario();
-        Mockito.when(usuarioService.autenticar(any(Usuario.class))).thenReturn(null);
+        Mockito.when(usuarioService.autenticar(any(Usuario.class), null)).thenReturn(null);
 
         ResponseEntity<UsuarioTokenOutput> response = usuarioController.login(usuarioAutenticacaoInput);
 

@@ -1,0 +1,68 @@
+package org.com.imaapi.controller;
+
+import jakarta.validation.Valid;
+import org.com.imaapi.model.evento.EventoDTO;
+import org.com.imaapi.service.impl.GoogleCalendarServiceImpl;
+import org.com.imaapi.service.impl.OauthTokenServiceImpl;
+import org.com.imaapi.service.impl.UsuarioServiceImpl;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
+
+@RestController
+@RequestMapping("/calendar/eventos")
+public class GoogleCalendarController {
+    private final GoogleCalendarServiceImpl googleCalendarService;
+    private final UsuarioServiceImpl usuarioService;
+
+    public GoogleCalendarController(GoogleCalendarServiceImpl googleCalendarService,
+                                    UsuarioServiceImpl usuarioService) {
+        this.googleCalendarService = googleCalendarService;
+        this.usuarioService = usuarioService;
+    }
+
+    @PostMapping
+    public ResponseEntity<?> criarEvento(@RequestBody @Valid EventoDTO eventoDTO,
+                                         Authentication authentication) throws GeneralSecurityException, IOException {
+        String email = authentication.getName();
+        System.out.println(authentication);
+
+        Integer idUsuario = usuarioService.buscarDadosPrimeiraFase(email).getIdUsuario();
+
+        googleCalendarService.criarEventoParaUsuario(
+                idUsuario,
+                eventoDTO.getTitulo(),
+                eventoDTO.getDescricao(),
+                eventoDTO.getInicio(),
+                eventoDTO.getFim()
+        );
+
+        return ResponseEntity.ok("Evento criado com sucesso!");
+    }
+
+    @PostMapping("/meet")
+    public ResponseEntity<?> criarEventoComMeet(@Valid @RequestBody EventoDTO eventoDTO,
+                                      Authentication authentication) throws GeneralSecurityException, IOException {
+        String email = authentication.getName();
+
+
+        Integer idUsuario = usuarioService.buscarDadosPrimeiraFase(email).getIdUsuario();
+
+        String linkMeet = googleCalendarService.criarEventoComMeetParaUsuario(
+                idUsuario,
+                eventoDTO.getTitulo(),
+                eventoDTO.getDescricao(),
+                eventoDTO.getInicio(),
+                eventoDTO.getFim()
+        );
+
+        return ResponseEntity.ok(Collections.singletonMap("linkMeet", linkMeet));
+    }
+}

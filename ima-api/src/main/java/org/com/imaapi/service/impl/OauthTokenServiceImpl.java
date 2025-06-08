@@ -168,8 +168,6 @@ public class OauthTokenServiceImpl implements OauthTokenService {
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", escoposCombinados))
                 .queryParam("state", state)
-                .queryParam("access_type", "offline")
-                .queryParam("prompt", "consent")
                 .build()
                 .toUriString();
     }

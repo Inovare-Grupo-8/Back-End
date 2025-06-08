@@ -9,7 +9,6 @@ import com.google.api.services.calendar.model.*;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import org.com.imaapi.model.usuario.Usuario;
-import org.com.imaapi.repository.OauthTokenRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.GoogleCalendarService;
 import org.com.imaapi.service.OauthTokenService;
@@ -19,6 +18,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,11 +29,12 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     private static final String TIMEZONE_CALENDARIO = "America/Sao_Paulo";
     private static final String NOME_APLICACAO = "IMA API";
     private static final String DESCRICAO_CALENDARIO = "Eventos IMA";
+    private static final String CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.app.created";
     private final OauthTokenService oauthTokenService;
     private final UsuarioRepository usuarioRepository;
 
-    public GoogleCalendarServiceImpl(OauthTokenRepository oauthTokenRepository,
-                                     OauthTokenService oauthTokenService, UsuarioRepository usuarioRepository) {
+    public GoogleCalendarServiceImpl(OauthTokenService oauthTokenService,
+                                     UsuarioRepository usuarioRepository) {
         this.oauthTokenService = oauthTokenService;
         this.usuarioRepository = usuarioRepository;
     }
@@ -115,26 +116,14 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                                        String titulo,
                                        String descricao,
                                        LocalDateTime inicio,
-                                       LocalDateTime fim) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                                       LocalDateTime fim) throws GeneralSecurityException, IOException {
+
 
         try {
-            GoogleCredentials credentials = oauthTokenService.buscarCredenciaisValidasGoogle(usuario);
-
-            HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-
-            Calendar service = new Calendar.Builder(
-                    httpTransport,
-                    GsonFactory.getDefaultInstance(),
-                    new HttpCredentialsAdapter(credentials)
-            )
-                    .setApplicationName(NOME_APLICACAO)
-                    .build();
-
+            Calendar service = construirCalendarService(idUsuario);
             String idCalendario = buscarOuCriarCalendario(service);
             Event evento = criarEvento(titulo, descricao, inicio, fim);
-            service.events().insert(idCalendario, evento).execute();
+            inserirEvento(service, idCalendario, evento);
 
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException("Erro ao criar evento: " + e.getMessage(), e);
@@ -163,29 +152,17 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     }
 
     @Override
-    public String criarEventoComMeetParaUsuario(Integer idUsuario, String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim) {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        GoogleCredentials credentials = oauthTokenService.buscarCredenciaisValidasGoogle(usuario);
+    public String criarEventoComMeetParaUsuario(Integer idUsuario,
+                                                String titulo,
+                                                String descricao,
+                                                LocalDateTime inicio,
+                                                LocalDateTime fim) throws GeneralSecurityException, IOException {
 
         try {
-            HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-
-            Calendar service = new Calendar.Builder(
-                    httpTransport,
-                    GsonFactory.getDefaultInstance(),
-                    new HttpCredentialsAdapter(credentials)
-            )
-                    .setApplicationName(NOME_APLICACAO)
-                    .build();
-
+            Calendar service = construirCalendarService(idUsuario);
             String idCalendario = buscarOuCriarCalendario(service);
-
             Event evento = criarEventoComMeet(titulo, descricao, inicio, fim);
-
             Event eventoInserido = inserirEventoComMeet(service, idCalendario, evento);
-
             return extrairLinkMeet(eventoInserido);
 
         } catch (GeneralSecurityException | IOException e) {
@@ -196,7 +173,7 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     @Override
     public String extrairLinkMeet(Event evento) {
         if (evento.getConferenceData() != null &&
-            evento.getConferenceData().getEntryPoints() != null) {
+                evento.getConferenceData().getEntryPoints() != null) {
 
             for (EntryPoint entryPoint : evento.getConferenceData().getEntryPoints()) {
                 if ("video".equals(entryPoint.getEntryPointType())) {
@@ -205,5 +182,42 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
             }
         }
         throw new RuntimeException("Link do meet não encontrado no evento: " + evento);
+    }
+
+    private Calendar construirCalendarService(Integer idUsuario) throws GeneralSecurityException, IOException {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        GoogleCredentials credentials = oauthTokenService.buscarCredenciaisValidasGoogle(usuario);
+
+        // Verificar escopo diretamente nas credenciais
+        if (!contemEscopoCalendar(credentials)) {
+            System.out.println(credentials);
+            throw new SecurityException("Usuário não possui permissão para Google Calendar");
+        }
+
+        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+
+        return new Calendar.Builder(
+                httpTransport,
+                GsonFactory.getDefaultInstance(),
+                new HttpCredentialsAdapter(credentials)
+        )
+                .setApplicationName(NOME_APLICACAO)
+                .build();
+    }
+
+    @Override
+    public boolean usuarioTemEscopoCalendar(Integer idUsuario) throws GeneralSecurityException, IOException {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        GoogleCredentials credentials = oauthTokenService.buscarCredenciaisValidasGoogle(usuario);
+        return contemEscopoCalendar(credentials);
+    }
+
+    private boolean contemEscopoCalendar(GoogleCredentials credentials) {
+        Collection<String> scopes = credentials.getAccessToken().getScopes();
+        return scopes != null && scopes.contains(CALENDAR_SCOPE);
     }
 }
