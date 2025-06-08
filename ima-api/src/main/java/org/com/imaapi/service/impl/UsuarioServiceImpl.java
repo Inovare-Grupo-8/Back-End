@@ -31,13 +31,12 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Collections;
 
 @Service
 @Transactional
 public class UsuarioServiceImpl implements UsuarioService {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
-    
+
     @Autowired
     private TelefoneRepository telefoneRepository;
 
@@ -256,10 +255,19 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.atualizarTipo(TipoUsuario.VOLUNTARIO);
         usuarioRepository.save(usuario);
         logger.info("Tipo do usuário atualizado para VOLUNTARIO e salvo: ID={}, email={}", usuario.getIdUsuario(), usuario.getEmail());
-
         VoluntarioInput voluntarioInput = UsuarioMapper.of(usuarioInputSegundaFase, idUsuario);
-        voluntarioService.cadastrarVoluntario(voluntarioInput);
-        logger.info("Voluntário cadastrado com sucesso para usuário ID: {}", idUsuario);
+
+        // Para segunda fase de voluntário, verificar se já existe um voluntário e atualizar em vez de criar
+        Voluntario voluntarioExistente = voluntarioRepository.findByUsuario_IdUsuario(idUsuario);
+        if (voluntarioExistente != null) {
+            logger.info("Voluntário já existe para usuário ID: {}, atualizando dados...", idUsuario);
+            voluntarioService.atualizarVoluntario(voluntarioInput);
+            logger.info("Voluntário atualizado com sucesso para usuário ID: {}", idUsuario);
+        } else {
+            logger.info("Voluntário não existe para usuário ID: {}, criando novo...", idUsuario);
+            voluntarioService.cadastrarVoluntario(voluntarioInput);
+            logger.info("Voluntário cadastrado com sucesso para usuário ID: {}", idUsuario);
+        }
 
         emailService.enviarEmail(usuario.getEmail(), usuario.getFicha().getNome(), "bem vindo voluntario");
         logger.info("Email de boas-vindas para voluntário enviado para o usuário: {}", usuario.getEmail());
