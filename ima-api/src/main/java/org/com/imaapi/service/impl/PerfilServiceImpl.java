@@ -1,15 +1,13 @@
 package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.enums.TipoUsuario;
-import org.com.imaapi.model.usuario.Usuario;
-import org.com.imaapi.model.usuario.Ficha;
-import org.com.imaapi.model.usuario.Voluntario;
-import org.com.imaapi.model.usuario.Endereco;
+import org.com.imaapi.model.usuario.*;
 import org.com.imaapi.model.usuario.input.UsuarioInputAtualizacaoDadosPessoais;
 import org.com.imaapi.model.usuario.input.VoluntarioDadosProfissionaisInput;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
+import org.com.imaapi.repository.TelefoneRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.repository.EnderecoRepository;
@@ -22,8 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.com.imaapi.model.usuario.Telefone;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -42,6 +42,8 @@ public class PerfilServiceImpl implements PerfilService {
     private FotoService fotoService;
     @Autowired
     private VoluntarioRepository voluntarioRepository;
+    @Autowired
+    private TelefoneRepository telefoneRepository;
 
     @Override
     public UsuarioDadosPessoaisOutput buscarDadosPessoaisPorId(Integer usuarioId) {
@@ -51,7 +53,7 @@ public class PerfilServiceImpl implements PerfilService {
             LOGGER.warn("Usuário não encontrado para o ID: {}", usuarioId);
             return null;
         }
-        
+
         Ficha ficha = usuario.getFicha();
         if (ficha == null) {
             LOGGER.warn("Ficha não encontrada para o usuário com ID: {}", usuarioId);
@@ -60,11 +62,25 @@ public class PerfilServiceImpl implements PerfilService {
 
         UsuarioDadosPessoaisOutput usuarioOutput = new UsuarioDadosPessoaisOutput();
         usuarioOutput.setNome(ficha.getNome());
+        usuarioOutput.setSobrenome(ficha.getSobrenome());
         usuarioOutput.setCpf(ficha.getCpf());
         usuarioOutput.setEmail(usuario.getEmail());
         usuarioOutput.setDataNascimento(ficha.getDtNascim());
+        usuarioOutput.setGenero(ficha.getGenero());
         usuarioOutput.setTipo(usuario.getTipo() != null ? usuario.getTipo().toString() : null);
-        
+
+        // Buscar telefone formatado da tabela telefone
+        List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
+        if (!telefones.isEmpty()) {
+            Telefone telefone = telefones.get(0);
+            if (telefone.getDdd() != null && telefone.getPrefixo() != null && telefone.getSufixo() != null) {
+                usuarioOutput.setTelefone(String.format("(%s) %s-%s",
+                        telefone.getDdd(),
+                        telefone.getPrefixo(),
+                        telefone.getSufixo()));
+            }
+        }
+
         LOGGER.info("Dados pessoais encontrados para o usuário com ID: {}", usuarioId);
         return usuarioOutput;
     }
@@ -84,18 +100,34 @@ public class PerfilServiceImpl implements PerfilService {
             return null;
         }
 
-        if (usuarioInputAtualizacaoDadosPessoais.getNome() != null) {
+        // Atualizar dados da ficha
+        if (usuarioInputAtualizacaoDadosPessoais.getNome() != null && !usuarioInputAtualizacaoDadosPessoais.getNome().trim().isEmpty()) {
             ficha.setNome(usuarioInputAtualizacaoDadosPessoais.getNome());
         }
-        if (usuarioInputAtualizacaoDadosPessoais.getEmail() != null) {
-            usuario.setEmail(usuarioInputAtualizacaoDadosPessoais.getEmail());
-        }
-        if (usuarioInputAtualizacaoDadosPessoais.getSenha() != null) {
-            String senhaCriptografada = passwordEncoder.encode(usuarioInputAtualizacaoDadosPessoais.getSenha());
-            usuario.setSenha(senhaCriptografada);
+        if (usuarioInputAtualizacaoDadosPessoais.getSobrenome() != null && !usuarioInputAtualizacaoDadosPessoais.getSobrenome().trim().isEmpty()) {
+            ficha.setSobrenome(usuarioInputAtualizacaoDadosPessoais.getSobrenome());
         }
         if (usuarioInputAtualizacaoDadosPessoais.getDataNascimento() != null) {
             ficha.setDtNascim(usuarioInputAtualizacaoDadosPessoais.getDataNascimento());
+        }
+        if (usuarioInputAtualizacaoDadosPessoais.getGenero() != null) {
+            ficha.setGenero(usuarioInputAtualizacaoDadosPessoais.getGenero());
+        }
+
+        // Atualizar dados do usuário
+        if (usuarioInputAtualizacaoDadosPessoais.getEmail() != null && !usuarioInputAtualizacaoDadosPessoais.getEmail().trim().isEmpty()) {
+            usuario.setEmail(usuarioInputAtualizacaoDadosPessoais.getEmail());
+        }
+
+        // Só atualizar senha se fornecida e não vazia
+        if (usuarioInputAtualizacaoDadosPessoais.getSenha() != null && !usuarioInputAtualizacaoDadosPessoais.getSenha().trim().isEmpty()) {
+            String senhaCriptografada = passwordEncoder.encode(usuarioInputAtualizacaoDadosPessoais.getSenha());
+            usuario.setSenha(senhaCriptografada);
+        }
+
+        // Atualizar telefone se fornecido
+        if (usuarioInputAtualizacaoDadosPessoais.getTelefone() != null && !usuarioInputAtualizacaoDadosPessoais.getTelefone().trim().isEmpty()) {
+            atualizarTelefone(ficha, usuarioInputAtualizacaoDadosPessoais.getTelefone());
         }
 
         usuarioRepository.save(usuario);
@@ -103,6 +135,40 @@ public class PerfilServiceImpl implements PerfilService {
 
         UsuarioDadosPessoaisOutput dadosPessoais = buscarDadosPessoaisPorId(usuarioId);
         return converterParaUsuarioOutput(dadosPessoais);
+    }
+
+    private void atualizarTelefone(Ficha ficha, String telefoneFormatado) {
+        // Extrair DDD e número do formato (11) 99999-9999
+        String telefone = telefoneFormatado.replaceAll("[^0-9]", "");
+
+        if (telefone.length() >= 10) {
+            String ddd = telefone.substring(0, 2);
+            String numero = telefone.substring(2);
+
+            // Buscar telefone existente ou criar novo
+            List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
+            Telefone telefoneEntity;
+
+            if (telefones.isEmpty()) {
+                telefoneEntity = new Telefone();
+                telefoneEntity.setFicha(ficha);
+            } else {
+                telefoneEntity = telefones.get(0);
+            }
+
+            telefoneEntity.setDdd(ddd);
+
+            // Dividir número em prefixo e sufixo
+            if (numero.length() == 9) {
+                telefoneEntity.setPrefixo(numero.substring(0, 5));
+                telefoneEntity.setSufixo(numero.substring(5));
+            } else if (numero.length() == 8) {
+                telefoneEntity.setPrefixo(numero.substring(0, 4));
+                telefoneEntity.setSufixo(numero.substring(4));
+            }
+
+            telefoneRepository.save(telefoneEntity);
+        }
     }
 
     @Override
