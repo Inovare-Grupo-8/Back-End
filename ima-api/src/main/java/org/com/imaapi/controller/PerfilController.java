@@ -185,7 +185,9 @@ public class PerfilController {
             LOGGER.error("Erro ao atualizar dados profissionais do assistente social: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }    @PatchMapping("/assistente-social/dados-pessoais")
+    }    
+  
+  @PatchMapping("/assistente-social/dados-pessoais")
     @ResponseBody
     public ResponseEntity<UsuarioDadosPessoaisOutput> atualizarDadosPessoaisAssistenteSocial(
             @RequestParam Integer usuarioId,

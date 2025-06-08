@@ -244,6 +244,7 @@ public class PerfilServiceImpl implements PerfilService {
         }
 
         // Salvar as alterações
+
         usuarioRepository.save(usuario);
         LOGGER.info("Dados pessoais completos atualizados com sucesso para o usuário com ID: {}", usuarioId);
 
@@ -276,7 +277,6 @@ public class PerfilServiceImpl implements PerfilService {
                 }
             }
         }
-
         return output;
     }
 
