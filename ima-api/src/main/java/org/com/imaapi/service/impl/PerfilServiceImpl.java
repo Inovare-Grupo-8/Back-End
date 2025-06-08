@@ -1,6 +1,5 @@
 package org.com.imaapi.service.impl;
 
-import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.*;
 import org.com.imaapi.model.usuario.input.UsuarioInputAtualizacaoDadosPessoais;
 import org.com.imaapi.model.usuario.input.VoluntarioDadosProfissionaisInput;
@@ -10,9 +9,6 @@ import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.model.especialidade.Especialidade;
 import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.enums.Funcao;
-import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.repository.VoluntarioRepository;
-import org.com.imaapi.repository.EnderecoRepository;
 import org.com.imaapi.repository.*;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.FotoService;
@@ -24,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.com.imaapi.model.usuario.Telefone;
 
 import java.io.IOException;
 import java.util.List;
@@ -81,9 +76,9 @@ public class PerfilServiceImpl implements PerfilService {
             Telefone telefone = telefones.get(0);
             if (telefone.getDdd() != null && telefone.getPrefixo() != null && telefone.getSufixo() != null) {
                 dadosPessoais.setTelefone(String.format("(%s) %s-%s",
-                    telefone.getDdd(),
-                    telefone.getPrefixo(),
-                    telefone.getSufixo()));
+                        telefone.getDdd(),
+                        telefone.getPrefixo(),
+                        telefone.getSufixo()));
             }
         } else {
             dadosPessoais.setTelefone("");
@@ -122,16 +117,16 @@ public class PerfilServiceImpl implements PerfilService {
         // TODO: Implementar atualização de gênero quando o tipo Genero estiver disponível
 
         // TODO: Implementar atualização de telefone quando a estrutura estiver disponível
-        
+
         usuarioRepository.save(usuario);
         LOGGER.info("Dados pessoais atualizados com sucesso para o usuário com ID: {}", usuarioId);
 
         return new UsuarioOutput(
-            ficha.getNome(),
-            ficha.getCpf(),
-            usuario.getEmail(),
-            ficha.getDtNascim(),
-            usuario.getTipo()
+                ficha.getNome(),
+                ficha.getCpf(),
+                usuario.getEmail(),
+                ficha.getDtNascim(),
+                usuario.getTipo()
         );
     }
 
@@ -231,7 +226,7 @@ public class PerfilServiceImpl implements PerfilService {
                     voluntarioAtualizado = true;
                     LOGGER.info("Bio profissional atualizada");
                 }
-                  if (dadosPessoais.getEspecialidade() != null) {
+                if (dadosPessoais.getEspecialidade() != null) {
                     try {
                         Funcao funcao = Funcao.fromValue(dadosPessoais.getEspecialidade());
                         voluntario.setFuncao(funcao);
@@ -265,9 +260,9 @@ public class PerfilServiceImpl implements PerfilService {
         if (!telefonesAtualizados.isEmpty()) {
             Telefone telefoneAtualizado = telefonesAtualizados.get(0);
             String telefoneFormatado = String.format("(%s) %s-%s",
-                telefoneAtualizado.getDdd(),
-                telefoneAtualizado.getPrefixo(),
-                telefoneAtualizado.getSufixo());
+                    telefoneAtualizado.getDdd(),
+                    telefoneAtualizado.getPrefixo(),
+                    telefoneAtualizado.getSufixo());
             output.setTelefone(telefoneFormatado);
         } else {
             output.setTelefone("");
@@ -285,40 +280,6 @@ public class PerfilServiceImpl implements PerfilService {
         return output;
     }
 
-    private void atualizarTelefone(Ficha ficha, String telefoneFormatado) {
-        // Extrair DDD e número do formato (11) 99999-9999
-        String telefone = telefoneFormatado.replaceAll("[^0-9]", "");
-
-        if (telefone.length() >= 10) {
-            String ddd = telefone.substring(0, 2);
-            String numero = telefone.substring(2);
-
-            // Buscar telefone existente ou criar novo
-            List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
-            Telefone telefoneEntity;
-
-            if (telefones.isEmpty()) {
-                telefoneEntity = new Telefone();
-                telefoneEntity.setFicha(ficha);
-            } else {
-                telefoneEntity = telefones.get(0);
-            }
-
-            telefoneEntity.setDdd(ddd);
-
-            // Dividir número em prefixo e sufixo
-            if (numero.length() == 9) {
-                telefoneEntity.setPrefixo(numero.substring(0, 5));
-                telefoneEntity.setSufixo(numero.substring(5));
-            } else if (numero.length() == 8) {
-                telefoneEntity.setPrefixo(numero.substring(0, 4));
-                telefoneEntity.setSufixo(numero.substring(4));
-            }
-
-            telefoneRepository.save(telefoneEntity);
-        }
-    }
-
     @Override
     public EnderecoOutput buscarEnderecoPorId(Integer usuarioId) {
         LOGGER.info("Buscando endereço para o usuário com ID: {}", usuarioId);
@@ -327,7 +288,7 @@ public class PerfilServiceImpl implements PerfilService {
             LOGGER.warn("Usuário não encontrado para o ID: {}", usuarioId);
             return null;
         }
-        
+
         Ficha ficha = usuario.getFicha();
         if (ficha == null || ficha.getEndereco() == null) {
             LOGGER.warn("Ficha ou endereço não encontrado para o usuário com ID: {}", usuarioId);
@@ -445,9 +406,9 @@ public class PerfilServiceImpl implements PerfilService {
             if (dadosProfissionais.getEspecialidade() != null) {
                 LOGGER.debug("Atualizando especialidade principal: {}", dadosProfissionais.getEspecialidade());
                 atualizarEspecialidadesVoluntario(
-                    voluntario,
-                    dadosProfissionais.getEspecialidade(),
-                    dadosProfissionais.getEspecialidades()
+                        voluntario,
+                        dadosProfissionais.getEspecialidade(),
+                        dadosProfissionais.getEspecialidades()
                 );
             }
 
@@ -516,11 +477,11 @@ public class PerfilServiceImpl implements PerfilService {
     private void atualizarEspecialidadesVoluntario(Voluntario voluntario, String especialidadePrincipal, List<String> especialidadesAdicionais) {
         // Buscar ou criar a especialidade principal
         Especialidade especialidadePrincipalEntity = especialidadeRepository.findByNome(especialidadePrincipal)
-            .orElseGet(() -> {
-                Especialidade novaEspecialidade = new Especialidade();
-                novaEspecialidade.setNome(especialidadePrincipal);
-                return especialidadeRepository.save(novaEspecialidade);
-            });
+                .orElseGet(() -> {
+                    Especialidade novaEspecialidade = new Especialidade();
+                    novaEspecialidade.setNome(especialidadePrincipal);
+                    return especialidadeRepository.save(novaEspecialidade);
+                });
 
         // Remover todas as especialidades antigas
         voluntarioEspecialidadeRepository.deleteByVoluntario(voluntario);
@@ -537,11 +498,11 @@ public class PerfilServiceImpl implements PerfilService {
             for (String nomeEspecialidade : especialidadesAdicionais) {
                 if (!nomeEspecialidade.equals(especialidadePrincipal)) {
                     Especialidade especialidade = especialidadeRepository.findByNome(nomeEspecialidade)
-                        .orElseGet(() -> {
-                            Especialidade novaEspecialidade = new Especialidade();
-                            novaEspecialidade.setNome(nomeEspecialidade);
-                            return especialidadeRepository.save(novaEspecialidade);
-                        });
+                            .orElseGet(() -> {
+                                Especialidade novaEspecialidade = new Especialidade();
+                                novaEspecialidade.setNome(nomeEspecialidade);
+                                return especialidadeRepository.save(novaEspecialidade);
+                            });
 
                     VoluntarioEspecialidade ve = new VoluntarioEspecialidade();
                     ve.setVoluntario(voluntario);
