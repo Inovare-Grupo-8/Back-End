@@ -8,6 +8,8 @@ import org.com.imaapi.model.usuario.output.EnderecoOutput;
 import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.model.especialidade.Especialidade;
+import org.com.imaapi.model.enums.TipoUsuario;
+import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.repository.EnderecoRepository;
@@ -65,9 +67,7 @@ public class PerfilServiceImpl implements PerfilService {
         if (ficha == null) {
             LOGGER.warn("Ficha não encontrada para o usuário com ID: {}", usuarioId);
             return null;
-        }
-
-        UsuarioDadosPessoaisOutput dadosPessoais = new UsuarioDadosPessoaisOutput();
+        }        UsuarioDadosPessoaisOutput dadosPessoais = new UsuarioDadosPessoaisOutput();
         dadosPessoais.setNome(ficha.getNome());
         dadosPessoais.setSobrenome(ficha.getSobrenome());
         dadosPessoais.setCpf(ficha.getCpf());
@@ -75,25 +75,29 @@ public class PerfilServiceImpl implements PerfilService {
         dadosPessoais.setEmail(usuario.getEmail());
         dadosPessoais.setTipo(usuario.getTipo().toString());
 
-        // TODO: Implementar lógica para buscar telefone quando houver
-        dadosPessoais.setTelefone("");
-
-        return dadosPessoais;
-
-        // Buscar telefone formatado da tabela telefone
+        // Buscar telefone
         List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
         if (!telefones.isEmpty()) {
             Telefone telefone = telefones.get(0);
             if (telefone.getDdd() != null && telefone.getPrefixo() != null && telefone.getSufixo() != null) {
-                usuarioOutput.setTelefone(String.format("(%s) %s-%s",
-                        telefone.getDdd(),
-                        telefone.getPrefixo(),
-                        telefone.getSufixo()));
+                dadosPessoais.setTelefone(String.format("(%s) %s-%s",
+                    telefone.getDdd(),
+                    telefone.getPrefixo(),
+                    telefone.getSufixo()));
+            }
+        } else {
+            dadosPessoais.setTelefone("");
+        }        // Buscar dados profissionais se for administrador (assistente social)
+        Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
+        if (voluntario != null) {
+            dadosPessoais.setCrp(voluntario.getRegistroProfissional());
+            dadosPessoais.setBio(voluntario.getBiografiaProfissional());
+            if (voluntario.getFuncao() != null) {
+                dadosPessoais.setEspecialidade(voluntario.getFuncao().getValue());
             }
         }
 
-        LOGGER.info("Dados pessoais encontrados para o usuário com ID: {}", usuarioId);
-        return usuarioOutput;
+        return dadosPessoais;
     }
 
     @Override
@@ -118,7 +122,7 @@ public class PerfilServiceImpl implements PerfilService {
         // TODO: Implementar atualização de gênero quando o tipo Genero estiver disponível
 
         // TODO: Implementar atualização de telefone quando a estrutura estiver disponível
-
+        
         usuarioRepository.save(usuario);
         LOGGER.info("Dados pessoais atualizados com sucesso para o usuário com ID: {}", usuarioId);
 
@@ -129,6 +133,156 @@ public class PerfilServiceImpl implements PerfilService {
             ficha.getDtNascim(),
             usuario.getTipo()
         );
+    }
+
+    @Override
+    public UsuarioDadosPessoaisOutput atualizarDadosPessoaisCompleto(Integer usuarioId, UsuarioInputAtualizacaoDadosPessoais dadosPessoais) {
+        LOGGER.info("Atualizando dados pessoais completos para o usuário com ID: {}", usuarioId);
+        Usuario usuario = buscarUsuarioPorId(usuarioId);
+        if (usuario == null) {
+            LOGGER.warn("Usuário não encontrado para o ID: {}", usuarioId);
+            return null;
+        }
+
+        Ficha ficha = usuario.getFicha();
+        if (ficha == null) {
+            LOGGER.warn("Ficha não encontrada para o usuário com ID: {}", usuarioId);
+            return null;
+        }
+
+        // Atualizar dados básicos da ficha
+        if (dadosPessoais.getNome() != null) {
+            ficha.setNome(dadosPessoais.getNome());
+        }
+        if (dadosPessoais.getSobrenome() != null) {
+            ficha.setSobrenome(dadosPessoais.getSobrenome());
+        }
+        if (dadosPessoais.getDataNascimento() != null) {
+            ficha.setDtNascim(dadosPessoais.getDataNascimento());
+        }
+
+        // Atualizar email do usuário
+        if (dadosPessoais.getEmail() != null && !dadosPessoais.getEmail().trim().isEmpty()) {
+            usuario.setEmail(dadosPessoais.getEmail());
+            LOGGER.info("Email atualizado para: {}", dadosPessoais.getEmail());
+        }
+
+        // Atualizar telefone
+        if (dadosPessoais.getTelefone() != null && !dadosPessoais.getTelefone().trim().isEmpty()) {
+            List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
+            Telefone telefone;
+
+            if (telefones.isEmpty()) {
+                telefone = new Telefone();
+                telefone.setFicha(ficha);
+                LOGGER.info("Criando novo telefone para ficha ID: {}", ficha.getIdFicha());
+            } else {
+                telefone = telefones.get(0);
+                LOGGER.info("Atualizando telefone existente ID: {}", telefone.getIdTelefone());
+            }
+
+            // Parse do telefone formato "(11) 98765-4321" ou "(11) 9876-5432"
+            String telefoneCompleto = dadosPessoais.getTelefone().replaceAll("[()\\s-]", "");
+
+            if (telefoneCompleto.length() >= 10) {
+                String ddd = telefoneCompleto.substring(0, 2);
+                String numero = telefoneCompleto.substring(2);
+
+                telefone.setDdd(ddd);
+
+                // Dividir número em prefixo e sufixo
+                if (numero.length() == 9) { // Celular com 9 dígitos
+                    telefone.setPrefixo(numero.substring(0, 5));
+                    telefone.setSufixo(numero.substring(5));
+                } else if (numero.length() == 8) { // Fixo com 8 dígitos
+                    telefone.setPrefixo(numero.substring(0, 4));
+                    telefone.setSufixo(numero.substring(4));
+                } else {
+                    // Fallback para outros tamanhos
+                    int splitPoint = numero.length() - 4;
+                    telefone.setPrefixo(numero.substring(0, splitPoint));
+                    telefone.setSufixo(numero.substring(splitPoint));
+                }
+
+                if (telefone.getWhatsapp() == null) {
+                    telefone.setWhatsapp(true); // Default para WhatsApp
+                }
+
+                telefoneRepository.save(telefone);
+                LOGGER.info("Telefone atualizado: DDD={}, Prefixo={}, Sufixo={}", telefone.getDdd(), telefone.getPrefixo(), telefone.getSufixo());
+            } else {
+                LOGGER.warn("Telefone inválido fornecido: {}", dadosPessoais.getTelefone());
+            }        }
+
+        // Atualizar dados profissionais se for administrador (assistente social)
+        if (usuario.getTipo() == TipoUsuario.ADMINISTRADOR) {
+            Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
+            if (voluntario != null) {
+                boolean voluntarioAtualizado = false;
+
+                if (dadosPessoais.getCrp() != null) {
+                    voluntario.setRegistroProfissional(dadosPessoais.getCrp());
+                    voluntarioAtualizado = true;
+                    LOGGER.info("CRP atualizado para: {}", dadosPessoais.getCrp());
+                }
+
+                if (dadosPessoais.getBio() != null) {
+                    voluntario.setBiografiaProfissional(dadosPessoais.getBio());
+                    voluntarioAtualizado = true;
+                    LOGGER.info("Bio profissional atualizada");
+                }
+                  if (dadosPessoais.getEspecialidade() != null) {
+                    try {
+                        Funcao funcao = Funcao.fromValue(dadosPessoais.getEspecialidade());
+                        voluntario.setFuncao(funcao);
+                        voluntarioAtualizado = true;
+                        LOGGER.info("Especialidade atualizada para: {}", dadosPessoais.getEspecialidade());
+                    } catch (Exception e) {
+                        LOGGER.warn("Especialidade inválida fornecida: {}", dadosPessoais.getEspecialidade());
+                    }
+                }
+
+                if (voluntarioAtualizado) {
+                    voluntarioRepository.save(voluntario);
+                }
+            }
+        }
+
+        // Salvar as alterações
+
+        usuarioRepository.save(usuario);
+        LOGGER.info("Dados pessoais completos atualizados com sucesso para o usuário com ID: {}", usuarioId);
+
+        // Retornar dados atualizados
+        UsuarioDadosPessoaisOutput output = new UsuarioDadosPessoaisOutput();
+        output.setNome(ficha.getNome());
+        output.setSobrenome(ficha.getSobrenome());
+        output.setCpf(ficha.getCpf());
+        output.setDataNascimento(ficha.getDtNascim());
+        output.setEmail(usuario.getEmail());
+        output.setTipo(usuario.getTipo().toString());        // Buscar telefone atualizado para retorno
+        List<Telefone> telefonesAtualizados = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
+        if (!telefonesAtualizados.isEmpty()) {
+            Telefone telefoneAtualizado = telefonesAtualizados.get(0);
+            String telefoneFormatado = String.format("(%s) %s-%s",
+                telefoneAtualizado.getDdd(),
+                telefoneAtualizado.getPrefixo(),
+                telefoneAtualizado.getSufixo());
+            output.setTelefone(telefoneFormatado);
+        } else {
+            output.setTelefone("");
+        }        // Incluir dados profissionais atualizados se for administrador
+        if (usuario.getTipo() == TipoUsuario.ADMINISTRADOR) {
+            Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
+            if (voluntario != null) {
+                output.setCrp(voluntario.getRegistroProfissional());
+                output.setBio(voluntario.getBiografiaProfissional());
+                if (voluntario.getFuncao() != null) {
+                    output.setEspecialidade(voluntario.getFuncao().getValue());
+                }
+            }
+        }
+        return output;
     }
 
     private void atualizarTelefone(Ficha ficha, String telefoneFormatado) {

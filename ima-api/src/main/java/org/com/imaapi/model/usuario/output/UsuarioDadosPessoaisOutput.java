@@ -12,8 +12,12 @@ public class UsuarioDadosPessoaisOutput {
     private String cpf;
     private String telefone;
     private String email;
-    private String telefone;
     private LocalDate dataNascimento;
     private Genero genero;
     private String tipo;
+
+    // Campos específicos para assistente social
+    private String crp;
+    private String bio;
+    private String especialidade;
 }
