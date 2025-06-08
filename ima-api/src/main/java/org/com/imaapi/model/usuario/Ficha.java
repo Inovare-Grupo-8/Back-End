@@ -22,6 +22,11 @@ public class Ficha {
     @Column(name = "id_ficha")
     private Integer idFicha;
 
+    public Integer getIdFicha() {
+        return this.idFicha;
+    }
+
+
     @ManyToOne
     @JoinColumn(name = "fk_endereco")
     private Endereco endereco;

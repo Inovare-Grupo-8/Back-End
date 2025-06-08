@@ -9,7 +9,8 @@ import org.com.imaapi.model.enums.converter.TipoUsuarioConverter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+@Getter
+@Setter
 @Entity
 @Table(name = "usuario")
 @Data
@@ -17,6 +18,49 @@ public class Usuario {    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Integer idUsuario;
+
+
+    public Ficha getFicha() {
+        return this.ficha;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public void setSenha(String senha){
+        this.senha=senha;
+    }
+
+    public TipoUsuario getTipo() {
+        return tipo;
+    }
+    public void setDataCadastro(LocalDate dataCadastro) {
+        this.dataCadastro = dataCadastro;
+    }
+
+    public void setCriadoEm(LocalDateTime criadoEm) {
+        this.criadoEm = criadoEm;
+    }
+
+    public void setAtualizadoEm(LocalDateTime atualizadoEm) {
+        this.atualizadoEm = atualizadoEm;
+    }
+
+    public void setUltimoAcesso(LocalDateTime ultimoAcesso) {
+        this.ultimoAcesso = ultimoAcesso;
+    }
+
+    public void setVersao(Integer versao) {
+        this.versao = versao;
+    }
+
+    public void setFicha(Ficha ficha) {
+        this.ficha = ficha;
+    }
+    public void setTipo(TipoUsuario tipo) {
+        this.tipo = tipo;
+    }
+
 
     @OneToOne(optional = false)
     @JoinColumn(name = "fk_ficha", unique = true, nullable = false)
@@ -41,6 +85,7 @@ public class Usuario {    @Id
 
     @Column(name = "ultimo_acesso")
     private LocalDateTime ultimoAcesso;
+
 
     @Version
     @Column(name = "versao")
