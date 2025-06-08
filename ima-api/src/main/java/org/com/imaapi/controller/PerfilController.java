@@ -29,6 +29,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/perfil")
+@CrossOrigin(origins = "http://localhost:5173", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS})
 public class PerfilController {
 
     @Autowired
@@ -151,6 +152,26 @@ public class PerfilController {
             return ResponseEntity.ok(perfil);
         } catch (Exception e) {
             LOGGER.error("Erro ao buscar perfil do assistente social: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PatchMapping("/assistente-social/dados-profissionais")
+    @ResponseBody
+    public ResponseEntity<Void> atualizarDadosProfissionaisAssistenteSocial(
+            @RequestParam Integer usuarioId,
+            @RequestBody @Valid VoluntarioDadosProfissionaisInput dadosProfissionais) {
+        try {
+            LOGGER.info("Atualizando dados profissionais para assistente social com ID: {}", usuarioId);
+            boolean atualizado = perfilService.atualizarDadosProfissionais(usuarioId, dadosProfissionais);
+            if (!atualizado) {
+                LOGGER.warn("Assistente social não encontrado com ID: {}", usuarioId);
+                return ResponseEntity.notFound().build();
+            }
+            LOGGER.info("Dados profissionais atualizados com sucesso para assistente social com ID: {}", usuarioId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            LOGGER.error("Erro ao atualizar dados profissionais do assistente social: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
