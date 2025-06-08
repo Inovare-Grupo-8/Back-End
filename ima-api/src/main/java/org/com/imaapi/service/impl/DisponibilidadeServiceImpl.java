@@ -43,7 +43,7 @@ public class DisponibilidadeServiceImpl implements DisponibilidadeService {
     public boolean atualizarDisponibilidade(Integer usuarioId, Disponibilidade disponibilidade) {
         Disponibilidade disponibilidadeExistente = disponibilidadeRepository.findById(disponibilidade.getIdDisponibilidade())
                 .orElseThrow(() -> new IllegalArgumentException("Disponibilidade não encontrada para ID: " + disponibilidade.getIdDisponibilidade()));
-        disponibilidadeExistente.setDataHora(disponibilidade.getDataHora());
+        disponibilidadeExistente.setDataHorario(disponibilidade.getDataHorario());
         disponibilidadeRepository.save(disponibilidadeExistente);
         return true;
     }
