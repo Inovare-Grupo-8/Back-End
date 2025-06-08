@@ -1,0 +1,6 @@
+imaapi\ImaApiApplication.class
+imaapi\controller\ConsultaControllerTest.class
+imaapi\model\output\UsuarioOutputTest.class
+imaapi\controller\UsuarioControllerTest.class
+imaapi\model\input\UsuarioInputPrimeiraFaseTest.class
+imaapi\service\EmailServiceImplTest.class
