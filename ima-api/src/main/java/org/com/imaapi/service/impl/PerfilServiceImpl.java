@@ -1,10 +1,7 @@
 package org.com.imaapi.service.impl;
 
 import org.com.imaapi.model.enums.TipoUsuario;
-import org.com.imaapi.model.usuario.Usuario;
-import org.com.imaapi.model.usuario.Ficha;
-import org.com.imaapi.model.usuario.Voluntario;
-import org.com.imaapi.model.usuario.Endereco;
+import org.com.imaapi.model.usuario.*;
 import org.com.imaapi.model.usuario.input.UsuarioInputAtualizacaoDadosPessoais;
 import org.com.imaapi.model.usuario.input.VoluntarioDadosProfissionaisInput;
 import org.com.imaapi.model.usuario.output.EnderecoOutput;
@@ -13,6 +10,7 @@ import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.repository.EnderecoRepository;
+import org.com.imaapi.repository.TelefoneRepository;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.FotoService;
 import org.com.imaapi.service.PerfilService;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -42,6 +41,8 @@ public class PerfilServiceImpl implements PerfilService {
     private FotoService fotoService;
     @Autowired
     private VoluntarioRepository voluntarioRepository;
+    @Autowired
+    private TelefoneRepository telefoneRepository;
 
     @Override
     public UsuarioDadosPessoaisOutput buscarDadosPessoaisPorId(Integer usuarioId) {
@@ -60,10 +61,22 @@ public class PerfilServiceImpl implements PerfilService {
 
         UsuarioDadosPessoaisOutput usuarioOutput = new UsuarioDadosPessoaisOutput();
         usuarioOutput.setNome(ficha.getNome());
+        usuarioOutput.setSobrenome(ficha.getSobrenome());
         usuarioOutput.setCpf(ficha.getCpf());
         usuarioOutput.setEmail(usuario.getEmail());
         usuarioOutput.setDataNascimento(ficha.getDtNascim());
         usuarioOutput.setTipo(usuario.getTipo() != null ? usuario.getTipo().toString() : null);
+        
+        // Get phone number from Telefone entity
+        List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
+        if (!telefones.isEmpty()) {
+            Telefone telefone = telefones.get(0);
+            String numeroFormatado = String.format("(%s) %s-%s", 
+                telefone.getDdd(), 
+                telefone.getPrefixo(), 
+                telefone.getSufixo());
+            usuarioOutput.setTelefone(numeroFormatado);
+        }
         
         LOGGER.info("Dados pessoais encontrados para o usuário com ID: {}", usuarioId);
         return usuarioOutput;
@@ -87,8 +100,36 @@ public class PerfilServiceImpl implements PerfilService {
         if (usuarioInputAtualizacaoDadosPessoais.getNome() != null) {
             ficha.setNome(usuarioInputAtualizacaoDadosPessoais.getNome());
         }
+        if (usuarioInputAtualizacaoDadosPessoais.getSobrenome() != null) {
+            ficha.setSobrenome(usuarioInputAtualizacaoDadosPessoais.getSobrenome());
+        }
         if (usuarioInputAtualizacaoDadosPessoais.getEmail() != null) {
             usuario.setEmail(usuarioInputAtualizacaoDadosPessoais.getEmail());
+        }
+        
+        // Update phone number
+        if (usuarioInputAtualizacaoDadosPessoais.getTelefone() != null) {
+            String telefoneCompleto = usuarioInputAtualizacaoDadosPessoais.getTelefone().replaceAll("[^0-9]", "");
+            List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
+            Telefone telefone;
+            if (telefones.isEmpty()) {
+                telefone = new Telefone();
+                telefone.setFicha(ficha);
+            } else {
+                telefone = telefones.get(0);
+            }
+            
+            // Assuming Brazilian phone format: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
+            telefone.setDdd(telefoneCompleto.substring(0, 2));
+            if (telefoneCompleto.length() == 11) { // Celular: (XX) 9XXXX-XXXX
+                telefone.setPrefixo(telefoneCompleto.substring(2, 7));
+                telefone.setSufixo(telefoneCompleto.substring(7));
+            } else { // Fixo: (XX) XXXX-XXXX
+                telefone.setPrefixo(telefoneCompleto.substring(2, 6));
+                telefone.setSufixo(telefoneCompleto.substring(6));
+            }
+            telefone.setWhatsapp(true); // Default to true for social workers
+            telefoneRepository.save(telefone);
         }
         if (usuarioInputAtualizacaoDadosPessoais.getSenha() != null) {
             String senhaCriptografada = passwordEncoder.encode(usuarioInputAtualizacaoDadosPessoais.getSenha());

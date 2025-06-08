@@ -11,6 +11,10 @@ import java.time.LocalDate;
 public class UsuarioInputAtualizacaoDadosPessoais {
     private String nome;
 
+    private String sobrenome;
+
+    private String telefone;
+
     @Email(message = "Email inválido")
     private String email;
 
