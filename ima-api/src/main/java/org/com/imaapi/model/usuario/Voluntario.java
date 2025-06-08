@@ -12,25 +12,25 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "voluntario")
-public class Voluntario {    @Id
+public class Voluntario {
+    @Id
     @Column(name = "id_voluntario")
     private Integer idVoluntario;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "funcao")
-    private Funcao funcao;
+    @Column(name = "funcao", nullable = false, length = 45)
+    private String funcao;
 
     @Column(name = "dt_cadastro", nullable = false)
     private LocalDate dataCadastro;
 
-    @Column(name = "criado_em")
-    private LocalDateTime criadoEm;
+    @Column(name = "biografia_profissional")
+    private String biografiaProfissional;
 
-    @Column(name = "registro_profissional")
+    @Column(name = "registro_profissional", length = 55)
     private String registroProfissional;
 
-    @Column(name = "biografia_profissional", length = 500)
-    private String biografiaProfissional;
+    @Column(name = "criado_em")
+    private LocalDateTime criadoEm;
 
     @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
@@ -42,13 +42,32 @@ public class Voluntario {    @Id
     @Setter
     @ManyToOne
     @JoinColumn(name = "fk_usuario", referencedColumnName = "id_usuario", insertable = false, updatable = false)
+    private Usuario usuario;
 
-    private Usuario usuario;    @Column(name = "fk_usuario", unique = true)
-
+    @Column(name = "fk_usuario", unique = true, nullable = false)
     private Integer fkUsuario;
 
     @OneToMany(mappedBy = "voluntario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Disponibilidade> disponibilidades;
+
+    public void setFuncao(Funcao funcao) {
+        if (funcao != null) {
+            // Store the normalized value to ensure consistency
+            this.funcao = Funcao.normalizeValue(funcao.getValue());
+        } else {
+            this.funcao = null;
+        }
+    }
+
+    public Funcao getFuncao() {
+        try {
+            return this.funcao != null ? Funcao.fromValue(this.funcao) : null;
+        } catch (IllegalArgumentException e) {
+            // Log the error but don't throw it to prevent data loading issues
+            System.err.println("Warning: Invalid funcao value in database: " + this.funcao);
+            return null;
+        }
+    }
 
     @PrePersist
     public void prePersist() {

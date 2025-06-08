@@ -17,6 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.com.imaapi.service.AssistenteSocialService;
+import org.com.imaapi.model.usuario.output.AssistenteSocialOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,12 +29,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/perfil")
+@CrossOrigin(origins = "http://localhost:5173", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS})
 public class PerfilController {
 
     @Autowired
     private PerfilService perfilService;
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private AssistenteSocialService assistenteSocialService;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PerfilController.class);
 
     @GetMapping("/{tipo}/dados-pessoais")
     public ResponseEntity<UsuarioDadosPessoaisOutput> buscarDadosPessoais(
@@ -81,20 +91,31 @@ public class PerfilController {
             @RequestParam Integer usuarioId,
             @PathVariable String tipo,
             @RequestParam("file") MultipartFile file) {
+        LOGGER.info("Iniciando upload de foto para usuário ID: {}, tipo: {}", usuarioId, tipo);
+        
         if (file.isEmpty()) {
+            LOGGER.warn("Arquivo vazio recebido para usuário ID: {}", usuarioId);
             return ResponseEntity.badRequest().body("O arquivo não pode estar vazio.");
         }
 
         // Validação do tipo MIME
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
+            LOGGER.warn("Tipo de arquivo inválido recebido: {} para usuário ID: {}", contentType, usuarioId);
             return ResponseEntity.badRequest().body("O arquivo deve ser uma imagem.");
         }
 
         try {
+            if (file.getSize() > 1048576) { // 1MB em bytes
+                LOGGER.warn("Arquivo muito grande ({} bytes) recebido para usuário ID: {}", file.getSize(), usuarioId);
+                return ResponseEntity.badRequest().body("O tamanho máximo permitido é 1MB.");
+            }
+
             String fotoUrl = perfilService.salvarFoto(usuarioId, tipo, file);
+            LOGGER.info("Foto salva com sucesso para usuário ID: {}, URL: {}", usuarioId, fotoUrl);
             return ResponseEntity.ok(Map.of("message", "Foto salva com sucesso.", "url", fotoUrl));
         } catch (IOException e) {
+            LOGGER.error("Erro ao salvar foto para usuário ID: {}: {}", usuarioId, e.getMessage(), e);
             return ResponseEntity.status(500).body("Erro ao salvar a foto.");
         }
     }
@@ -130,5 +151,39 @@ public class PerfilController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/assistente-social")
+    public ResponseEntity<AssistenteSocialOutput> buscarPerfilAssistenteSocial(@RequestParam Integer usuarioId) {
+        try {
+            AssistenteSocialOutput perfil = assistenteSocialService.buscarAssistenteSocial(usuarioId);
+            if (perfil == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(perfil);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao buscar perfil do assistente social: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PatchMapping("/assistente-social/dados-profissionais")
+    @ResponseBody
+    public ResponseEntity<Void> atualizarDadosProfissionaisAssistenteSocial(
+            @RequestParam Integer usuarioId,
+            @RequestBody @Valid VoluntarioDadosProfissionaisInput dadosProfissionais) {
+        try {
+            LOGGER.info("Atualizando dados profissionais para assistente social com ID: {}", usuarioId);
+            boolean atualizado = perfilService.atualizarDadosProfissionais(usuarioId, dadosProfissionais);
+            if (!atualizado) {
+                LOGGER.warn("Assistente social não encontrado com ID: {}", usuarioId);
+                return ResponseEntity.notFound().build();
+            }
+            LOGGER.info("Dados profissionais atualizados com sucesso para assistente social com ID: {}", usuarioId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            LOGGER.error("Erro ao atualizar dados profissionais do assistente social: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
