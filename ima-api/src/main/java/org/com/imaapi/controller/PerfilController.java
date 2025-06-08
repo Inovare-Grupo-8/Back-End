@@ -91,20 +91,31 @@ public class PerfilController {
             @RequestParam Integer usuarioId,
             @PathVariable String tipo,
             @RequestParam("file") MultipartFile file) {
+        LOGGER.info("Iniciando upload de foto para usuário ID: {}, tipo: {}", usuarioId, tipo);
+        
         if (file.isEmpty()) {
+            LOGGER.warn("Arquivo vazio recebido para usuário ID: {}", usuarioId);
             return ResponseEntity.badRequest().body("O arquivo não pode estar vazio.");
         }
 
         // Validação do tipo MIME
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
+            LOGGER.warn("Tipo de arquivo inválido recebido: {} para usuário ID: {}", contentType, usuarioId);
             return ResponseEntity.badRequest().body("O arquivo deve ser uma imagem.");
         }
 
         try {
+            if (file.getSize() > 1048576) { // 1MB em bytes
+                LOGGER.warn("Arquivo muito grande ({} bytes) recebido para usuário ID: {}", file.getSize(), usuarioId);
+                return ResponseEntity.badRequest().body("O tamanho máximo permitido é 1MB.");
+            }
+
             String fotoUrl = perfilService.salvarFoto(usuarioId, tipo, file);
+            LOGGER.info("Foto salva com sucesso para usuário ID: {}, URL: {}", usuarioId, fotoUrl);
             return ResponseEntity.ok(Map.of("message", "Foto salva com sucesso.", "url", fotoUrl));
         } catch (IOException e) {
+            LOGGER.error("Erro ao salvar foto para usuário ID: {}: {}", usuarioId, e.getMessage(), e);
             return ResponseEntity.status(500).body("Erro ao salvar a foto.");
         }
     }
