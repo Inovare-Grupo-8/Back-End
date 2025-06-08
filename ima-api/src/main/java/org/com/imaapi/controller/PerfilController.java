@@ -185,5 +185,23 @@ public class PerfilController {
             LOGGER.error("Erro ao atualizar dados profissionais do assistente social: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }    @PatchMapping("/assistente-social/dados-pessoais")
+    @ResponseBody
+    public ResponseEntity<UsuarioDadosPessoaisOutput> atualizarDadosPessoaisAssistenteSocial(
+            @RequestParam Integer usuarioId,
+            @RequestBody @Valid UsuarioInputAtualizacaoDadosPessoais dadosPessoais) {
+        try {
+            LOGGER.info("Atualizando dados pessoais para assistente social com ID: {}", usuarioId);
+            UsuarioDadosPessoaisOutput dadosAtualizados = perfilService.atualizarDadosPessoaisCompleto(usuarioId, dadosPessoais);
+            if (dadosAtualizados == null) {
+                LOGGER.warn("Assistente social não encontrado com ID: {}", usuarioId);
+                return ResponseEntity.notFound().build();
+            }
+            LOGGER.info("Dados pessoais atualizados com sucesso para assistente social com ID: {}", usuarioId);
+            return ResponseEntity.ok(dadosAtualizados);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao atualizar dados pessoais do assistente social: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
