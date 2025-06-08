@@ -8,6 +8,7 @@ import org.com.imaapi.model.usuario.output.UsuarioDadosPessoaisOutput;
 import org.com.imaapi.model.usuario.output.UsuarioOutput;
 import org.com.imaapi.model.especialidade.Especialidade;
 import org.com.imaapi.model.enums.TipoUsuario;
+import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.repository.*;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.FotoService;
@@ -61,9 +62,7 @@ public class PerfilServiceImpl implements PerfilService {
         if (ficha == null) {
             LOGGER.warn("Ficha não encontrada para o usuário com ID: {}", usuarioId);
             return null;
-        }
-
-        UsuarioDadosPessoaisOutput dadosPessoais = new UsuarioDadosPessoaisOutput();
+        }        UsuarioDadosPessoaisOutput dadosPessoais = new UsuarioDadosPessoaisOutput();
         dadosPessoais.setNome(ficha.getNome());
         dadosPessoais.setSobrenome(ficha.getSobrenome());
         dadosPessoais.setCpf(ficha.getCpf());
@@ -71,8 +70,27 @@ public class PerfilServiceImpl implements PerfilService {
         dadosPessoais.setEmail(usuario.getEmail());
         dadosPessoais.setTipo(usuario.getTipo().toString());
 
-        // TODO: Implementar lógica para buscar telefone quando houver
-        dadosPessoais.setTelefone("");
+        // Buscar telefone
+        List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
+        if (!telefones.isEmpty()) {
+            Telefone telefone = telefones.get(0);
+            if (telefone.getDdd() != null && telefone.getPrefixo() != null && telefone.getSufixo() != null) {
+                dadosPessoais.setTelefone(String.format("(%s) %s-%s", 
+                    telefone.getDdd(), 
+                    telefone.getPrefixo(), 
+                    telefone.getSufixo()));
+            }
+        } else {
+            dadosPessoais.setTelefone("");
+        }        // Buscar dados profissionais se for administrador (assistente social)
+        Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
+        if (voluntario != null) {
+            dadosPessoais.setCrp(voluntario.getRegistroProfissional());
+            dadosPessoais.setBio(voluntario.getBiografiaProfissional());
+            if (voluntario.getFuncao() != null) {
+                dadosPessoais.setEspecialidade(voluntario.getFuncao().getValue());
+            }
+        }
 
         return dadosPessoais;
     }
@@ -189,6 +207,39 @@ public class PerfilServiceImpl implements PerfilService {
                 LOGGER.info("Telefone atualizado: DDD={}, Prefixo={}, Sufixo={}", telefone.getDdd(), telefone.getPrefixo(), telefone.getSufixo());
             } else {
                 LOGGER.warn("Telefone inválido fornecido: {}", dadosPessoais.getTelefone());
+            }        }
+
+        // Atualizar dados profissionais se for administrador (assistente social)
+        if (usuario.getTipo() == TipoUsuario.ADMINISTRADOR) {
+            Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
+            if (voluntario != null) {
+                boolean voluntarioAtualizado = false;
+                
+                if (dadosPessoais.getCrp() != null) {
+                    voluntario.setRegistroProfissional(dadosPessoais.getCrp());
+                    voluntarioAtualizado = true;
+                    LOGGER.info("CRP atualizado para: {}", dadosPessoais.getCrp());
+                }
+                
+                if (dadosPessoais.getBio() != null) {
+                    voluntario.setBiografiaProfissional(dadosPessoais.getBio());
+                    voluntarioAtualizado = true;
+                    LOGGER.info("Bio profissional atualizada");
+                }
+                  if (dadosPessoais.getEspecialidade() != null) {
+                    try {
+                        Funcao funcao = Funcao.fromValue(dadosPessoais.getEspecialidade());
+                        voluntario.setFuncao(funcao);
+                        voluntarioAtualizado = true;
+                        LOGGER.info("Especialidade atualizada para: {}", dadosPessoais.getEspecialidade());
+                    } catch (Exception e) {
+                        LOGGER.warn("Especialidade inválida fornecida: {}", dadosPessoais.getEspecialidade());
+                    }
+                }
+                
+                if (voluntarioAtualizado) {
+                    voluntarioRepository.save(voluntario);
+                }
             }
         }
 
@@ -203,9 +254,7 @@ public class PerfilServiceImpl implements PerfilService {
         output.setCpf(ficha.getCpf());
         output.setDataNascimento(ficha.getDtNascim());
         output.setEmail(usuario.getEmail());
-        output.setTipo(usuario.getTipo().toString());
-
-        // Buscar telefone atualizado para retorno
+        output.setTipo(usuario.getTipo().toString());        // Buscar telefone atualizado para retorno
         List<Telefone> telefonesAtualizados = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
         if (!telefonesAtualizados.isEmpty()) {
             Telefone telefoneAtualizado = telefonesAtualizados.get(0);
@@ -216,6 +265,16 @@ public class PerfilServiceImpl implements PerfilService {
             output.setTelefone(telefoneFormatado);
         } else {
             output.setTelefone("");
+        }        // Incluir dados profissionais atualizados se for administrador
+        if (usuario.getTipo() == TipoUsuario.ADMINISTRADOR) {
+            Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
+            if (voluntario != null) {
+                output.setCrp(voluntario.getRegistroProfissional());
+                output.setBio(voluntario.getBiografiaProfissional());
+                if (voluntario.getFuncao() != null) {
+                    output.setEspecialidade(voluntario.getFuncao().getValue());
+                }
+            }
         }
 
         return output;
