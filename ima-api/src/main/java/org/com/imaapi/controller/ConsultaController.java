@@ -92,7 +92,7 @@ public class ConsultaController {
 
     }
 
-    @PostMapping("/consultas/{id}/avaliacao")
+       @PostMapping("/consultas/{id}/avaliacao")
 
     public ResponseEntity<ConsultaDto> adicionarAvaliacao(
             @PathVariable Integer id,
