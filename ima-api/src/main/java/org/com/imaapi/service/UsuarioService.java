@@ -45,5 +45,7 @@ public interface UsuarioService {
 
     UsuarioListarOutput classificarUsuarioComoValorSocial(Integer id);
     
+    void atualizarUltimoAcesso(Integer idUsuario);
+
     List<VoluntarioListagemOutput> listarVoluntarios();
 }

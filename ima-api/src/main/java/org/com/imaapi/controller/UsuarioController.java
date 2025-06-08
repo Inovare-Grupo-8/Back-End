@@ -336,4 +336,18 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @PutMapping("/{idUsuario}/ultimo-acesso")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Void> atualizarUltimoAcesso(@PathVariable Integer idUsuario) {
+        try {
+            usuarioService.atualizarUltimoAcesso(idUsuario);
+            return ResponseEntity.ok().build();
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            LOGGER.error("Erro ao atualizar último acesso: {}", e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
