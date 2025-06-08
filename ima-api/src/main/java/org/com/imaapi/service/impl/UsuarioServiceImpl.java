@@ -571,4 +571,15 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("Erro ao buscar lista de voluntários: " + e.getMessage());
         }
     }
+
+    @Override
+    public void atualizarUltimoAcesso(Integer idUsuario) {
+        logger.info("Atualizando último acesso para usuário ID: {}", idUsuario);
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para ID: " + idUsuario));
+
+        usuario.setUltimoAcesso(LocalDateTime.now());
+        usuarioRepository.save(usuario);
+        logger.info("Último acesso atualizado com sucesso para usuário ID: {}", idUsuario);
+    }
 }
