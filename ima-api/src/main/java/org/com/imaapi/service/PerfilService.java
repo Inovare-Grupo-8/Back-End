@@ -16,6 +16,7 @@ public interface PerfilService {
     UsuarioDadosPessoaisOutput buscarDadosPessoaisPorId(Integer usuarioId);
     EnderecoOutput buscarEnderecoPorId(Integer usuarioId);
     UsuarioOutput atualizarDadosPessoais(Integer usuarioId, UsuarioInputAtualizacaoDadosPessoais usuarioInputAtualizacaoDadosPessoais);
+    UsuarioDadosPessoaisOutput atualizarDadosPessoaisCompleto(Integer usuarioId, UsuarioInputAtualizacaoDadosPessoais usuarioInputAtualizacaoDadosPessoais);
     boolean atualizarEnderecoPorUsuarioId(Integer usuarioId, String cep, String numero, String complemento);
     boolean atualizarDadosProfissionais(Integer usuarioId, VoluntarioDadosProfissionaisInput dadosProfissionais);
     boolean criarDisponibilidade(Integer usuarioId, Map<String, Object> disponibilidade);

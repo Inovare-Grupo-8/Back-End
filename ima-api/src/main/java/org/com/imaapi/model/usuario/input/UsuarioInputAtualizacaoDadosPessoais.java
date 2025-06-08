@@ -20,8 +20,11 @@ public class UsuarioInputAtualizacaoDadosPessoais {
 
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,}$",
             message = "A senha deve ter pelo menos 6 caracteres, incluindo letras, números e um caractere especial")
-    private String senha;
-
-    @PastOrPresent(message = "Data de nascimento inválida")
+    private String senha;    @PastOrPresent(message = "Data de nascimento inválida")
     private LocalDate dataNascimento;
+    
+    // Campos específicos para assistente social
+    private String crp;
+    private String bio;
+    private String especialidade;
 }
