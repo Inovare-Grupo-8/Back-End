@@ -37,7 +37,8 @@ public class AssistenteSocialService {
 
         Endereco endereco = enderecoService.criarOuAtualizarEndereco(enderecoInput);
         // Create and set up Ficha with all user data
-        Ficha ficha = new Ficha();        ficha.setNome(input.getNome());
+        Ficha ficha = new Ficha();        
+        ficha.setNome(input.getNome());
         ficha.setSobrenome(input.getSobrenome());
         ficha.setCpf(input.getCpf());
         ficha.setDtNascim(input.getDataNascimento() != null ? LocalDate.parse(input.getDataNascimento()) : null);
@@ -105,7 +106,8 @@ public class AssistenteSocialService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Assistente Social não encontrado"));
         Ficha ficha = usuario.getFicha();
-        ficha.setNome(input.getNome());        ficha.setSobrenome(input.getSobrenome());
+        ficha.setNome(input.getNome());
+        ficha.setSobrenome(input.getSobrenome());
         ficha.setCpf(input.getCpf());
         ficha.setDtNascim(input.getDataNascimento() != null ? LocalDate.parse(input.getDataNascimento()) : null);
         ficha.setGenero(Genero.fromString(input.getGenero()));

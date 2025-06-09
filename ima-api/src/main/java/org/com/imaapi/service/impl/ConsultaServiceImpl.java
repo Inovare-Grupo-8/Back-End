@@ -25,7 +25,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+
 import java.util.Collections;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -241,51 +243,29 @@ public class ConsultaServiceImpl implements ConsultaService {
 
     public ResponseEntity<?> getHorariosDisponiveis(LocalDate data, Integer idVoluntario) {
         try {
-            // Define início e fim do dia
+
             LocalDateTime inicioDia = data.atStartOfDay();
             LocalDateTime fimDia = data.atTime(23, 59, 59);
 
-            // Busca consultas existentes para o voluntário neste dia
             List<Consulta> consultasMarcadas = consultaRepository
                     .findByVoluntario_IdUsuarioAndHorarioBetween(idVoluntario, inicioDia, fimDia);
 
-            // Horários padrão de atendimento (exemplo: 9h às 17h, intervalo de 1h)
-            List<LocalTime> horariosDisponiveis = Arrays.asList(
-                    LocalTime.of(0, 0),
-                    LocalTime.of(1, 0),
-                    LocalTime.of(2, 0),
-                    LocalTime.of(3, 0),
-                    LocalTime.of(4, 0),
-                    LocalTime.of(5, 0),
-                    LocalTime.of(6, 0),
-                    LocalTime.of(7, 0),
-                    LocalTime.of(8, 0),
-                    LocalTime.of(9, 0),
-                    LocalTime.of(10, 0),
-                    LocalTime.of(11, 0),
-                    LocalTime.of(12, 0),
-                    LocalTime.of(13, 0),
-                    LocalTime.of(14, 0),
-                    LocalTime.of(15, 0),
-                    LocalTime.of(16, 0),
-                    LocalTime.of(17, 0),
-                    LocalTime.of(18, 0),
-                    LocalTime.of(19, 0),
-                    LocalTime.of(20, 0),
-                    LocalTime.of(21, 0),
-                    LocalTime.of(22, 0),
-                    LocalTime.of(23, 0)
-            );
+            // Gera dinamicamente os horários de 00:00 até 23:00
+            List<LocalTime> horariosDisponiveis =
+                java.util.stream.IntStream.rangeClosed(0, 23)
+                    .mapToObj(h -> LocalTime.of(h, 0))
+                    .collect(Collectors.toList());
 
-            // Lista de horários ocupados
             List<LocalTime> horariosOcupados = consultasMarcadas.stream()
                     .map(consulta -> consulta.getHorario().toLocalTime())
                     .collect(Collectors.toList());
 
-            // Filtra os horários disponíveis removendo os ocupados
+            LocalDateTime agora = LocalDateTime.now();
+
             List<LocalDateTime> horariosLivres = horariosDisponiveis.stream()
                     .filter(horario -> !horariosOcupados.contains(horario))
                     .map(horario -> LocalDateTime.of(data, horario))
+                    .filter(horario -> !data.equals(LocalDate.now()) || horario.isAfter(agora))
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(horariosLivres);
