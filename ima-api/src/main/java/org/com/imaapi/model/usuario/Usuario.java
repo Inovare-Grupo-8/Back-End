@@ -18,49 +18,103 @@ public class Usuario {    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Integer idUsuario;
+    private Usuario usuario;
 
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public Integer getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Integer idUsuario) {
+        this.idUsuario = idUsuario;
+    }
 
     public Ficha getFicha() {
-        return this.ficha;
+        return ficha;
+    }
+
+    public void setFicha(Ficha ficha) {
+        this.ficha = ficha;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
     }
-    public void setSenha(String senha){
-        this.senha=senha;
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
     }
 
     public TipoUsuario getTipo() {
         return tipo;
     }
+
+    public void setTipo(TipoUsuario tipo) {
+        this.tipo = tipo;
+    }
+
+    public LocalDate getDataCadastro() {
+        return dataCadastro;
+    }
+
     public void setDataCadastro(LocalDate dataCadastro) {
         this.dataCadastro = dataCadastro;
+    }
+
+    public LocalDateTime getCriadoEm() {
+        return criadoEm;
     }
 
     public void setCriadoEm(LocalDateTime criadoEm) {
         this.criadoEm = criadoEm;
     }
 
+    public LocalDateTime getAtualizadoEm() {
+        return atualizadoEm;
+    }
+
     public void setAtualizadoEm(LocalDateTime atualizadoEm) {
         this.atualizadoEm = atualizadoEm;
+    }
+
+    public LocalDateTime getUltimoAcesso() {
+        return ultimoAcesso;
     }
 
     public void setUltimoAcesso(LocalDateTime ultimoAcesso) {
         this.ultimoAcesso = ultimoAcesso;
     }
 
+    public Integer getVersao() {
+        return versao;
+    }
+
     public void setVersao(Integer versao) {
         this.versao = versao;
     }
 
-    public void setFicha(Ficha ficha) {
-        this.ficha = ficha;
-    }
-    public void setTipo(TipoUsuario tipo) {
-        this.tipo = tipo;
+    public String getFotoUrl() {
+        return fotoUrl;
     }
 
+    public void setFotoUrl(String fotoUrl) {
+        this.fotoUrl = fotoUrl;
+    }
 
     @OneToOne(optional = false)
     @JoinColumn(name = "fk_ficha", unique = true, nullable = false)

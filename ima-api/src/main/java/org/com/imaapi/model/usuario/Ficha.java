@@ -1,9 +1,6 @@
 package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 
@@ -11,21 +8,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name = "ficha")
-@NoArgsConstructor
-@AllArgsConstructor
 public class Ficha {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_ficha")
     private Integer idFicha;
-
-    public Integer getIdFicha() {
-        return this.idFicha;
-    }
-
 
     @ManyToOne
     @JoinColumn(name = "fk_endereco")
@@ -45,7 +34,6 @@ public class Ficha {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "genero", length = 20)
-
     private Genero genero;
 
     @Column(name = "dt_nascim")
@@ -81,11 +69,128 @@ public class Ficha {
         if (this.versao == null) {
             this.versao = 0;
         }
-    }    @PreUpdate
+    }
+
+    @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
     }
-    
+
+    // Getters
+    public Integer getIdFicha() {
+        return idFicha;
+    }
+
+    public Endereco getEndereco() {
+        return endereco;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getSobrenome() {
+        return sobrenome;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public BigDecimal getRenda() {
+        return renda;
+    }
+
+    public Genero getGenero() {
+        return genero;
+    }
+
+    public LocalDate getDtNascim() {
+        return dtNascim;
+    }
+
+    public String getAreaOrientacao() {
+        return areaOrientacao;
+    }
+
+    public String getComoSoube() {
+        return comoSoube;
+    }
+
+    public String getProfissao() {
+        return profissao;
+    }
+
+    public LocalDateTime getCriadoEm() {
+        return criadoEm;
+    }
+
+    public LocalDateTime getAtualizadoEm() {
+        return atualizadoEm;
+    }
+
+    public Integer getVersao() {
+        return versao;
+    }
+
+    // Setters
+    public void setIdFicha(Integer idFicha) {
+        this.idFicha = idFicha;
+    }
+
+    public void setEndereco(Endereco endereco) {
+        this.endereco = endereco;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setSobrenome(String sobrenome) {
+        this.sobrenome = sobrenome;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
+    public void setRenda(BigDecimal renda) {
+        this.renda = renda;
+    }
+
+    public void setGenero(Genero genero) {
+        this.genero = genero;
+    }
+
+    public void setDtNascim(LocalDate dtNascim) {
+        this.dtNascim = dtNascim;
+    }
+
+    public void setAreaOrientacao(String areaOrientacao) {
+        this.areaOrientacao = areaOrientacao;
+    }
+
+    public void setComoSoube(String comoSoube) {
+        this.comoSoube = comoSoube;
+    }
+
+    public void setProfissao(String profissao) {
+        this.profissao = profissao;
+    }
+
+    public void setCriadoEm(LocalDateTime criadoEm) {
+        this.criadoEm = criadoEm;
+    }
+
+    public void setAtualizadoEm(LocalDateTime atualizadoEm) {
+        this.atualizadoEm = atualizadoEm;
+    }
+
+    public void setVersao(Integer versao) {
+        this.versao = versao;
+    }
+
+    // Atualização dos dados da segunda fase
     public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
         this.setDtNascim(input.getDataNascimento());
         this.setRenda(input.getRenda() != null ? BigDecimal.valueOf(input.getRenda()) : null);

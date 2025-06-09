@@ -19,4 +19,36 @@ public class TelefoneInput {
     private String sufixo;
 
     private Boolean whatsapp;
+
+    public @Pattern(regexp = "\\d{2}", message = "DDD deve ter 2 dígitos") String getDdd() {
+        return ddd;
+    }
+
+    public void setDdd(@Pattern(regexp = "\\d{2}", message = "DDD deve ter 2 dígitos") String ddd) {
+        this.ddd = ddd;
+    }
+
+    public @Pattern(regexp = "\\d{5}", message = "Prefixo deve ter 5 dígitos") String getPrefixo() {
+        return prefixo;
+    }
+
+    public void setPrefixo(@Pattern(regexp = "\\d{5}", message = "Prefixo deve ter 5 dígitos") String prefixo) {
+        this.prefixo = prefixo;
+    }
+
+    public @Pattern(regexp = "\\d{4}", message = "Sufixo deve ter 4 dígitos") String getSufixo() {
+        return sufixo;
+    }
+
+    public void setSufixo(@Pattern(regexp = "\\d{4}", message = "Sufixo deve ter 4 dígitos") String sufixo) {
+        this.sufixo = sufixo;
+    }
+
+    public Boolean getWhatsapp() {
+        return whatsapp;
+    }
+
+    public void setWhatsapp(Boolean whatsapp) {
+        this.whatsapp = whatsapp;
+    }
 }

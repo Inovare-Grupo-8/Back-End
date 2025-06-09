@@ -20,4 +20,28 @@ public class Disponibilidade {
     @ManyToOne
     @JoinColumn(name = "fk_voluntario", referencedColumnName = "id_voluntario")
     private Voluntario voluntario;
+
+    public Integer getIdDisponibilidade() {
+        return idDisponibilidade;
+    }
+
+    public void setIdDisponibilidade(Integer idDisponibilidade) {
+        this.idDisponibilidade = idDisponibilidade;
+    }
+
+    public LocalDateTime getDataHora() {
+        return dataHora;
+    }
+
+    public void setDataHora(LocalDateTime dataHora) {
+        this.dataHora = dataHora;
+    }
+
+    public Voluntario getVoluntario() {
+        return voluntario;
+    }
+
+    public void setVoluntario(Voluntario voluntario) {
+        this.voluntario = voluntario;
+    }
 }

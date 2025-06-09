@@ -24,4 +24,36 @@ public class DevTokenInput {
     private List<String> authorities;
 
     private Long validityInSeconds;
+
+    public @NotBlank(message = "O email é obrigatório") @Email(message = "Email inválido") String getEmail() {
+        return email;
+    }
+
+    public void setEmail(@NotBlank(message = "O email é obrigatório") @Email(message = "Email inválido") String email) {
+        this.email = email;
+    }
+
+    public @NotBlank(message = "O nome é obrigatório") String getNome() {
+        return nome;
+    }
+
+    public void setNome(@NotBlank(message = "O nome é obrigatório") String nome) {
+        this.nome = nome;
+    }
+
+    public @NotEmpty(message = "As authorities são obrigatórias") List<String> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(@NotEmpty(message = "As authorities são obrigatórias") List<String> authorities) {
+        this.authorities = authorities;
+    }
+
+    public Long getValidityInSeconds() {
+        return validityInSeconds;
+    }
+
+    public void setValidityInSeconds(Long validityInSeconds) {
+        this.validityInSeconds = validityInSeconds;
+    }
 }

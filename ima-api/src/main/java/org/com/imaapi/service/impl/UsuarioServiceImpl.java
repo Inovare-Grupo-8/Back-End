@@ -571,4 +571,92 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("Erro ao buscar lista de voluntários: " + e.getMessage());
         }
     }
+
+    public VoluntarioRepository getVoluntarioRepository() {
+        return voluntarioRepository;
+    }
+
+    public void setVoluntarioRepository(VoluntarioRepository voluntarioRepository) {
+        this.voluntarioRepository = voluntarioRepository;
+    }
+
+    public TelefoneRepository getTelefoneRepository() {
+        return telefoneRepository;
+    }
+
+    public void setTelefoneRepository(TelefoneRepository telefoneRepository) {
+        this.telefoneRepository = telefoneRepository;
+    }
+
+    public PasswordEncoder getPasswordEncoder() {
+        return passwordEncoder;
+    }
+
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public UsuarioRepository getUsuarioRepository() {
+        return usuarioRepository;
+    }
+
+    public void setUsuarioRepository(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
+
+    public VoluntarioService getVoluntarioService() {
+        return voluntarioService;
+    }
+
+    public void setVoluntarioService(VoluntarioService voluntarioService) {
+        this.voluntarioService = voluntarioService;
+    }
+
+    public EmailService getEmailService() {
+        return emailService;
+    }
+
+    public void setEmailService(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
+    public AuthenticationManager getAuthenticationManager() {
+        return authenticationManager;
+    }
+
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
+
+    public GerenciadorTokenJwt getGerenciadorTokenJwt() {
+        return gerenciadorTokenJwt;
+    }
+
+    public void setGerenciadorTokenJwt(GerenciadorTokenJwt gerenciadorTokenJwt) {
+        this.gerenciadorTokenJwt = gerenciadorTokenJwt;
+    }
+
+    public EnderecoRepository getEnderecoRepository() {
+        return enderecoRepository;
+    }
+
+    public void setEnderecoRepository(EnderecoRepository enderecoRepository) {
+        this.enderecoRepository = enderecoRepository;
+    }
+
+    public FichaRepository getFichaRepository() {
+        return fichaRepository;
+    }
+
+    public void setFichaRepository(FichaRepository fichaRepository) {
+        this.fichaRepository = fichaRepository;
+    }
+
+    public EnderecoService getEnderecoService() {
+        return enderecoService;
+    }
+
+    public void setEnderecoService(EnderecoService enderecoService) {
+        this.enderecoService = enderecoService;
+    }
 }

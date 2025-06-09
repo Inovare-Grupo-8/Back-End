@@ -65,4 +65,77 @@ public class Telefone {    @Id
         telefone.setWhatsapp(telefoneInput.getWhatsapp());
         return telefone;
     }
+
+    public Integer getIdTelefone() {
+        return idTelefone;
+    }
+
+    public void setIdTelefone(Integer idTelefone) {
+        this.idTelefone = idTelefone;
+    }
+
+
+    public Ficha getFicha() {
+        return ficha;
+    }
+
+    public void setFicha(Ficha ficha) {
+        this.ficha = ficha;
+    }
+
+    public String getDdd() {
+        return ddd;
+    }
+
+    public void setDdd(String ddd) {
+        this.ddd = ddd;
+    }
+
+    public String getPrefixo() {
+        return prefixo;
+    }
+
+    public void setPrefixo(String prefixo) {
+        this.prefixo = prefixo;
+    }
+
+    public String getSufixo() {
+        return sufixo;
+    }
+
+    public void setSufixo(String sufixo) {
+        this.sufixo = sufixo;
+    }
+
+    public Boolean getWhatsapp() {
+        return whatsapp;
+    }
+
+    public void setWhatsapp(Boolean whatsapp) {
+        this.whatsapp = whatsapp;
+    }
+
+    public LocalDateTime getCriadoEm() {
+        return criadoEm;
+    }
+
+    public void setCriadoEm(LocalDateTime criadoEm) {
+        this.criadoEm = criadoEm;
+    }
+
+    public LocalDateTime getAtualizadoEm() {
+        return atualizadoEm;
+    }
+
+    public void setAtualizadoEm(LocalDateTime atualizadoEm) {
+        this.atualizadoEm = atualizadoEm;
+    }
+
+    public Integer getVersao() {
+        return versao;
+    }
+
+    public void setVersao(Integer versao) {
+        this.versao = versao;
+    }
 }

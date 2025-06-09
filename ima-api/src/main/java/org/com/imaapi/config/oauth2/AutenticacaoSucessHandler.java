@@ -118,4 +118,5 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
         response.getWriter().write("{\"token\": \"" + tokenOutput.getToken() + "\"}");
     }
 
+
 }
