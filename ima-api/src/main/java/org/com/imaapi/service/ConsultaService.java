@@ -48,4 +48,7 @@ public interface ConsultaService {
     List<ConsultaOutput> buscarProximasConsultas(String user);
     
     void remarcarConsulta(Integer id, ConsultaRemarcarInput input);
+    
+    // Cancel consultation method
+    ResponseEntity<ConsultaDto> cancelarConsulta(Integer id);
 }
