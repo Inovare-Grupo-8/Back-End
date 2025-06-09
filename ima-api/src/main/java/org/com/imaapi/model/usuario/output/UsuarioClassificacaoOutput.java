@@ -21,10 +21,9 @@ public class UsuarioClassificacaoOutput {
     
     // Dados da Ficha
     private String nome;
-    private String sobrenome;
-    private String cpf;
-    private LocalDate dataNascimento;
-    private BigDecimal renda;
+    private String sobrenome;    private String cpf;    private LocalDate dataNascimento;
+    private BigDecimal rendaMinima;
+    private BigDecimal rendaMaxima;
     private Genero genero;
     private String areaInteresse;
     private String profissao;

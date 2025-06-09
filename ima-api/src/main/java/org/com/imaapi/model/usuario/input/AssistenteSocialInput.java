@@ -26,12 +26,8 @@ public class AssistenteSocialInput {
     private String cpf;
 
     @NotBlank(message = "Data de nascimento é obrigatória")
-    private String dataNascimento;
-
-    @NotBlank(message = "Gênero é obrigatório")
+    private String dataNascimento;    @NotBlank(message = "Gênero é obrigatório")
     private String genero;
-
-    private Double renda;
 
     private TipoUsuario tipo = TipoUsuario.ADMINISTRADOR;
     private Funcao funcao = Funcao.ASSISTENCIA_SOCIAL;

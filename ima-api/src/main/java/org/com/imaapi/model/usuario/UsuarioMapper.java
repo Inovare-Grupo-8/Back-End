@@ -104,10 +104,9 @@ public class UsuarioMapper {
         if (usuario.getFicha() != null) {
             Ficha ficha = usuario.getFicha();
             output.setNome(ficha.getNome());
-            output.setSobrenome(ficha.getSobrenome());
-            output.setCpf(ficha.getCpf());
-            output.setDataNascimento(ficha.getDtNascim());
-            output.setRenda(ficha.getRenda());
+            output.setSobrenome(ficha.getSobrenome());            output.setCpf(ficha.getCpf());            output.setDataNascimento(ficha.getDtNascim());
+            output.setRendaMinima(ficha.getRendaMinima());
+            output.setRendaMaxima(ficha.getRendaMaxima());
             output.setGenero(ficha.getGenero());
             output.setAreaInteresse(ficha.getAreaOrientacao());
             output.setProfissao(ficha.getProfissao());

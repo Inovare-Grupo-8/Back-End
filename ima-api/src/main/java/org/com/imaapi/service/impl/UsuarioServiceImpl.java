@@ -237,15 +237,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuario;
     }
 
-    @Override
-    public Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
+    @Override    public Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         logger.info("Iniciando cadastro fase 2 para voluntário ID: {}", idUsuario);
         if (usuarioInputSegundaFase.getFuncao() == null) {
             throw new IllegalArgumentException("A função do voluntário deve ser informada");
         }
 
-        if (usuarioInputSegundaFase.getRenda() == null) {
-            throw new IllegalArgumentException("A renda do voluntário deve ser informada");
+        if (usuarioInputSegundaFase.getRendaMinima() == null || usuarioInputSegundaFase.getRendaMaxima() == null) {
+            throw new IllegalArgumentException("A faixa de renda do voluntário deve ser informada");
         }
 
         Usuario usuario = usuarioRepository.findById(idUsuario)

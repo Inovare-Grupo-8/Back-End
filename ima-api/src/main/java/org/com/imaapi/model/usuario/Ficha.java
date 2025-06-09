@@ -30,13 +30,14 @@ public class Ficha {
     private String nome;
 
     @Column(name = "sobrenome", nullable = false, length = 45)
-    private String sobrenome;
-
-    @Column(name = "cpf", unique = true, length = 11)
+    private String sobrenome;    @Column(name = "cpf", unique = true, length = 11)
     private String cpf;
 
-    @Column(name = "renda", precision = 10, scale = 2)
-    private BigDecimal renda;
+    @Column(name = "renda_minima", precision = 10, scale = 2)
+    private BigDecimal rendaMinima;
+
+    @Column(name = "renda_maxima", precision = 10, scale = 2)
+    private BigDecimal rendaMaxima;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "genero", length = 20)
@@ -79,11 +80,19 @@ public class Ficha {
     }    @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-    }
-    
-    public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
+    }      public void atualizarDadosSegundaFase(UsuarioInputSegundaFase input) {
         this.setDtNascim(input.getDataNascimento());
-        this.setRenda(input.getRenda() != null ? BigDecimal.valueOf(input.getRenda()) : null);
+        
+        // Trabalhar apenas com intervalos de renda (rendaMinima e rendaMaxima)
+        if (input.getRendaMinima() != null && input.getRendaMaxima() != null) {
+            this.setRendaMinima(BigDecimal.valueOf(input.getRendaMinima()));
+            this.setRendaMaxima(BigDecimal.valueOf(input.getRendaMaxima()));
+        } else {
+            // Para casos de "prefiro não informar" ou sem informação
+            this.setRendaMinima(null);
+            this.setRendaMaxima(null);
+        }
+        
         this.setAreaOrientacao(input.getAreaOrientacao());
         this.setComoSoube(input.getComoSoube());
         this.setProfissao(input.getProfissao());
