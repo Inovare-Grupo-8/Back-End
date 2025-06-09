@@ -309,21 +309,15 @@ public class ConsultaServiceImpl implements ConsultaService {
 
             Integer userId = getUsuarioLogado().getIdUsuario();
             logger.debug("Buscando consultas do dia para {} com ID: {}, período: {} até {}",
-                    user, userId, inicio, fim);
+                    user, userId, inicio, fim);            List<Consulta> consultas;
 
-            List<Consulta> consultas;
-
-            List<StatusConsulta> statusFiltro = List.of(
-                    StatusConsulta.AGENDADA,
-                    StatusConsulta.REAGENDADA,
-                    StatusConsulta.EM_ANDAMENTO);
-
+            // Remover filtro de status para incluir todas as consultas do dia
             if (user.equals("voluntario")) {
-                consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetweenAndStatusIn(
-                        userId, inicio, fim, statusFiltro);
+                consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(
+                        userId, inicio, fim);
             } else {
-                consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioBetweenAndStatusIn(
-                        userId, inicio, fim, statusFiltro);
+                consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioBetween(
+                        userId, inicio, fim);
             }
 
             logger.debug("Encontradas {} consultas do dia para {} com ID: {}",
@@ -338,9 +332,7 @@ public class ConsultaServiceImpl implements ConsultaService {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
-    }
-
-    @Override
+    }    @Override
     public ResponseEntity<List<ConsultaDto>> getConsultasSemana(String user) {
         try {
             if (!user.equals("voluntario") && !user.equals("assistido")) {
@@ -348,49 +340,42 @@ public class ConsultaServiceImpl implements ConsultaService {
                 return ResponseEntity.badRequest().build();
             }
 
-            DayOfWeek diaSemanaAtual = LocalDateTime.now().getDayOfWeek();
-
-            LocalDateTime inicio = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
-
-            int diasAteDomingo = DayOfWeek.SUNDAY.getValue() - diaSemanaAtual.getValue();
-            if (diasAteDomingo <= 0) {
-                diasAteDomingo += 7;
-            }
-
-            LocalDateTime fim = inicio.plusDays(diasAteDomingo).withHour(23).withMinute(59).withSecond(59);
+            // Calcular o início e fim da semana atual (segunda a domingo)
+            LocalDateTime agora = LocalDateTime.now();
+            DayOfWeek diaSemanaAtual = agora.getDayOfWeek();
+            
+            // Calcular quantos dias voltar para chegar na segunda-feira
+            int diasParaSegunda = diaSemanaAtual.getValue() - DayOfWeek.MONDAY.getValue();
+            LocalDateTime inicio = agora.minusDays(diasParaSegunda).withHour(0).withMinute(0).withSecond(0).withNano(0);
+            
+            // Domingo da semana atual
+            LocalDateTime fim = inicio.plusDays(6).withHour(23).withMinute(59).withSecond(59).withNano(999999999);
 
             Integer userId = getUsuarioLogado().getIdUsuario();
-            logger.debug("Buscando consultas da semana para {} com ID: {}, período: {} até {}",
-                    user, userId, inicio, fim);
+            logger.debug("Buscando consultas da semana atual para {} com ID: {}, período: {} até {}",
+                    user, userId, inicio, fim);            List<Consulta> consultas;
 
-            List<Consulta> consultas;
-
-            List<StatusConsulta> statusFiltro = List.of(StatusConsulta.AGENDADA, StatusConsulta.EM_ANDAMENTO);
-
+            // Remover filtro de status para incluir todas as consultas da semana
             if (user.equals("voluntario")) {
-                consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetweenAndStatusIn(
-                        userId, inicio, fim, statusFiltro);
+                consultas = consultaRepository.findByVoluntario_IdUsuarioAndHorarioBetween(
+                        userId, inicio, fim);
             } else {
-                consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioBetweenAndStatusIn(
-                        userId, inicio, fim, statusFiltro);
+                consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioBetween(
+                        userId, inicio, fim);
             }
 
-            logger.debug("Encontradas {} consultas da semana para {} com ID: {}",
+            logger.debug("Encontradas {} consultas da semana atual para {} com ID: {}",
                     consultas.size(), user, userId);
             List<ConsultaDto> dtos = consultas.stream()
                     .sorted(Comparator.comparing(Consulta::getHorario))
                     .map(consulta -> ConsultaMapper.toDto(consulta))
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok(dtos);
+                    .collect(Collectors.toList());            return ResponseEntity.ok(dtos);
         } catch (Exception e) {
-            logger.error("Erro ao buscar consultas da semana: {}", e.getMessage());
+            logger.error("Erro ao buscar consultas da semana atual: {}", e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
-    }
-
-    @Override
+    }    @Override
     public ResponseEntity<List<ConsultaDto>> getConsultasMes(String user) {
         try {
             if (!user.equals("voluntario") && !user.equals("assistido")) {
@@ -398,11 +383,13 @@ public class ConsultaServiceImpl implements ConsultaService {
                 return ResponseEntity.badRequest().build();
             }
 
-            LocalDateTime fim = LocalDateTime.now();
-            LocalDateTime inicio = fim.minusDays(30);
+            // Calcular o início e fim do mês atual
+            LocalDateTime agora = LocalDateTime.now();
+            LocalDateTime inicio = agora.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+            LocalDateTime fim = agora.withDayOfMonth(agora.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999999999);
 
             Integer userId = getUsuarioLogado().getIdUsuario();
-            logger.debug("Buscando consultas dos últimos 30 dias para {} com ID: {}, período: {} até {}",
+            logger.debug("Buscando consultas do mês atual para {} com ID: {}, período: {} até {}",
                     user, userId, inicio, fim);
 
             List<Consulta> consultas;
@@ -413,9 +400,7 @@ public class ConsultaServiceImpl implements ConsultaService {
             } else {
                 consultas = consultaRepository.findByAssistido_IdUsuarioAndHorarioBetween(
                         userId, inicio, fim);
-            }
-
-            logger.debug("Encontradas {} consultas dos últimos 30 dias para {} com ID: {}",
+            }            logger.debug("Encontradas {} consultas do mês atual para {} com ID: {}",
                     consultas.size(), user, userId);
             List<ConsultaDto> dtos = consultas.stream()
                     .sorted(Comparator.comparing(Consulta::getHorario).reversed())
@@ -424,7 +409,7 @@ public class ConsultaServiceImpl implements ConsultaService {
 
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
-            logger.error("Erro ao buscar consultas dos últimos 30 dias: {}", e.getMessage());
+            logger.error("Erro ao buscar consultas do mês atual: {}", e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }

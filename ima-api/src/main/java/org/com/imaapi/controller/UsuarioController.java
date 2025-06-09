@@ -9,6 +9,8 @@ import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.output.*;
+import org.com.imaapi.repository.TelefoneRepository;
+import org.com.imaapi.repository.VoluntarioRepository;
 import org.com.imaapi.service.EnderecoService;
 import org.com.imaapi.service.UsuarioService;
 import org.slf4j.Logger;
