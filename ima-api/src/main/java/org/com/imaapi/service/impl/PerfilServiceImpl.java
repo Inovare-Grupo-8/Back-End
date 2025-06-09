@@ -62,14 +62,16 @@ public class PerfilServiceImpl implements PerfilService {
         if (ficha == null) {
             LOGGER.warn("Ficha não encontrada para o usuário com ID: {}", usuarioId);
             return null;
-        }        UsuarioDadosPessoaisOutput dadosPessoais = new UsuarioDadosPessoaisOutput();
+        }
+
+        UsuarioDadosPessoaisOutput dadosPessoais = new UsuarioDadosPessoaisOutput();
         dadosPessoais.setNome(ficha.getNome());
         dadosPessoais.setSobrenome(ficha.getSobrenome());
         dadosPessoais.setCpf(ficha.getCpf());
         dadosPessoais.setDataNascimento(ficha.getDtNascim());
         dadosPessoais.setEmail(usuario.getEmail());
         dadosPessoais.setTipo(usuario.getTipo().toString());
-        
+
         // Mapear gênero da ficha
         if (ficha.getGenero() != null) {
             dadosPessoais.setGenero(ficha.getGenero());
@@ -80,14 +82,23 @@ public class PerfilServiceImpl implements PerfilService {
         if (!telefones.isEmpty()) {
             Telefone telefone = telefones.get(0);
             if (telefone.getDdd() != null && telefone.getPrefixo() != null && telefone.getSufixo() != null) {
-                dadosPessoais.setTelefone(String.format("(%s) %s-%s",
+                String telefoneFormatado = String.format("(%s) %s-%s",
                         telefone.getDdd(),
                         telefone.getPrefixo(),
-                        telefone.getSufixo()));
+                        telefone.getSufixo());
+                dadosPessoais.setTelefone(telefoneFormatado);
+                LOGGER.info("Telefone encontrado: {}", telefoneFormatado);
+            } else {
+                LOGGER.warn("Telefone encontrado, mas incompleto: DDD={}, Prefixo={}, Sufixo={}",
+                        telefone.getDdd(), telefone.getPrefixo(), telefone.getSufixo());
+                dadosPessoais.setTelefone("");
             }
         } else {
+            LOGGER.warn("Nenhum telefone encontrado para a ficha com ID: {}", ficha.getIdFicha());
             dadosPessoais.setTelefone("");
-        }        // Buscar dados profissionais se for administrador (assistente social)
+        }
+
+        // Buscar dados profissionais se for administrador (assistente social)
         Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
         if (voluntario != null) {
             dadosPessoais.setCrp(voluntario.getRegistroProfissional());
