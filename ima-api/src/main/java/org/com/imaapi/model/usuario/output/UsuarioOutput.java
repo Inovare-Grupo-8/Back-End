@@ -16,10 +16,9 @@ public class UsuarioOutput {
     private Integer id;
     private String nome;
     private String cpf;
-    private String email;
-    private String senha;
-    private LocalDate dataNascimento;
-    private Double renda;
+    private String email;    private String senha;    private LocalDate dataNascimento;
+    private Double rendaMinima;
+    private Double rendaMaxima;
     private Genero genero;
     private TipoUsuario tipo;
     private Funcao funcao;
