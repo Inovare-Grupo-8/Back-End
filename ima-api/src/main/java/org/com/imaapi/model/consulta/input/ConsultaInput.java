@@ -26,23 +26,20 @@ public class ConsultaInput {
     @NotNull(message = "Indique como será a consulta, online ou presencial")
     private ModalidadeConsulta modalidade;
 
-    @NotBlank(message = "Informe o local da consulta")
+    @NotBlank(message = "O local da consulta não pode estar em branco")
     private String local;
     
     private String observacoes;
 
     private Integer idEspecialidade;
-    
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
     private Especialidade especialidade;
-    
+
     private Integer idAssistido;
-    
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "senha", "tipo", "ficha.endereco"})
+
     private Usuario assistido;
-    
+
     private Integer idVoluntario;
-    
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "senha", "tipo", "ficha.endereco"})
+
     private Usuario voluntario;
 }
