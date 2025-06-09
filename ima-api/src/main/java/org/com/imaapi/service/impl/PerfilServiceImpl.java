@@ -69,6 +69,11 @@ public class PerfilServiceImpl implements PerfilService {
         dadosPessoais.setDataNascimento(ficha.getDtNascim());
         dadosPessoais.setEmail(usuario.getEmail());
         dadosPessoais.setTipo(usuario.getTipo().toString());
+        
+        // Mapear gênero da ficha
+        if (ficha.getGenero() != null) {
+            dadosPessoais.setGenero(ficha.getGenero());
+        }
 
         // Buscar telefone
         List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
@@ -151,9 +156,14 @@ public class PerfilServiceImpl implements PerfilService {
         }
         if (dadosPessoais.getSobrenome() != null) {
             ficha.setSobrenome(dadosPessoais.getSobrenome());
-        }
-        if (dadosPessoais.getDataNascimento() != null) {
+        }        if (dadosPessoais.getDataNascimento() != null) {
             ficha.setDtNascim(dadosPessoais.getDataNascimento());
+        }
+        
+        // Atualizar gênero se fornecido
+        if (dadosPessoais.getGenero() != null) {
+            ficha.setGenero(dadosPessoais.getGenero());
+            LOGGER.info("Gênero atualizado para: {}", dadosPessoais.getGenero());
         }
 
         // Atualizar email do usuário
@@ -246,16 +256,19 @@ public class PerfilServiceImpl implements PerfilService {
         // Salvar as alterações
 
         usuarioRepository.save(usuario);
-        LOGGER.info("Dados pessoais completos atualizados com sucesso para o usuário com ID: {}", usuarioId);
-
-        // Retornar dados atualizados
+        LOGGER.info("Dados pessoais completos atualizados com sucesso para o usuário com ID: {}", usuarioId);        // Retornar dados atualizados
         UsuarioDadosPessoaisOutput output = new UsuarioDadosPessoaisOutput();
         output.setNome(ficha.getNome());
         output.setSobrenome(ficha.getSobrenome());
         output.setCpf(ficha.getCpf());
         output.setDataNascimento(ficha.getDtNascim());
         output.setEmail(usuario.getEmail());
-        output.setTipo(usuario.getTipo().toString());        // Buscar telefone atualizado para retorno
+        output.setTipo(usuario.getTipo().toString());
+        
+        // Incluir gênero no output
+        if (ficha.getGenero() != null) {
+            output.setGenero(ficha.getGenero());
+        }// Buscar telefone atualizado para retorno
         List<Telefone> telefonesAtualizados = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
         if (!telefonesAtualizados.isEmpty()) {
             Telefone telefoneAtualizado = telefonesAtualizados.get(0);

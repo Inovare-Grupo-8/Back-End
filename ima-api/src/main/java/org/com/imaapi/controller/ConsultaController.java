@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import org.com.imaapi.model.consulta.dto.ConsultaDto;
+import org.com.imaapi.model.consulta.dto.ConsultaCountDto;
 import org.com.imaapi.model.consulta.input.ConsultaInput;
 import org.com.imaapi.model.consulta.input.ConsultaRemarcarInput;
 import org.com.imaapi.model.consulta.output.ConsultaOutput;
@@ -36,21 +37,34 @@ public class ConsultaController {
     @PostMapping
     public ResponseEntity<ConsultaOutput> criarEvento(@RequestBody @Valid ConsultaInput consultaInput) {
         return consultaService.criarEvento(consultaInput);
-    }
-
-    @GetMapping("/consultas/dia")
-    public ResponseEntity<List<ConsultaDto>> getConsultasDia(@RequestParam String user) {
-        return consultaService.getConsultasDia(user);
+    }    @GetMapping("/consultas/dia")
+    public ResponseEntity<ConsultaCountDto> getConsultasDia(@RequestParam String user) {
+        ResponseEntity<List<ConsultaDto>> response = consultaService.getConsultasDia(user);
+        if (response.getBody() != null) {
+            int count = response.getBody().size();
+            return ResponseEntity.ok(new ConsultaCountDto(count));
+        }
+        return ResponseEntity.ok(new ConsultaCountDto(0));
     }
 
     @GetMapping("/consultas/semana")
-    public ResponseEntity<List<ConsultaDto>> getConsultasSemana(@RequestParam String user) {
-        return consultaService.getConsultasSemana(user);
+    public ResponseEntity<ConsultaCountDto> getConsultasSemana(@RequestParam String user) {
+        ResponseEntity<List<ConsultaDto>> response = consultaService.getConsultasSemana(user);
+        if (response.getBody() != null) {
+            int count = response.getBody().size();
+            return ResponseEntity.ok(new ConsultaCountDto(count));
+        }
+        return ResponseEntity.ok(new ConsultaCountDto(0));
     }
 
     @GetMapping("/consultas/mes")
-    public ResponseEntity<List<ConsultaDto>> getConsultasMes(@RequestParam String user) {
-        return consultaService.getConsultasMes(user);
+    public ResponseEntity<ConsultaCountDto> getConsultasMes(@RequestParam String user) {
+        ResponseEntity<List<ConsultaDto>> response = consultaService.getConsultasMes(user);
+        if (response.getBody() != null) {
+            int count = response.getBody().size();
+            return ResponseEntity.ok(new ConsultaCountDto(count));
+        }
+        return ResponseEntity.ok(new ConsultaCountDto(0));
     }
 
     @GetMapping("/consultas/avaliacoes-feedback")
