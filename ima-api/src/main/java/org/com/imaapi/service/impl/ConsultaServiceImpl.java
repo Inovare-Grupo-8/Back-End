@@ -901,6 +901,70 @@ public class ConsultaServiceImpl implements ConsultaService {
         logger.info("Consulta remarcada com sucesso para {}", input.getNovoHorario());
     }
     
+    @Override
+    public ResponseEntity<ConsultaDto> cancelarConsulta(Integer id) {
+        logger.info("Cancelando consulta com ID {}", id);
+        
+        try {
+            // Buscar a consulta pelo ID
+            Consulta consulta = consultaRepository.findById(id)
+                    .orElseThrow(() -> {
+                        logger.error("Consulta não encontrada com ID: {}", id);
+                        return new RuntimeException("Consulta não encontrada");
+                    });
+            
+            // Verificar se a consulta pode ser cancelada (não está já cancelada ou realizada)
+            if (consulta.getStatus() == StatusConsulta.CANCELADA) {
+                logger.warn("Tentativa de cancelar consulta já cancelada com ID: {}", id);
+                return ResponseEntity.badRequest().build();
+            }
+            
+            if (consulta.getStatus() == StatusConsulta.REALIZADA || 
+                consulta.getStatus() == StatusConsulta.CONCLUIDA) {
+                logger.warn("Tentativa de cancelar consulta já realizada com ID: {}", id);
+                return ResponseEntity.badRequest().build();
+            }
+            
+            // Verificar se o usuário logado tem permissão para cancelar esta consulta
+            Usuario usuarioLogado = getUsuarioLogado();
+            if (usuarioLogado == null) {
+                logger.error("Usuário não autenticado");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            boolean podeCancel = false;
+            if (consulta.getAssistido() != null && 
+                usuarioLogado.getIdUsuario().equals(consulta.getAssistido().getIdUsuario())) {
+                podeCancel = true;
+            } else if (consulta.getVoluntario() != null && 
+                       usuarioLogado.getIdUsuario().equals(consulta.getVoluntario().getIdUsuario())) {
+                podeCancel = true;
+            }
+            
+            if (!podeCancel) {
+                logger.error("Usuário {} não tem permissão para cancelar a consulta {}", 
+                           usuarioLogado.getIdUsuario(), id);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            
+            // Atualizar o status da consulta para CANCELADA
+            consulta.setStatus(StatusConsulta.CANCELADA);
+            
+            // Salvar a consulta atualizada
+            Consulta consultaCancelada = consultaRepository.save(consulta);
+            
+            // Mapear para DTO e retornar
+            ConsultaDto consultaDto = ConsultaMapper.toDto(consultaCancelada);
+            
+            logger.info("Consulta cancelada com sucesso. ID: {}", id);
+            return ResponseEntity.ok(consultaDto);
+            
+        } catch (Exception e) {
+            logger.error("Erro ao cancelar consulta com ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
     // Método auxiliar para mapear Lista de Consultas para Lista de ConsultaOutput
     private List<ConsultaOutput> mapConsultasToConsultaOutput(List<Consulta> consultas) {
         return consultas.stream()

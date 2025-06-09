@@ -123,6 +123,11 @@ public class ConsultaController {
         return ResponseEntity.noContent().build();
     }
     
+    @PostMapping("/cancelar/{id}")
+    public ResponseEntity<ConsultaDto> cancelarConsulta(@PathVariable Integer id) {
+        return consultaService.cancelarConsulta(id);
+    }
+    
     @PostMapping("/validate")
     public ResponseEntity<Map<String, Object>> validateConsultaInput(@RequestBody String rawJson) {
         try {
