@@ -124,7 +124,7 @@ public class PerfilServiceImpl implements PerfilService {
         // TODO: Implementar atualização de telefone quando a estrutura estiver disponível
 
         usuarioRepository.save(usuario);
-        LOGGER.info("Dados pessoais atualizados com sucesso para o usuário com ID: {}", usuarioId);
+        LOGGER.info("Dados pessoais atualizados com sucesso para o usuário cgit om ID: {}", usuarioId);
 
         return new UsuarioOutput(
                 ficha.getNome(),
