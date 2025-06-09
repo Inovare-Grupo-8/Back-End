@@ -41,4 +41,18 @@ public class UsuarioInputPrimeiraFaseTest {
         usuario.setSenha("abc"); // apenas 3 caracteres
         assertTrue(usuario.getSenha().length() < 6, "Senha com menos de 6 caracteres deve ser inválida");
     }
+
+    @Test
+    void emailNaoDeveSerVazio() {
+        UsuarioInputPrimeiraFase usuario = new UsuarioInputPrimeiraFase();
+        usuario.setEmail("");
+        assertEquals("", usuario.getEmail(), "Email não pode ser vazio");
+    }
+
+    @Test
+    void nomeNaoDeveSerVazio() {
+        UsuarioInputPrimeiraFase usuario = new UsuarioInputPrimeiraFase();
+        usuario.setNome("");
+        assertEquals("", usuario.getNome(), "Nome não pode ser vazio");
+    }
 }

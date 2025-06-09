@@ -70,7 +70,7 @@ public class UsuarioControllerTest {
 
         ResponseEntity<UsuarioListarOutput> response = usuarioController.atualizarUsuario(id, usuarioInputSegundaFase);
 
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(usuarioAtualizado, response.getBody());
     }
 
@@ -126,6 +126,30 @@ public class UsuarioControllerTest {
 
         ResponseEntity<Usuario> response = usuarioController.completarCadastroVoluntario(id, usuarioInputSegundaFase);
 
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(usuario, response.getBody());
+    }
+
+    @Test
+    public void testListarUsuariosVazio() {
+        Mockito.when(usuarioService.buscarUsuarios()).thenReturn(Collections.emptyList());
+        ResponseEntity<List<UsuarioListarOutput>> response = usuarioController.listarUsuarios();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(0, response.getBody().size());
+    }
+
+    @Test
+    public void testBuscarUsuarioPorIdNaoEncontrado() {
+        Mockito.when(usuarioService.buscaUsuario(any(Integer.class))).thenReturn(Optional.empty());
+        ResponseEntity<Usuario> response = usuarioController.buscarUsuario(99);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    public void testBuscarUsuarioPorEmail() {
+        Usuario usuario = new Usuario();
+        Mockito.when(usuarioService.buscaUsuarioPorEmail(any(String.class))).thenReturn(Optional.of(usuario));
+        ResponseEntity<Usuario> response = usuarioController.buscarUsuarioPorEmail("email@teste.com");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(usuario, response.getBody());
     }

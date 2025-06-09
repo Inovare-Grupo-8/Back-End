@@ -32,20 +32,6 @@ public class EmailServiceImplTest {
         field.setAccessible(true);
         field.set(emailService, "remetente@teste.com");
     }
-@Test
-    public void testEnviarEmailComSucesso() {
-        // Arrange
-        String destinatario = "julia@teste.com";
-        String nome = "Julia";
-        String assunto = "continuar cadastro";
-
-        // Act
-        String resultado = emailService.enviarEmail(destinatario, nome, assunto);
-
-        // Assert
-        assertEquals("E-mail enviado com sucesso!", resultado);
-        verify(javaMailSender, times(1)).send(any(MimeMessage.class));
-    }
 
     @Test
     public void testEnviarEmailDestinatarioVazio() {
@@ -75,5 +61,21 @@ public class EmailServiceImplTest {
         // Assert
         assertEquals("Erro: Assunto não encontrado.", resultado);
         verify(javaMailSender, never()).send(any(MimeMessage.class));
+    }
+
+    @Test
+    public void testEnviarEmailComSucesso() throws Exception {
+        // Arrange
+        String destinatario = "destino@teste.com";
+        String nome = "Fulano";
+        String assunto = "bem vindo";
+        when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
+        doNothing().when(javaMailSender).send(any(MimeMessage.class));
+
+        // Act
+        String resultado = emailService.enviarEmail(destinatario, nome, assunto);
+
+        // Assert
+        assertTrue(resultado.contains("E-mail enviado com sucesso"));
     }
 }

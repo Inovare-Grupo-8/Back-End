@@ -87,4 +87,57 @@ public class ConsultaControllerTest {
             assertEquals("ConsultaInput não pode ser nulo", e.getMessage());
         }
     }
+
+    @Test
+    public void testGetConsultasDiaComSucesso() {
+        Mockito.when(consultaService.getConsultasDia(any(String.class))).thenReturn(ResponseEntity.ok().build());
+        ResponseEntity<?> response = consultaController.getConsultasDia("user");
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    public void testGetConsultasDiaComErro() {
+        Mockito.when(consultaService.getConsultasDia(any(String.class))).thenThrow(new RuntimeException("Erro ao buscar consultas"));
+        try {
+            consultaController.getConsultasDia("user");
+        } catch (RuntimeException e) {
+            assertEquals("Erro ao buscar consultas", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testAdicionarFeedback() {
+        Mockito.when(consultaService.adicionarFeedback(any(Integer.class), any(String.class))).thenReturn(ResponseEntity.ok().build());
+        ResponseEntity<?> response = consultaController.adicionarFeedback(1, "feedback");
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test
+    public void testAdicionarFeedbackComErro() {
+        Mockito.when(consultaService.adicionarFeedback(any(Integer.class), any(String.class)))
+                .thenThrow(new RuntimeException("Erro ao adicionar feedback"));
+        try {
+            consultaController.adicionarFeedback(1, "feedback");
+        } catch (RuntimeException e) {
+            assertEquals("Erro ao adicionar feedback", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testAdicionarAvaliacaoComErro() {
+        Mockito.when(consultaService.adicionarAvaliacao(any(Integer.class), any(String.class))).thenThrow(new RuntimeException("Erro ao adicionar avaliação"));
+        try {
+            consultaController.adicionarAvaliacao(1, "avaliacao");
+        } catch (RuntimeException e) {
+            assertEquals("Erro ao adicionar avaliação", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testAdicionarAvaliacaoComSucesso() {
+        Mockito.when(consultaService.adicionarAvaliacao(any(Integer.class), any(String.class)))
+                .thenReturn(ResponseEntity.ok().build());
+        ResponseEntity<?> response = consultaController.adicionarAvaliacao(1, "avaliacao");
+        assertEquals(200, response.getStatusCodeValue());
+    }
 }
