@@ -1,9 +1,7 @@
 package org.com.imaapi.service;
 
 import lombok.RequiredArgsConstructor;
-import org.com.imaapi.model.enums.Funcao;
 import org.com.imaapi.model.enums.Genero;
-import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.*;
 import org.com.imaapi.model.usuario.input.AssistenteSocialInput;
 import org.com.imaapi.model.usuario.input.EnderecoInput;
@@ -28,33 +26,34 @@ public class AssistenteSocialService {
     private final TelefoneRepository telefoneRepository;
     private final VoluntarioRepository voluntarioRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EnderecoService enderecoService;    @Transactional
+    private final EnderecoService enderecoService;
+
+    @Transactional
     public AssistenteSocialOutput cadastrarAssistenteSocial(AssistenteSocialInput input) {
         // Create and set up Endereco
         EnderecoInput enderecoInput = new EnderecoInput();
         enderecoInput.setCep(input.getCep());
         enderecoInput.setComplemento(input.getComplemento());
-        
+
         Endereco endereco = enderecoService.criarOuAtualizarEndereco(enderecoInput);
-          // Create and set up Ficha with all user data
-        Ficha ficha = new Ficha();
+        // Create and set up Ficha with all user data
+        Ficha ficha = new Ficha();        
         ficha.setNome(input.getNome());
         ficha.setSobrenome(input.getSobrenome());
         ficha.setCpf(input.getCpf());
         ficha.setDtNascim(input.getDataNascimento() != null ? LocalDate.parse(input.getDataNascimento()) : null);
         ficha.setGenero(Genero.fromString(input.getGenero()));
-        ficha.setRenda(input.getRenda() != null ? BigDecimal.valueOf(input.getRenda()) : null);
         ficha.setProfissao(input.getProfissao());
         ficha.setEndereco(endereco);
-        
+
         // Save ficha first to get the ID
         fichaRepository.save(ficha);
-        
+
         // Create and set up Telefone with proper structure
         Telefone telefone = new Telefone();
         telefone.setFicha(ficha);
         telefone.setDdd(input.getDdd());
-        
+
         // Split the phone number into prefixo and sufixo
         String numeroCompleto = input.getNumero();
         if (numeroCompleto != null && numeroCompleto.length() >= 8) {
@@ -73,7 +72,7 @@ public class AssistenteSocialService {
             }
         }
         telefone.setWhatsapp(true); // Default assumption for social workers
-        
+
         telefoneRepository.save(telefone);        // Create and set up Usuario
 
         Usuario usuario = new Usuario();
@@ -82,9 +81,13 @@ public class AssistenteSocialService {
         usuario.setSenha(passwordEncoder.encode(input.getSenha()));
         usuario.setTipo(input.getTipo());
 
-        usuarioRepository.save(usuario);
+        usuarioRepository.save(usuario);        // Create and set up Voluntario for professional data
+        // Verificar se já existe um voluntário para este usuário
+        Voluntario voluntarioExistente = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
+        if (voluntarioExistente != null) {
+            throw new IllegalArgumentException("Já existe um voluntário cadastrado para este usuário");
+        }
 
-        // Create and set up Voluntario for professional data
         Voluntario voluntario = new Voluntario();
         voluntario.setFkUsuario(usuario.getIdUsuario());
         voluntario.setUsuario(usuario);
@@ -92,30 +95,32 @@ public class AssistenteSocialService {
         voluntario.setDataCadastro(LocalDate.now());
         voluntario.setRegistroProfissional(input.getCrp());
         voluntario.setBiografiaProfissional(input.getBio());
-        
+
         voluntarioRepository.save(voluntario);
 
         return converterParaOutput(usuario);
-    }    @Transactional
+    }
+
+    @Transactional
     public AssistenteSocialOutput atualizarAssistenteSocial(Integer idUsuario, AssistenteSocialInput input) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Assistente Social não encontrado"));        Ficha ficha = usuario.getFicha();
+                .orElseThrow(() -> new RuntimeException("Assistente Social não encontrado"));
+        Ficha ficha = usuario.getFicha();
         ficha.setNome(input.getNome());
         ficha.setSobrenome(input.getSobrenome());
         ficha.setCpf(input.getCpf());
         ficha.setDtNascim(input.getDataNascimento() != null ? LocalDate.parse(input.getDataNascimento()) : null);
         ficha.setGenero(Genero.fromString(input.getGenero()));
-        ficha.setRenda(input.getRenda() != null ? BigDecimal.valueOf(input.getRenda()) : null);
         ficha.setProfissao(input.getProfissao());
-        
+
         // Update endereco
         EnderecoInput enderecoInput = new EnderecoInput();
         enderecoInput.setCep(input.getCep());
         enderecoInput.setComplemento(input.getComplemento());
-        
+
         Endereco endereco = enderecoService.criarOuAtualizarEndereco(enderecoInput);
         ficha.setEndereco(endereco);
-        
+
         // Update telefone
         List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(ficha.getIdFicha());
         Telefone telefone;
@@ -125,9 +130,9 @@ public class AssistenteSocialService {
         } else {
             telefone = telefones.get(0); // Get the first phone number
         }
-        
+
         telefone.setDdd(input.getDdd());
-        
+
         // Split the phone number into prefixo and sufixo
         String numeroCompleto = input.getNumero();
         if (numeroCompleto != null && numeroCompleto.length() >= 8) {
@@ -143,21 +148,21 @@ public class AssistenteSocialService {
                 telefone.setSufixo(numeroCompleto.substring(splitPoint));
             }
         }
-        
+
         telefoneRepository.save(telefone);
-        
+
         // Save ficha changes
         fichaRepository.save(ficha);
-        
+
         // Update usuario
 
         usuario.setEmail(input.getEmail());
         if (input.getSenha() != null && !input.getSenha().isEmpty()) {
             usuario.setSenha(passwordEncoder.encode(input.getSenha()));
         }
-        
+
         usuarioRepository.save(usuario);
-        
+
         // Update or create Voluntario for professional data
         Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(idUsuario);
         if (voluntario == null) {
@@ -166,23 +171,23 @@ public class AssistenteSocialService {
             voluntario.setUsuario(usuario);
             voluntario.setDataCadastro(LocalDate.now());
         }
-          voluntario.setFuncao(input.getFuncao());
+        voluntario.setFuncao(input.getFuncao());
         voluntario.setRegistroProfissional(input.getCrp());
         voluntario.setBiografiaProfissional(input.getBio());
-        
+
         voluntarioRepository.save(voluntario);
-        
+
         return converterParaOutput(usuario);
     }
 
     public AssistenteSocialOutput buscarAssistenteSocial(Integer idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Assistente Social não encontrado"));
-                
+
         return converterParaOutput(usuario);
-    }    
-  
-  private AssistenteSocialOutput converterParaOutput(Usuario usuario) {
+    }
+
+    private AssistenteSocialOutput converterParaOutput(Usuario usuario) {
 
         AssistenteSocialOutput output = new AssistenteSocialOutput();
         output.setIdUsuario(usuario.getIdUsuario());
@@ -191,7 +196,7 @@ public class AssistenteSocialService {
         output.setEmail(usuario.getEmail());
         output.setFotoUrl(usuario.getFotoUrl());
         output.setEndereco(usuario.getFicha().getEndereco());
-        
+
         // Get professional details from Voluntario entity
         Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
         if (voluntario != null) {
@@ -201,19 +206,19 @@ public class AssistenteSocialService {
                 output.setEspecialidade(voluntario.getFuncao().getValue());
             }
         }
-        
+
         // Get formatted telefone from telefone table
         List<Telefone> telefones = telefoneRepository.findByFichaIdFicha(usuario.getFicha().getIdFicha());
         if (!telefones.isEmpty()) {
             Telefone telefone = telefones.get(0);
             if (telefone.getDdd() != null && telefone.getPrefixo() != null && telefone.getSufixo() != null) {
-                output.setTelefone(String.format("(%s) %s-%s", 
-                    telefone.getDdd(), 
-                    telefone.getPrefixo(), 
-                    telefone.getSufixo()));
+                output.setTelefone(String.format("(%s) %s-%s",
+                        telefone.getDdd(),
+                        telefone.getPrefixo(),
+                        telefone.getSufixo()));
             }
         }
-        
+
         return output;
     }
 }

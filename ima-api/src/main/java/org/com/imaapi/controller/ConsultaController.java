@@ -89,12 +89,17 @@ public class ConsultaController {
             @PathVariable Integer id,
             @RequestBody String feedback) {
         return consultaService.adicionarFeedback(id, feedback);
-    }    @PostMapping("/consultas/{id}/avaliacao")
+
+    }
+
+       @PostMapping("/consultas/{id}/avaliacao")
+
     public ResponseEntity<ConsultaDto> adicionarAvaliacao(
             @PathVariable Integer id,
             @RequestBody String avaliacao) {
         return consultaService.adicionarAvaliacao(id, avaliacao);
     }
+
     
     @GetMapping("/consultas/historico")
     public ResponseEntity<List<ConsultaOutput>> listarHistoricoConsultasVoluntario(
@@ -205,6 +210,7 @@ public class ConsultaController {
         return consultaService.getHorariosDisponiveis(data, idVoluntario);
     }
 
+
     @GetMapping("/consultas/hoje")
     public ResponseEntity<Map<String, Object>> getConsultasHoje(@RequestParam String user) {
         try {
@@ -227,5 +233,4 @@ public class ConsultaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 }

@@ -16,12 +16,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class UsuarioInputSegundaFase {
-    @NotNull(message = "Data de nascimento não pode ser nula")
-    @PastOrPresent(message = "Data de nascimento inválida")
-    private LocalDate dataNascimento;
+public class UsuarioInputSegundaFase {    @NotNull(message = "Data de nascimento não pode ser nula")
+    @PastOrPresent(message = "Data de nascimento inválida")    private LocalDate dataNascimento;
 
-    private Double renda;
+    private Double rendaMinima;
+    
+    private Double rendaMaxima;
 
     @NotNull(message = "O gênero deve ser informado")
     private String genero;

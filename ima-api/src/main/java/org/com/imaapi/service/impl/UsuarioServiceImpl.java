@@ -31,13 +31,12 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Collections;
 
 @Service
 @Transactional
 public class UsuarioServiceImpl implements UsuarioService {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
-    
+
     @Autowired
     private TelefoneRepository telefoneRepository;
 
@@ -238,15 +237,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuario;
     }
 
-    @Override
-    public Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
+    @Override    public Usuario cadastrarSegundaFaseVoluntario(Integer idUsuario, UsuarioInputSegundaFase usuarioInputSegundaFase) {
         logger.info("Iniciando cadastro fase 2 para voluntário ID: {}", idUsuario);
         if (usuarioInputSegundaFase.getFuncao() == null) {
             throw new IllegalArgumentException("A função do voluntário deve ser informada");
         }
 
-        if (usuarioInputSegundaFase.getRenda() == null) {
-            throw new IllegalArgumentException("A renda do voluntário deve ser informada");
+        if (usuarioInputSegundaFase.getRendaMinima() == null || usuarioInputSegundaFase.getRendaMaxima() == null) {
+            throw new IllegalArgumentException("A faixa de renda do voluntário deve ser informada");
         }
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
@@ -256,10 +254,19 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.atualizarTipo(TipoUsuario.VOLUNTARIO);
         usuarioRepository.save(usuario);
         logger.info("Tipo do usuário atualizado para VOLUNTARIO e salvo: ID={}, email={}", usuario.getIdUsuario(), usuario.getEmail());
-
         VoluntarioInput voluntarioInput = UsuarioMapper.of(usuarioInputSegundaFase, idUsuario);
-        voluntarioService.cadastrarVoluntario(voluntarioInput);
-        logger.info("Voluntário cadastrado com sucesso para usuário ID: {}", idUsuario);
+
+        // Para segunda fase de voluntário, verificar se já existe um voluntário e atualizar em vez de criar
+        Voluntario voluntarioExistente = voluntarioRepository.findByUsuario_IdUsuario(idUsuario);
+        if (voluntarioExistente != null) {
+            logger.info("Voluntário já existe para usuário ID: {}, atualizando dados...", idUsuario);
+            voluntarioService.atualizarVoluntario(voluntarioInput);
+            logger.info("Voluntário atualizado com sucesso para usuário ID: {}", idUsuario);
+        } else {
+            logger.info("Voluntário não existe para usuário ID: {}, criando novo...", idUsuario);
+            voluntarioService.cadastrarVoluntario(voluntarioInput);
+            logger.info("Voluntário cadastrado com sucesso para usuário ID: {}", idUsuario);
+        }
 
         emailService.enviarEmail(usuario.getEmail(), usuario.getFicha().getNome(), "bem vindo voluntario");
         logger.info("Email de boas-vindas para voluntário enviado para o usuário: {}", usuario.getEmail());
@@ -570,5 +577,16 @@ public class UsuarioServiceImpl implements UsuarioService {
             logger.error("Erro ao listar voluntários: {}", e.getMessage(), e);
             throw new RuntimeException("Erro ao buscar lista de voluntários: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void atualizarUltimoAcesso(Integer idUsuario) {
+        logger.info("Atualizando último acesso para usuário ID: {}", idUsuario);
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado para ID: " + idUsuario));
+
+        usuario.setUltimoAcesso(LocalDateTime.now());
+        usuarioRepository.save(usuario);
+        logger.info("Último acesso atualizado com sucesso para usuário ID: {}", idUsuario);
     }
 }
