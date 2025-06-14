@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface VoluntarioRepository extends JpaRepository<Voluntario, Integer> {
     Voluntario findByUsuario_IdUsuario(Integer usuarioId);
     Voluntario findByUsuario_Email(String email);
+
+
 }

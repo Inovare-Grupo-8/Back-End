@@ -50,8 +50,7 @@ public class DisponibilidadeServiceImpl implements DisponibilidadeService {
 
     @Override
     public List<Disponibilidade> buscarDisponibilidadeDoDia(String user, LocalDate dia) {
-        Voluntario voluntario = voluntarioRepository.findByUsuario_NomeUsuario(user);
-        if (voluntario == null) {
+        Voluntario voluntario = voluntarioRepository.findByUsuario_Email(user);        if (voluntario == null) {
             throw new IllegalArgumentException("Voluntário não encontrado para o usuário: " + user);
         }
         return disponibilidadeRepository.findByVoluntarioAndDataHorarioBetween(
