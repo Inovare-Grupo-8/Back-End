@@ -9,7 +9,8 @@ import org.com.imaapi.model.enums.converter.TipoUsuarioConverter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+@Getter
+@Setter
 @Entity
 @Table(name = "usuario")
 @Data

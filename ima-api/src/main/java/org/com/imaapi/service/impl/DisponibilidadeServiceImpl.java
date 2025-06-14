@@ -47,4 +47,17 @@ public class DisponibilidadeServiceImpl implements DisponibilidadeService {
         disponibilidadeRepository.save(disponibilidadeExistente);
         return true;
     }
+
+    @Override
+    public List<Disponibilidade> buscarDisponibilidadeDoDia(String user, LocalDate dia) {
+        Voluntario voluntario = voluntarioRepository.findByUsuario_NomeUsuario(user);
+        if (voluntario == null) {
+            throw new IllegalArgumentException("Voluntário não encontrado para o usuário: " + user);
+        }
+        return disponibilidadeRepository.findByVoluntarioAndDataHorarioBetween(
+                voluntario,
+                dia.atStartOfDay(),
+                dia.plusDays(1).atStartOfDay().minusNanos(1)
+        );
+    }
 }

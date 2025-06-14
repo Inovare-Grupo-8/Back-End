@@ -38,4 +38,12 @@ public class DisponibilidadeController {
         }
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/dia")
+    public ResponseEntity<List<Disponibilidade>> getDisponibilidadeDoDia(
+            @RequestParam String user,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dia) {
+        LocalDate data = (dia != null) ? dia : LocalDate.now();
+        List<Disponibilidade> lista = disponibilidadeService.buscarDisponibilidadeDoDia(user, data);
+        return ResponseEntity.ok(lista);
+    }
 }

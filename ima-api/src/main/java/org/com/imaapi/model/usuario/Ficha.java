@@ -1,9 +1,7 @@
 package org.com.imaapi.model.usuario;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 
@@ -16,6 +14,8 @@ import java.time.LocalDateTime;
 @Table(name = "ficha")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class Ficha {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

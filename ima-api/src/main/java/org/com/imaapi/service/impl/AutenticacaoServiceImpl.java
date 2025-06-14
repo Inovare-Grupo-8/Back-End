@@ -1,5 +1,7 @@
 package org.com.imaapi.service.impl;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.com.imaapi.model.usuario.Ficha;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
