@@ -385,12 +385,10 @@ public class PerfilServiceImpl implements PerfilService {
         Endereco endereco = ficha.getEndereco();
         EnderecoOutput enderecoOutput = new EnderecoOutput();
         enderecoOutput.setCep(endereco.getCep());
-        // ✅ CORREÇÃO: Garantir que o número seja retornado
         enderecoOutput.setNumero(endereco.getNumero());
         enderecoOutput.setComplemento(endereco.getComplemento());
         enderecoOutput.setLogradouro(endereco.getLogradouro());
         enderecoOutput.setBairro(endereco.getBairro());
-        // ✅ CORREÇÃO: Usar cidade para compatibilidade
         enderecoOutput.setLocalidade(endereco.getCidade());
         enderecoOutput.setUf(endereco.getUf());
 
