@@ -14,10 +14,10 @@ public class UsuarioDadosPessoaisOutput {
     private String email;
     private LocalDate dataNascimento;
     private Genero genero;
-    private String tipo;
-
-    // Campos específicos para assistente social
+    private String tipo;    // Campos específicos para assistente social
     private String crp;
     private String bio;
     private String especialidade;
+
+    private String fotoUrl;
 }

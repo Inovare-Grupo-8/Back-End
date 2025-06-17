@@ -96,9 +96,7 @@ public class PerfilServiceImpl implements PerfilService {
         } else {
             LOGGER.warn("Nenhum telefone encontrado para a ficha com ID: {}", ficha.getIdFicha());
             dadosPessoais.setTelefone("");
-        }
-
-        // Buscar dados profissionais se for administrador (assistente social)
+        }        // Buscar dados profissionais se for administrador (assistente social)
         Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
         if (voluntario != null) {
             dadosPessoais.setCrp(voluntario.getRegistroProfissional());
@@ -106,6 +104,11 @@ public class PerfilServiceImpl implements PerfilService {
             if (voluntario.getFuncao() != null) {
                 dadosPessoais.setEspecialidade(voluntario.getFuncao().getValue());
             }
+        }
+
+        // Incluir URL da foto de perfil
+        if (usuario.getFotoUrl() != null) {
+            dadosPessoais.setFotoUrl(usuario.getFotoUrl());
         }
 
         return dadosPessoais;
