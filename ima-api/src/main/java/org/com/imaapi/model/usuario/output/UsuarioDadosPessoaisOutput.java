@@ -18,6 +18,5 @@ public class UsuarioDadosPessoaisOutput {
     private String crp;
     private String bio;
     private String especialidade;
-
     private String fotoUrl;
 }

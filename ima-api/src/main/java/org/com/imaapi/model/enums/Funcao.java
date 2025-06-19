@@ -1,16 +1,16 @@
 package org.com.imaapi.model.enums;
 
 public enum Funcao {
-    JURIDICA("juridica"),
-    PSICOLOGIA("psicologia"),
-    PSICOPEDAGOGIA("psicopedagogia"),
-    ASSISTENCIA_SOCIAL("assistencia_social"), 
-    CONTABIL("contabil"),
-    FINANCEIRA("financeira"),
-    PEDIATRIA("pediatria"),
-    FISIOTERAPIA("fisioterapia"),
-    QUIROPRAXIA("quiropraxia"),
-    NUTRICAO("nutricao");
+    JURIDICA("Juridica"),
+    PSICOLOGIA("Psicologia"),
+    PSICOPEDAGOGIA("Psicopedagogia"),
+    ASSISTENCIA_SOCIAL("Assistencia Social"),
+    CONTABIL("Contabil"),
+    FINANCEIRA("Financeira"),
+    PEDIATRIA("Pediatria"),
+    FISIOTERAPIA("Fisioterapia"),
+    QUIROPRAXIA("Quiropraxia"),
+    NUTRICAO("Nutricao");
 
     private final String value;
 

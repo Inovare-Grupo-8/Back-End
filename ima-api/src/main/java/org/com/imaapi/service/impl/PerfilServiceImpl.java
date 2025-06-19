@@ -96,7 +96,9 @@ public class PerfilServiceImpl implements PerfilService {
         } else {
             LOGGER.warn("Nenhum telefone encontrado para a ficha com ID: {}", ficha.getIdFicha());
             dadosPessoais.setTelefone("");
-        }        // Buscar dados profissionais se for administrador (assistente social)
+        }
+
+        // Buscar dados profissionais se for administrador (assistente social)
         Voluntario voluntario = voluntarioRepository.findByUsuario_IdUsuario(usuario.getIdUsuario());
         if (voluntario != null) {
             dadosPessoais.setCrp(voluntario.getRegistroProfissional());
@@ -201,7 +203,7 @@ public class PerfilServiceImpl implements PerfilService {
         }
 
         usuarioRepository.save(usuario);
-        LOGGER.info("Dados pessoais atualizados com sucesso para o usuário com ID: {}", usuarioId);
+        LOGGER.info("Dados pessoais atualizados com sucesso para o usuário cgit om ID: {}", usuarioId);
 
         return new UsuarioOutput(
                 ficha.getNome(),
