@@ -3,9 +3,9 @@ package org.com.imaapi.service.impl;
 import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.repository.OauthTokenRepository;
-import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.service.OauthTokenService;
+import org.com.imaapi.service.GoogleTokenService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -16,55 +16,23 @@ import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Instant;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
-public class OauthTokenServiceImpl implements OauthTokenService {
+public class GoogleTokenServiceImpl implements GoogleTokenService {
 
     private final OauthTokenRepository oauthTokenRepository;
-    private final UsuarioRepository usuarioRepository;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuth2AuthorizedClientManager oauthClientManager;
 
-    public OauthTokenServiceImpl(OauthTokenRepository oauthTokenRepository,
-                                 OAuth2AuthorizedClientManager oauthClientManager,
-                                 UsuarioRepository usuarioRepository,
-                                 ClientRegistrationRepository clientRegistrationRepository) {
+    public GoogleTokenServiceImpl(OauthTokenRepository oauthTokenRepository,
+                                  ClientRegistrationRepository clientRegistrationRepository,
+                                  OAuth2AuthorizedClientManager oauthClientManager) {
         this.oauthTokenRepository = oauthTokenRepository;
         this.oauthClientManager = oauthClientManager;
-        this.usuarioRepository = usuarioRepository;
         this.clientRegistrationRepository = clientRegistrationRepository;
-    }
-
-    @Override
-    public OAuth2AccessToken renovarAccessToken(Authentication authentication) {
-        OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest.withClientRegistrationId("google")
-                .principal(authentication)
-                .build();
-
-        OAuth2AuthorizedClient authorizedClient = oauthClientManager.authorize(authorizeRequest);
-
-        if (authorizedClient == null) {
-            throw new IllegalStateException("Usuário não autorizado ou token expirado e refresh token indisponível.");
-        }
-
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(authentication.getName());
-
-        if (usuarioOptional.isPresent()) {
-            Usuario usuario = usuarioOptional.get();
-
-            OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
-            OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
-
-            salvarToken(usuario, accessToken, refreshToken);
-
-        } else {
-            throw new IllegalStateException("Usuário não cadastrado ou token expirado.");
-        }
-
-        return authorizedClient.getAccessToken();
     }
 
     @Override
@@ -75,12 +43,45 @@ public class OauthTokenServiceImpl implements OauthTokenService {
         oauthToken.setUsuario(usuario);
 
         oauthToken.atualizarTokens(
-                accessToken.getTokenValue(),
-                refreshToken != null ? refreshToken.getTokenValue() : null,
-                accessToken.getExpiresAt()
+                accessToken,
+                refreshToken
         );
 
         oauthTokenRepository.save(oauthToken);
+    }
+
+    @Override
+    public boolean tokenExpirou(OauthToken token) {
+        return token.getAccessToken().getExpiresAt() == null ||
+                token.getAccessToken().getExpiresAt().isBefore(Instant.now().minusSeconds(30));
+    }
+
+    @Override
+    public void renovarAccessToken(Authentication authentication) {
+        OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest
+                .withClientRegistrationId("google")
+                .principal(authentication)
+                .build();
+
+        OAuth2AuthorizedClient client = oauthClientManager.authorize(request);
+
+        if (client == null || client.getAccessToken() == null) {
+            throw new IllegalStateException("Não foi possível renovar o token de acesso do Google");
+        }
+    }
+
+    @Override
+    public boolean contemEscoposNecessarios(Integer idUsuario, Set<String> escopos) {
+        OauthToken token = oauthTokenRepository.findByUsuarioIdUsuario(idUsuario)
+                .orElseThrow(() -> new IllegalStateException("Token não encontrado para o usuário"));
+
+        OAuth2AccessToken accessToken = token.getAccessToken();
+
+        if (tokenExpirou(token)) {
+            renovarAccessToken(SecurityContextHolder.getContext().getAuthentication());
+        }
+
+        return accessToken.getScopes().containsAll(escopos);
     }
 
     public String construirUrl(Set<String> escoposAdicionais, String state) {

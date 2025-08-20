@@ -2,14 +2,21 @@ package org.com.imaapi.model.oauth;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.com.imaapi.model.usuario.Usuario;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "oauth_token")
 @Data
+@Getter
+@Setter
 public class OauthToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +35,9 @@ public class OauthToken {
 
     @Column(length = 512)
     private String refreshToken;
+
+    @Column(length = 2048)
+    private String scopes;
 
     @Column(name = "expira_em")
     private Instant expiresAt;
@@ -64,5 +74,21 @@ public class OauthToken {
         if (refreshToken != null) {
             this.setRefreshToken(refreshToken);
         }
+    }
+
+    public OAuth2AccessToken getAccessTokenObject() {
+        return new OAuth2AccessToken(
+                OAuth2AccessToken.TokenType.BEARER,
+                accessToken,
+                expiresAt != null ? expiresAt : Instant.now(),
+                expiresAt,
+                Set.of(scopes.split(","))
+        );
+    }
+
+    public OAuth2RefreshToken getRefreshTokenObject() {
+        return refreshToken != null ?
+                new OAuth2RefreshToken(refreshToken, expiresAt != null ? expiresAt : Instant.now()) :
+                null;
     }
 }

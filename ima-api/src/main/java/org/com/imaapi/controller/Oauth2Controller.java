@@ -2,7 +2,7 @@ package org.com.imaapi.controller;
 
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.service.impl.OauthTokenServiceImpl;
+import org.com.imaapi.service.impl.GoogleTokenServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,11 +19,11 @@ import java.util.UUID;
 @RequestMapping("/oauth2")
 public class Oauth2Controller {
 
-    private final OauthTokenServiceImpl oauthTokenService;
+    private final GoogleTokenServiceImpl oauthTokenService;
     private final UsuarioRepository usuarioRepository;
 
     public Oauth2Controller(UsuarioRepository usuarioRepository,
-                            OauthTokenServiceImpl oauthTokenService) {
+                            GoogleTokenServiceImpl oauthTokenService) {
 
         this.usuarioRepository = usuarioRepository;
         this.oauthTokenService = oauthTokenService;

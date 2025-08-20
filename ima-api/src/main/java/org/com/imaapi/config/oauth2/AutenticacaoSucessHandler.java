@@ -10,7 +10,7 @@ import org.com.imaapi.model.usuario.UsuarioMapper;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.repository.FichaRepository;
 import org.com.imaapi.repository.UsuarioRepository;
-import org.com.imaapi.service.impl.OauthTokenServiceImpl;
+import org.com.imaapi.service.impl.GoogleTokenServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,7 +34,7 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
     private final GerenciadorTokenJwt gerenciadorTokenJwt;
     private final UsuarioServiceImpl usuarioService;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
-    private final OauthTokenServiceImpl oauthTokenService;
+    private final GoogleTokenServiceImpl oauthTokenService;
 
     public AutenticacaoSucessHandler(
             UsuarioRepository usuarioRepository,
@@ -42,7 +42,7 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
             GerenciadorTokenJwt gerenciadorTokenJwt,
             UsuarioServiceImpl usuarioService,
             OAuth2AuthorizedClientManager authorizedClientManager,
-            OauthTokenServiceImpl oauthTokenService) {
+            GoogleTokenServiceImpl oauthTokenService) {
         this.usuarioRepository = usuarioRepository;
         this.fichaRepository = fichaRepository;
         this.gerenciadorTokenJwt = gerenciadorTokenJwt;
