@@ -3,6 +3,7 @@ package org.com.imaapi.service;
 import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.model.usuario.Usuario;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 
@@ -15,4 +16,6 @@ public interface GoogleTokenService {
     boolean contemEscoposComClienteOAuth(Authentication authentication, Set<String> escopos);
     void renovarAccessToken(Authentication authentication);
     String construirUrlIncremental(Set<String> escoposAdicionais);
+
+    OAuth2AuthorizedClient trocarCodePorToken(String code);
 }
