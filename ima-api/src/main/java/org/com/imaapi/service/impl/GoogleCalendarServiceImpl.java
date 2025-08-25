@@ -205,7 +205,7 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
         return new Calendar.Builder(
                 httpTransport,
                 GsonFactory.getDefaultInstance(),
-                new HttpCredentialsAdapter()
+                new HttpCredentialsAdapter((Credentials) auth.getCredentials())
         )
                 .setApplicationName(NOME_APLICACAO)
                 .build();

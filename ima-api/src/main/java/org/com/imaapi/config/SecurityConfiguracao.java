@@ -23,6 +23,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -118,7 +120,6 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
 
         return new AutenticacaoSucessHandler(
                 usuarioRepository,
-                fichaRepository,
                 gerenciadorTokenJwt,
                 usuarioService,
                 authorizedClientManager,
@@ -178,7 +179,7 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
     @Primary
     public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
-            OAuth2AuthorizedClientService authorizedClientService) {
+            OAuth2AuthorizedClientRepository authorizedClientRepository) {
 
         OAuth2AuthorizedClientProvider authorizedClientProvider =
                 OAuth2AuthorizedClientProviderBuilder.builder()
@@ -186,9 +187,9 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
                         .refreshToken()
                         .build();
 
-        AuthorizedClientServiceOAuth2AuthorizedClientManager authorizedClientManager =
-                new AuthorizedClientServiceOAuth2AuthorizedClientManager(
-                        clientRegistrationRepository, authorizedClientService);
+        DefaultOAuth2AuthorizedClientManager authorizedClientManager =
+                new DefaultOAuth2AuthorizedClientManager(
+                        clientRegistrationRepository, authorizedClientRepository);
 
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 

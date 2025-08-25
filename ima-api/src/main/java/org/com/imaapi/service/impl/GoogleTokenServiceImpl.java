@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
@@ -52,8 +53,8 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
 
     @Override
     public boolean tokenExpirou(OauthToken token) {
-        return token.getAccessToken().getExpiresAt() == null ||
-                token.getAccessToken().getExpiresAt().isBefore(Instant.now().minusSeconds(30));
+        return token.getAccessTokenExpiresAt() == null ||
+                token.getAccessTokenExpiresAt().isBefore(Instant.now().minusSeconds(30));
     }
 
     @Override
@@ -75,17 +76,32 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
         OauthToken token = oauthTokenRepository.findByUsuarioIdUsuario(idUsuario)
                 .orElseThrow(() -> new IllegalStateException("Token não encontrado para o usuário"));
 
-        OAuth2AccessToken accessToken = token.getAccessToken();
-
         if (tokenExpirou(token)) {
             renovarAccessToken(SecurityContextHolder.getContext().getAuthentication());
+            token = oauthTokenRepository.findByUsuarioIdUsuario(idUsuario)
+                    .orElseThrow(() -> new IllegalStateException("Token não encontrado para o usuário"));
         }
 
-        return accessToken.getScopes().containsAll(escopos);
+        return token.getAccessTokenObject().getScopes().containsAll(escopos);
     }
 
-    public String construirUrl(Set<String> escoposAdicionais, String state) {
+    @Override
+    public boolean contemEscoposComClienteOAuth(Authentication authentication, Set<String> escoposNecessarios) {
+        OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest
+                .withClientRegistrationId("google")
+                .principal(authentication)
+                .build();
 
+        OAuth2AuthorizedClient client = oauthClientManager.authorize(request);
+        if (client == null || client.getAccessToken() == null) {
+            throw new IllegalStateException("Não foi possível obter o OAuth2AuthorizedClient");
+        }
+
+        return client.getAccessToken().getScopes().containsAll(escoposNecessarios);
+    }
+
+    @Override
+    public String construirUrlIncremental(Set<String> escoposAdicionais) {
         ClientRegistration googleRegistration = clientRegistrationRepository.findByRegistrationId("google");
 
         Set<String> escoposCombinados = new HashSet<>(googleRegistration.getScopes());
@@ -97,7 +113,8 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
                 .queryParam("redirect_uri", googleRegistration.getRedirectUri())
                 .queryParam("response_type", "code")
                 .queryParam("scope", String.join(" ", escoposCombinados))
-                .queryParam("state", state)
+                .queryParam("response_type", "code")
+                .queryParam("include_granted_scopes", "true")
                 .queryParam("access_type", "offline")
                 .queryParam("prompt", "consent")
                 .build()

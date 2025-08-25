@@ -38,14 +38,11 @@ public class Oauth2Controller {
 
             Usuario usuario = usuarioRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-            String state = "calendar_" + UUID.randomUUID().toString();
-
             Set<String> additionalScopes = Set.of(
                     "https://www.googleapis.com/auth/calendar.app.created"
             );
 
-            String authorizationUrl = oauthTokenService.construirUrl(additionalScopes, state);
+            String authorizationUrl = oauthTokenService.construirUrlIncremental(additionalScopes);
 
             System.out.println(authorizationUrl);
 

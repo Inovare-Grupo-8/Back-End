@@ -29,7 +29,7 @@ public interface UsuarioService {
 
     public Optional<Usuario> buscaUsuarioPorNome(String nome);
 
-    void cadastrarUsuarioOAuth(OAuth2User usuario);
+    Usuario cadastrarUsuarioOAuth(OAuth2User usuario);
 
     Optional<Usuario> buscaUsuarioPorEmail(String email);
 
