@@ -1,5 +1,6 @@
 package org.com.imaapi.service.impl;
 
+import com.google.api.client.auth.oauth2.AuthorizationCodeResponseUrl;
 import org.com.imaapi.config.oauth2.AppUserAuthenticationToken;
 import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.model.usuario.Usuario;
@@ -10,11 +11,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,15 +35,15 @@ import java.util.UUID;
 public class GoogleTokenServiceImpl implements GoogleTokenService {
 
     private final OauthTokenRepository oauthTokenRepository;
-    private final ClientRegistrationRepository clientRegistrationRepository;
+    private final OAuth2AuthorizedClientService authorizedClientService;
     private final OAuth2AuthorizedClientManager oauthClientManager;
 
     public GoogleTokenServiceImpl(OauthTokenRepository oauthTokenRepository,
-                                  ClientRegistrationRepository clientRegistrationRepository,
+                                  OAuth2AuthorizedClientService authorizedClientService,
                                   OAuth2AuthorizedClientManager oauthClientManager) {
         this.oauthTokenRepository = oauthTokenRepository;
         this.oauthClientManager = oauthClientManager;
-        this.clientRegistrationRepository = clientRegistrationRepository;
+        this.authorizedClientService = authorizedClientService;
     }
 
     @Override
@@ -139,24 +148,40 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
 
         ClientRegistration registration = appToken.getAuthorizedClient().getClientRegistration();
 
+        String state = "troca-token-" + UUID.randomUUID();
+
         OAuth2AuthorizationRequest authRequest = OAuth2AuthorizationRequest.authorizationCode()
                 .clientId(registration.getClientId())
                 .authorizationUri(registration.getProviderDetails().getAuthorizationUri())
-                .redirectUri("http://localhost:3030/")
-                .scopes(appToken.getAuthorizedClient().getAccessToken().getScopes())
-                .state(UUID.randomUUID().toString())
+                .redirectUri("http://localhost:8080/oauth2/googlecallback")
+                .state(state)
                 .build();
 
-        OAuth2AuthorizedClient client = oauthClientManager.authorize(
-                OAuth2AuthorizeRequest.withClientRegistrationId(registration.getRegistrationId())
-                        .principal(authentication)
-                        .attribute("code", code)
-                        .build()
+        OAuth2AuthorizationCodeGrantRequest grantRequest =
+                new OAuth2AuthorizationCodeGrantRequest(
+                        registration,
+                        new OAuth2AuthorizationExchange(
+                            authRequest,
+                            OAuth2AuthorizationResponse.success(code)
+                                .redirectUri("http://localhost:8080/oauth2/googlecallback")
+                                .state(state)
+                                .build()
+                ));
+
+        RestClientAuthorizationCodeTokenResponseClient tokenResponseClient = new RestClientAuthorizationCodeTokenResponseClient();
+        OAuth2AccessTokenResponse tokenResponse = tokenResponseClient.getTokenResponse(grantRequest);
+
+        OAuth2AuthorizedClient client = new OAuth2AuthorizedClient(
+                registration,
+                authentication.getName(),
+                tokenResponse.getAccessToken(),
+                tokenResponse.getRefreshToken()
         );
 
-        if (client == null || client.getAccessToken() == null) {
-            throw new IllegalStateException("Não foi possível trocar o código por token");
-        }
+        authorizedClientService.saveAuthorizedClient(client, authentication);
+
+        System.out.println("Token Response: " + tokenResponse);
+        System.out.println("Access Token (client): " + client.getAccessToken());
 
         // Salva no banco
         salvarToken((Usuario) authentication.getPrincipal(),
