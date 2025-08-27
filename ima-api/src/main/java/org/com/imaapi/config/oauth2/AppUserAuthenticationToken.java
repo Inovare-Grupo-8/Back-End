@@ -11,9 +11,9 @@ import java.util.Collection;
 public class AppUserAuthenticationToken extends AbstractAuthenticationToken {
 
     private final Object principal;
-    private Object credentials;
-    private String provider;
-    private OAuth2AuthorizedClient authorizedClient;
+    private final Object credentials;
+    private final String provider;
+    private final OAuth2AuthorizedClient authorizedClient;
 
     public AppUserAuthenticationToken(Object principal,
                                       Object credentials,
