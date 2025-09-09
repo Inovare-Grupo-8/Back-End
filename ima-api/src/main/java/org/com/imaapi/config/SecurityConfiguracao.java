@@ -49,7 +49,7 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/actuator/**"),
             new AntPathRequestMatcher("/usuarios/fase1/**"),
             new AntPathRequestMatcher("/usuarios/fase2/**"),
-            new AntPathRequestMatcher("/usuarios/login/***"),
+            new AntPathRequestMatcher("/usuarios/login/**"),
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/perfil/**"),
@@ -57,7 +57,9 @@ public class SecurityConfiguracao {
             new AntPathRequestMatcher("/"),
             new AntPathRequestMatcher("/oauth2/**"),
             new AntPathRequestMatcher("/dev/token"),
-            new AntPathRequestMatcher("/uploads/**")
+            new AntPathRequestMatcher("/uploads/**"),
+            new AntPathRequestMatcher("/usuarios/fase1"),
+            new AntPathRequestMatcher("/usuarios/fase2"),
     };
 
     private static final AntPathRequestMatcher[] URLS_ADMINISTRADORES = {
