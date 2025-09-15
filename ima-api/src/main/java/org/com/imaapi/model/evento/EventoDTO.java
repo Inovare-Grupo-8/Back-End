@@ -1,4 +1,4 @@
-package org.com.imaapi.model.GoogleCalendar;
+package org.com.imaapi.model.evento;
 
 import lombok.Getter;
 import lombok.Setter;

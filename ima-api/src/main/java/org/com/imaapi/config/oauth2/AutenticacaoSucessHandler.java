@@ -16,13 +16,10 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
@@ -65,17 +62,13 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseGet(() -> usuarioService.cadastrarUsuarioOAuth(usuarioOauth));
 
-        Optional<Usuario> usuarioCadastrado = usuarioRepository.findByEmail(email);
-
         OAuth2AuthorizedClient authorizedClient = authorizeClient(oauthToken, request, response);
 
-        if (authorizedClient != null && usuarioCadastrado.isPresent()) {
-            OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
-            OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
-            oauthTokenService.salvarToken(usuarioCadastrado.get(), accessToken, refreshToken);
-        } else {
+        if (authorizedClient == null) {
             throw new ServletException("Erro ao obter tokens autorizados com o Google.");
         }
+
+        oauthTokenService.processarTokenOAuth2(usuario, authorizedClient, authentication);
 
         SecurityContextHolder.getContext().setAuthentication(
                 new AppUserAuthenticationToken(usuario,
@@ -85,14 +78,7 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
                         authorizedClient)
         );
 
-        // Gera token JWT
-        String tokenJwt = gerenciadorTokenJwt.generateToken(SecurityContextHolder.getContext().getAuthentication());
-        UsuarioTokenOutput tokenOutput = UsuarioMapper.of(usuario, tokenJwt);
-
-        response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"token\": \"" + tokenOutput.getToken() + "\"}");
+        gerarJwt(authentication, response);
     }
 
     private OAuth2AuthorizedClient authorizeClient(OAuth2AuthenticationToken oauthToken,
@@ -107,6 +93,17 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
                 .build();
 
         return authorizedClientManager.authorize(authorizeRequest);
+    }
+
+    private void gerarJwt(Authentication authentication, HttpServletResponse response) throws IOException {
+        String tokenJwt = gerenciadorTokenJwt.generateToken(authentication);
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        UsuarioTokenOutput tokenOutput = UsuarioMapper.of(usuario, tokenJwt);
+
+        response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"token\": \"" + tokenOutput.getToken() + "\"}");
     }
 
 }

@@ -1,6 +1,7 @@
 package org.com.imaapi.config.oauth2;
 
 import lombok.Getter;
+import org.com.imaapi.model.usuario.Usuario;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -46,6 +47,14 @@ public class AppUserAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public Object getPrincipal() {
         return principal;
+    }
+
+    @Override
+    public String getName() {
+        if (principal instanceof Usuario) {
+            return ((Usuario) principal).getEmail();
+        }
+        return principal.toString();
     }
 
     public boolean isGoogleUser() {

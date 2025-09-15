@@ -1,6 +1,6 @@
 package org.com.imaapi.service.impl;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeResponseUrl;
+import jakarta.servlet.ServletException;
 import org.com.imaapi.config.oauth2.AppUserAuthenticationToken;
 import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.model.usuario.Usuario;
@@ -12,13 +12,11 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
-import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.endpoint.RestClientAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
@@ -47,73 +45,106 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
     }
 
     @Override
-    public void salvarToken(Usuario usuario, OAuth2AccessToken accessToken, OAuth2RefreshToken refreshToken) {
+    public void salvarAccessToken(Usuario usuario, OAuth2AccessToken accessToken) {
         OauthToken oauthToken = oauthTokenRepository.findByUsuarioIdUsuario(usuario.getIdUsuario())
                 .orElse(new OauthToken());
 
-        oauthToken.setUsuario(usuario);
-
-        oauthToken.atualizarTokens(
-                accessToken,
-                refreshToken
-        );
-
+        oauthToken.atualizarAccessToken(accessToken);
         oauthTokenRepository.save(oauthToken);
     }
 
     @Override
-    public boolean tokenExpirou(OauthToken token) {
-        return token.getAccessTokenExpiresAt() == null ||
-                token.getAccessTokenExpiresAt().isBefore(Instant.now().minusSeconds(30));
+    public boolean possuiRefreshToken(Integer idUsuario) {
+        return oauthTokenRepository.existsByUsuarioIdUsuario(idUsuario);
+    }
+
+    @Override
+    public void salvarRefreshToken(Usuario usuario, OAuth2RefreshToken refreshToken) {
+        oauthTokenRepository.findByUsuarioIdUsuario(usuario.getIdUsuario());
+        OauthToken oauthToken = oauthTokenRepository.findByUsuarioIdUsuario(usuario.getIdUsuario())
+                .orElseThrow(() -> new IllegalStateException("Usuário não possui tokens salvos"));
+
+        oauthToken.atualizarRefreshToken(refreshToken);
+        oauthTokenRepository.save(oauthToken);
+    }
+
+    @Override
+    public boolean tokenEstaParaExpirar(OAuth2AccessToken token) {
+        return token.getExpiresAt() == null ||
+                token.getExpiresAt().isBefore(Instant.now().minusSeconds(30));
     }
 
     @Override
     public void renovarAccessToken(Authentication authentication) {
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+
         OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest
                 .withClientRegistrationId("google")
                 .principal(authentication)
                 .build();
 
-        OAuth2AuthorizedClient client = oauthClientManager.authorize(request);
+        OAuth2AuthorizedClient client;
+        try {
+            client = oauthClientManager.authorize(request);
+            atualizarAuthorizedClient(authentication, client);
+        } catch (OAuth2AuthorizationException e) {
+            if ("invalid_grant".equals(e.getError().getErrorCode())) {
+                removerTokens(usuario);
+                throw new IllegalStateException("Refresh token revogado. Usuário precisa logar novamente.");
+            }
+            throw e;
+        }
 
         if (client == null || client.getAccessToken() == null) {
             throw new IllegalStateException("Não foi possível renovar o token de acesso do Google");
         }
+
+        salvarAccessToken(usuario, client.getAccessToken());
+
+        boolean usuarioPossuiRefreshToken = oauthTokenRepository.existsByUsuarioIdUsuario(usuario.getIdUsuario());
+        if (client.getRefreshToken() != null && !usuarioPossuiRefreshToken) {
+            salvarRefreshToken(usuario, client.getRefreshToken());
+        }
     }
 
     @Override
-    public boolean contemEscoposNecessarios(Integer idUsuario, Set<String> escopos) {
+    public boolean contemEscoposNecessarios(Integer idUsuario, Set<String> escopos, Authentication authentication) {
         OauthToken token = oauthTokenRepository.findByUsuarioIdUsuario(idUsuario)
                 .orElseThrow(() -> new IllegalStateException("Token não encontrado para o usuário"));
 
-        if (tokenExpirou(token)) {
-            renovarAccessToken(SecurityContextHolder.getContext().getAuthentication());
-            token = oauthTokenRepository.findByUsuarioIdUsuario(idUsuario)
-                    .orElseThrow(() -> new IllegalStateException("Token não encontrado para o usuário"));
+        OAuth2AccessToken accessToken = token.getAccessTokenObject();
+        if (tokenEstaParaExpirar(accessToken)) {
+            renovarAccessToken(authentication);
         }
 
-        return token.getAccessTokenObject().getScopes().containsAll(escopos);
+        return accessToken.getScopes().containsAll(escopos);
     }
 
     @Override
     public boolean contemEscoposComClienteOAuth(Authentication authentication, Set<String> escoposNecessarios) {
-        OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest
-                .withClientRegistrationId("google")
-                .principal(authentication)
-                .build();
-
-        OAuth2AuthorizedClient client = oauthClientManager.authorize(request);
-        if (client == null || client.getAccessToken() == null) {
-            throw new IllegalStateException("Não foi possível obter o OAuth2AuthorizedClient");
+        if (!(authentication instanceof AppUserAuthenticationToken token)) {
+            return false;
         }
 
-        return client.getAccessToken().getScopes().containsAll(escoposNecessarios);
+        OAuth2AuthorizedClient client = token.getAuthorizedClient();
+        if (client == null || client.getAccessToken() == null) {
+            return false;
+        }
+
+        OAuth2AccessToken accessToken = client.getAccessToken();
+
+        // Se token estiver prestes a expirar, renova antes de checar escopos
+        if (tokenEstaParaExpirar(accessToken)) {
+            renovarAccessToken(authentication);
+            client = token.getAuthorizedClient();
+            accessToken = client.getAccessToken();
+        }
+
+        return accessToken.getScopes().containsAll(escoposNecessarios);
     }
 
     @Override
-    public String construirUrlIncremental(Set<String> escoposAdicionais) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
+    public String construirUrlIncremental(Set<String> escoposAdicionais, Authentication authentication) {
         OAuth2AuthorizedClient client = null;
         if (authentication instanceof AppUserAuthenticationToken appToken) {
             client = appToken.getAuthorizedClient();
@@ -140,10 +171,10 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
 
     @Override
     public OAuth2AuthorizedClient trocarCodePorToken(String code) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof AppUserAuthenticationToken appToken)) {
-            throw new IllegalStateException("Authentication não é do tipo AppUserAuthenticationToken");
+            throw new IllegalStateException("Usuário não autenticado pelo google ou token inválido");
         }
 
         ClientRegistration registration = appToken.getAuthorizedClient().getClientRegistration();
@@ -183,11 +214,41 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
         System.out.println("Token Response: " + tokenResponse);
         System.out.println("Access Token (client): " + client.getAccessToken());
 
-        // Salva no banco
-        salvarToken((Usuario) authentication.getPrincipal(),
-                client.getAccessToken(),
-                client.getRefreshToken());
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        OAuth2AccessToken accessToken = client.getAccessToken();
 
+        this.salvarAccessToken(usuario, accessToken);
         return client;
+    }
+
+    @Override
+    public void removerTokens(Usuario usuario) {
+        oauthTokenRepository.deleteByUsuarioIdUsuario(usuario.getIdUsuario());
+    }
+
+    @Override
+    public void processarTokenOAuth2(Usuario usuario, OAuth2AuthorizedClient authorizedClient, Authentication authentication) throws ServletException {
+        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+        OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
+
+        salvarAccessToken(usuario, accessToken);
+        if (refreshToken != null && !possuiRefreshToken(usuario.getIdUsuario())) {
+            salvarRefreshToken(usuario, refreshToken);
+        }
+
+        if (tokenEstaParaExpirar(accessToken)) {
+            renovarAccessToken(authentication);
+        }
+    }
+
+    private void atualizarAuthorizedClient(Authentication authentication, OAuth2AuthorizedClient client) {
+        AppUserAuthenticationToken authenticationToken = new AppUserAuthenticationToken(
+                authentication.getPrincipal(),
+                authentication.getCredentials(),
+                authentication.getAuthorities(),
+                "google",
+                client
+        );
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
 }

@@ -87,7 +87,8 @@ public class SecurityConfiguracao {
 
     private static final AntPathRequestMatcher[] URLS_ASSISTIDOS_E_VOLUNTARIOS = {
             new AntPathRequestMatcher("/oauth2/authorize/**"),
-            new AntPathRequestMatcher("/agenda/**")
+            new AntPathRequestMatcher("/agenda/**"),
+            new AntPathRequestMatcher("/calendar/eventos/**")
     };
 
     private static final AntPathRequestMatcher[] URLS_ASSISTIDOS = {
@@ -107,7 +108,7 @@ public class SecurityConfiguracao {
                         .requestMatchers(URLS_ADMINISTRADORES).hasRole("ADMINISTRADOR")
                         .requestMatchers(URLS_VOLUNTARIOS).hasRole("VOLUNTARIO")
                         .requestMatchers(URLS_VALOR_SOCIAL).hasRole("VALOR SOCIAL")
-                        .requestMatchers(URLS_ASSISTIDOS).hasRole("ASSISTIDO")
+                        .requestMatchers(URLS_ASSISTIDOS).hasAnyRole("VALOR SOCIAL", "GRATUIDADE")
                         .requestMatchers(URLS_ASSISTIDOS_E_VOLUNTARIOS).hasAnyRole("VOLUNTARIO", "VALOR SOCIAL", "GRATUIDADE")
                         .requestMatchers(URLS_PUBLICAS).permitAll()
                         .anyRequest()

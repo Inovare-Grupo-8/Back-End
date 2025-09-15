@@ -44,7 +44,7 @@ public class Oauth2Controller {
             }
 
             Set<String> escopoAdicional = Set.of("https://www.googleapis.com/auth/calendar.app.created");
-            String urlAutorizacao = oauthTokenService.construirUrlIncremental(escopoAdicional);
+            String urlAutorizacao = oauthTokenService.construirUrlIncremental(escopoAdicional, authentication);
 
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", urlAutorizacao)

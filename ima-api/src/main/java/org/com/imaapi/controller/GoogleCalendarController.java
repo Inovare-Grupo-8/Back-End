@@ -1,7 +1,7 @@
 package org.com.imaapi.controller;
 
 import jakarta.validation.Valid;
-import org.com.imaapi.model.GoogleCalendar.EventoDTO;
+import org.com.imaapi.model.evento.EventoDTO;
 import org.com.imaapi.service.impl.GoogleCalendarServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +40,8 @@ public class GoogleCalendarController {
                 eventoDTO.getTitulo(),
                 eventoDTO.getDescricao(),
                 eventoDTO.getInicio(),
-                eventoDTO.getFim()
-        );
+                eventoDTO.getFim(),
+                authentication);
 
         return ResponseEntity.ok("Evento criado com sucesso!");
     }
@@ -59,8 +59,8 @@ public class GoogleCalendarController {
                 eventoDTO.getTitulo(),
                 eventoDTO.getDescricao(),
                 eventoDTO.getInicio(),
-                eventoDTO.getFim()
-        );
+                eventoDTO.getFim(),
+                authentication);
 
         return ResponseEntity.ok(Collections.singletonMap("linkMeet", linkMeet));
     }

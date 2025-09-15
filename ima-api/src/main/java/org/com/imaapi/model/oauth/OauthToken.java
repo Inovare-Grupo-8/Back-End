@@ -69,12 +69,14 @@ public class OauthToken {
         atualizadoEm = LocalDateTime.now();
     }
 
-    public void atualizarTokens(OAuth2AccessToken accessToken, OAuth2RefreshToken refreshToken) {
+    public void atualizarAccessToken(OAuth2AccessToken accessToken) {
         this.accessTokenValue = accessToken.getTokenValue();
         this.accessTokenIssuedAt = accessToken.getIssuedAt();
         this.accessTokenExpiresAt = accessToken.getExpiresAt();
         this.scopes = String.join(",", accessToken.getScopes());
+    }
 
+    public void atualizarRefreshToken(OAuth2RefreshToken refreshToken) {
         if (refreshToken != null) {
             this.refreshTokenValue = refreshToken.getTokenValue();
             this.refreshTokenIssuedAt = refreshToken.getIssuedAt();
