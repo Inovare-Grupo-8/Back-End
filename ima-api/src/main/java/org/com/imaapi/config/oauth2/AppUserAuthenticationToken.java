@@ -16,8 +16,7 @@ public class AppUserAuthenticationToken extends AbstractAuthenticationToken {
     private final String provider;
     private final OAuth2AuthorizedClient authorizedClient;
 
-    public AppUserAuthenticationToken(Object principal,
-                                      Object credentials) {
+    public AppUserAuthenticationToken(Object principal, Object credentials) {
         super(null);
         this.principal = principal;
         this.credentials = credentials;
@@ -27,13 +26,12 @@ public class AppUserAuthenticationToken extends AbstractAuthenticationToken {
     }
 
     public AppUserAuthenticationToken(Object principal,
-                                      Object credentials,
                                       Collection<? extends GrantedAuthority> authorities,
                                       String provider,
                                       OAuth2AuthorizedClient authorizedClient) {
         super(authorities);
         this.principal = principal;
-        this.credentials = credentials;
+        this.credentials = null;
         this.provider = provider;
         this.authorizedClient = authorizedClient;
         super.setAuthenticated(true);

@@ -1,6 +1,7 @@
 package org.com.imaapi.config;
 
 import org.com.imaapi.config.oauth2.AppUserAuthenticationToken;
+import org.com.imaapi.model.usuario.UsuarioDetalhes;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class AutenticacaoProvider implements AuthenticationProvider {
 //        LOGGER.info("[AUTENTICAR_PROVIDER] Tentando autenticar usuário: {}", username);
         
         try {
-            UserDetails userDetails = this.autenticacaoService.loadUserByUsername(username);
+            UsuarioDetalhes userDetails = (UsuarioDetalhes) this.autenticacaoService.loadUserByUsername(username);
 //            LOGGER.debug("[AUTENTICAR_PROVIDER] UserDetails carregado para: {}", username);
 //            LOGGER.debug("[AUTENTICAR_PROVIDER] Senha fornecida (primeiros 4 caracteres): {}",
 //                    password.length() > 4 ? password.substring(0, 4) + "..." : "***");
@@ -44,8 +45,7 @@ public class AutenticacaoProvider implements AuthenticationProvider {
             if (matches) {
                 LOGGER.info("[AUTENTICAR_PROVIDER] Autenticação bem-sucedida para: {}", username);
                 return new AppUserAuthenticationToken(
-                        userDetails.getUsername(),
-                        userDetails.getAuthorities(),
+                        userDetails,
                         userDetails.getAuthorities(),
                         "local",
                         null

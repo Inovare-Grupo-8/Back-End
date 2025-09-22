@@ -1,9 +1,6 @@
-package org.com.imaapi.model.usuario.output;
+package org.com.imaapi.model.usuario;
 
-import lombok.Data;
 import org.com.imaapi.model.enums.TipoUsuario;
-import org.com.imaapi.model.usuario.Ficha;
-import org.com.imaapi.model.usuario.Usuario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,10 +10,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Data
-public class UsuarioDetalhesOutput implements UserDetails {
+public class UsuarioDetalhes implements UserDetails {
     private static final long serialVersionUID = 3939036964410265319L;
-    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioDetalhesOutput.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioDetalhes.class);
 
     private final String nome;
     private final String email;
@@ -24,7 +20,7 @@ public class UsuarioDetalhesOutput implements UserDetails {
     private final TipoUsuario tipo;
     private final Integer idUsuario;
 
-    public UsuarioDetalhesOutput(Usuario usuario, Ficha ficha) {
+    public UsuarioDetalhes(Usuario usuario, Ficha ficha) {
 //        LOGGER.debug("[USUARIO_DETALHES] Criando UsuarioDetalhesOutput para: {}", usuario.getEmail());
 
         String nomeUsuario;

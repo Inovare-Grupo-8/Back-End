@@ -232,7 +232,7 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
         OAuth2RefreshToken refreshToken = authorizedClient.getRefreshToken();
 
         salvarAccessToken(usuario, accessToken);
-        if (refreshToken != null && !possuiRefreshToken(usuario.getIdUsuario())) {
+        if (refreshToken != null) {
             salvarRefreshToken(usuario, refreshToken);
         }
 
@@ -244,7 +244,6 @@ public class GoogleTokenServiceImpl implements GoogleTokenService {
     private void atualizarAuthorizedClient(Authentication authentication, OAuth2AuthorizedClient client) {
         AppUserAuthenticationToken authenticationToken = new AppUserAuthenticationToken(
                 authentication.getPrincipal(),
-                authentication.getCredentials(),
                 authentication.getAuthorities(),
                 "google",
                 client

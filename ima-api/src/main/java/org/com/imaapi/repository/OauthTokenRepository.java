@@ -12,4 +12,5 @@ public interface OauthTokenRepository extends JpaRepository<OauthToken, Integer>
     Optional<OauthToken> findByUsuarioEmail(String email);
     boolean existsByUsuarioIdUsuario(Integer id);
     void deleteByUsuarioIdUsuario(Integer id);
+    void deleteByUsuarioEmail(String email);
 }

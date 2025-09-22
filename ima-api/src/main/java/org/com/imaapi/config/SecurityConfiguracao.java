@@ -21,6 +21,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -149,18 +151,13 @@ public class SecurityConfiguracao {
     @Bean
     public AutenticacaoSucessHandler autenticacaoSucessHandler(
             UsuarioRepository usuarioRepository,
-            FichaRepository fichaRepository,
             GerenciadorTokenJwt gerenciadorTokenJwt,
-            UsuarioServiceImpl usuarioService,
-            OAuth2AuthorizedClientManager authorizedClientManager,
-            GoogleTokenServiceImpl oauthTokenService) {
+            UsuarioServiceImpl usuarioService) {
 
         return new AutenticacaoSucessHandler(
                 usuarioRepository,
                 gerenciadorTokenJwt,
-                usuarioService,
-                authorizedClientManager,
-                oauthTokenService
+                usuarioService
         );
     }
 

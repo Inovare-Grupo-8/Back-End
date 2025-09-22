@@ -288,7 +288,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         try {
 //            logger.debug("[AUTENTICAR] Criando token de autenticação com email: {}", usuario.getEmail());
-            UsuarioDetalhesOutput usuarioDetalhes = UsuarioMapper.ofDetalhes(usuario, ficha);
+            UsuarioDetalhes usuarioDetalhes = UsuarioMapper.ofDetalhes(usuario, ficha);
 //            logger.debug("[AUTENTICAR] Autoridades do usuário: {}", usuarioDetalhes.getAuthorities());
 
             final AppUserAuthenticationToken credentials = new AppUserAuthenticationToken(usuario.getEmail(), senha);
