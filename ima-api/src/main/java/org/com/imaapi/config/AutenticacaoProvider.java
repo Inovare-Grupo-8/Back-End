@@ -1,5 +1,7 @@
 package org.com.imaapi.config;
 
+import org.com.imaapi.config.oauth2.AppUserAuthenticationToken;
+import org.com.imaapi.model.usuario.UsuarioDetalhes;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,15 +24,16 @@ public class AutenticacaoProvider implements AuthenticationProvider {
     public AutenticacaoProvider(AutenticacaoServiceImpl autenticacaoService, PasswordEncoder passwordEncoder) {
         this.autenticacaoService = autenticacaoService;
         this.passwordEncoder = passwordEncoder;
-    }    @Override
+    }
+
+    @Override
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
-        final String username = authentication.getName();
-        final String password = authentication.getCredentials().toString();
-        
+        String username = authentication.getName();
+        String password = authentication.getCredentials().toString();
 //        LOGGER.info("[AUTENTICAR_PROVIDER] Tentando autenticar usuário: {}", username);
         
         try {
-            UserDetails userDetails = this.autenticacaoService.loadUserByUsername(username);
+            UsuarioDetalhes userDetails = (UsuarioDetalhes) this.autenticacaoService.loadUserByUsername(username);
 //            LOGGER.debug("[AUTENTICAR_PROVIDER] UserDetails carregado para: {}", username);
 //            LOGGER.debug("[AUTENTICAR_PROVIDER] Senha fornecida (primeiros 4 caracteres): {}",
 //                    password.length() > 4 ? password.substring(0, 4) + "..." : "***");
@@ -41,7 +44,12 @@ public class AutenticacaoProvider implements AuthenticationProvider {
             
             if (matches) {
                 LOGGER.info("[AUTENTICAR_PROVIDER] Autenticação bem-sucedida para: {}", username);
-                return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                return new AppUserAuthenticationToken(
+                        userDetails,
+                        userDetails.getAuthorities(),
+                        "local",
+                        null
+                );
             } else {
                 LOGGER.warn("[AUTENTICAR_PROVIDER] Senha inválida para usuário: {}", username);
                 throw new BadCredentialsException("Usuário ou senha inválidos");
@@ -54,6 +62,6 @@ public class AutenticacaoProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return authentication.equals(UsernamePasswordAuthenticationToken.class);
+        return AppUserAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

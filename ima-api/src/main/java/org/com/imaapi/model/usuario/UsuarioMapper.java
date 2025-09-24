@@ -5,7 +5,6 @@ import org.com.imaapi.model.usuario.input.UsuarioAutenticacaoInput;
 import org.com.imaapi.model.usuario.input.UsuarioInputPrimeiraFase;
 import org.com.imaapi.model.usuario.input.UsuarioInputSegundaFase;
 import org.com.imaapi.model.usuario.input.VoluntarioInput;
-import org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput;
 import org.com.imaapi.model.usuario.output.UsuarioListarOutput;
 import org.com.imaapi.model.usuario.output.UsuarioPrimeiraFaseOutput;
 import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
@@ -78,12 +77,12 @@ public class UsuarioMapper {
         return output;
     }
   
-  public static UsuarioDetalhesOutput ofDetalhes(Usuario usuario, Ficha ficha) {
+  public static UsuarioDetalhes ofDetalhes(Usuario usuario, Ficha ficha) {
 //        LOGGER.info("[USUARIO_MAPPER] Criando UsuarioDetalhesOutput para autenticação do usuário: {}", usuario.getEmail());
 //        LOGGER.debug("[USUARIO_MAPPER] Ficha associada: ID={}", ficha != null ? ficha.getIdFicha() : "null");
 //        LOGGER.debug("[USUARIO_MAPPER] Tipo do usuário: {}", usuario.getTipo());
         
-        UsuarioDetalhesOutput details = new UsuarioDetalhesOutput(usuario, ficha);
+        UsuarioDetalhes details = new UsuarioDetalhes(usuario, ficha);
 //        LOGGER.debug("[USUARIO_MAPPER] Autoridades concedidas: {}", details.getAuthorities());
         
         return details;

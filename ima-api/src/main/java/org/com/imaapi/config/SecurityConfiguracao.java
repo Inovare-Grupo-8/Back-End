@@ -1,11 +1,10 @@
 package org.com.imaapi.config;
 
 import org.com.imaapi.config.oauth2.AutenticacaoSucessHandler;
-import org.com.imaapi.config.oauth2.EscopoIncrementalFilter;
 import org.com.imaapi.repository.FichaRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
-import org.com.imaapi.service.impl.OauthTokenServiceImpl;
+import org.com.imaapi.service.impl.GoogleTokenServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +20,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -36,7 +36,8 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguracao {    private static final AntPathRequestMatcher[] URLS_PERMITIDAS = {
+public class SecurityConfiguracao {
+    private static final AntPathRequestMatcher[] URLS_PUBLICAS = {
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/swagger-ui.html"),
             new AntPathRequestMatcher("/swagger-resources"),
@@ -48,34 +49,72 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
             new AntPathRequestMatcher("/webjars/**"),
             new AntPathRequestMatcher("/v3/api-docs/**"),
             new AntPathRequestMatcher("/actuator/**"),
-            new AntPathRequestMatcher("/usuarios/**"),
-            new AntPathRequestMatcher("/assistentes-sociais/**"),            
-            new AntPathRequestMatcher("/usuarios/login/***"),
+            new AntPathRequestMatcher("/usuarios/fase1/**"),
+            new AntPathRequestMatcher("/usuarios/fase2/**"),
+            new AntPathRequestMatcher("/usuarios/login/**"),
             new AntPathRequestMatcher("/h2-console/**"),
             new AntPathRequestMatcher("/h2-console/**/**"),
             new AntPathRequestMatcher("/perfil/**"),
             new AntPathRequestMatcher("/error/**"),
             new AntPathRequestMatcher("/"),
             new AntPathRequestMatcher("/oauth2/**"),
-            new AntPathRequestMatcher("/oauth2/authorization/google"),
             new AntPathRequestMatcher("/dev/token"),
-            new AntPathRequestMatcher("/uploads/**")  // Add this line
+            new AntPathRequestMatcher("/uploads/**"),
+            new AntPathRequestMatcher("/usuarios/fase1"),
+            new AntPathRequestMatcher("/usuarios/fase2"),
     };
+
+    private static final AntPathRequestMatcher[] URLS_ADMINISTRADORES = {
+            new AntPathRequestMatcher("/{id}/classificar-usuarios"),
+            new AntPathRequestMatcher("/usuarios/classificar-usuarios/**"),
+            new AntPathRequestMatcher("/usuarios/{id}/classificar/**"),
+            new AntPathRequestMatcher("/{id}", "DELETE"),
+            new AntPathRequestMatcher("/usuarios/nao-classificados/**"),
+            new AntPathRequestMatcher("/assistentes-sociais/**"),
+            new AntPathRequestMatcher("/usuarios/voluntario/fase1"),
+            new AntPathRequestMatcher("/usuarios/voluntario/fase2/**"),
+            new AntPathRequestMatcher("/usuarios/verificar-cadastro"),
+            new AntPathRequestMatcher("/consulta/consultas/todas"),
+            new AntPathRequestMatcher("/especialidade/**")
+    };
+
+    private static final AntPathRequestMatcher[] URLS_VOLUNTARIOS = {
+            new AntPathRequestMatcher("/usuarios/voluntario/**"),
+            new AntPathRequestMatcher("/disponibilidade")
+    };
+
+    private static final AntPathRequestMatcher[] URLS_VALOR_SOCIAL = {
+            new AntPathRequestMatcher("/pagamento/**")
+    };
+
+    private static final AntPathRequestMatcher[] URLS_ASSISTIDOS_E_VOLUNTARIOS = {
+            new AntPathRequestMatcher("/oauth2/authorize/**"),
+            new AntPathRequestMatcher("/agenda/**"),
+            new AntPathRequestMatcher("/calendar/eventos/**")
+    };
+
+    private static final AntPathRequestMatcher[] URLS_ASSISTIDOS = {
+            new AntPathRequestMatcher("/consulta/**")
+    };
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
                                                    AutenticacaoSucessHandler autenticacaoSucessHandler,
-                                                   AutenticacaoEntryPoint autenticacaoEntryPoint,
-                                                   EscopoIncrementalFilter escopoIncrementalFilter) throws Exception {
+                                                   AutenticacaoEntryPoint autenticacaoEntryPoint) throws Exception {
         return http
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .cors(Customizer.withDefaults())
                 .csrf(CsrfConfigurer<HttpSecurity>::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/usuarios/voluntario").hasRole("ADMINISTRADOR")
-                        .requestMatchers(URLS_PERMITIDAS)
-                        .permitAll()
-                        .anyRequest().authenticated()  // Requer autenticação para tudo
+                        .requestMatchers(URLS_ADMINISTRADORES).hasRole("ADMINISTRADOR")
+                        .requestMatchers(URLS_VOLUNTARIOS).hasRole("VOLUNTARIO")
+                        .requestMatchers(URLS_VALOR_SOCIAL).hasRole("VALOR SOCIAL")
+                        .requestMatchers(URLS_ASSISTIDOS).hasAnyRole("VALOR SOCIAL", "GRATUIDADE")
+                        .requestMatchers(URLS_ASSISTIDOS_E_VOLUNTARIOS).hasAnyRole("VOLUNTARIO", "VALOR SOCIAL", "GRATUIDADE")
+                        .requestMatchers(URLS_PUBLICAS).permitAll()
+                        .anyRequest()
+                        .authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(autenticacaoSucessHandler)
@@ -84,7 +123,6 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
                         .authenticationEntryPoint(autenticacaoEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(escopoIncrementalFilter, OAuth2AuthorizationRequestRedirectFilter.class)
                 .build();
     }
 
@@ -113,31 +151,13 @@ public class SecurityConfiguracao {    private static final AntPathRequestMatche
     @Bean
     public AutenticacaoSucessHandler autenticacaoSucessHandler(
             UsuarioRepository usuarioRepository,
-            FichaRepository fichaRepository,
             GerenciadorTokenJwt gerenciadorTokenJwt,
-            UsuarioServiceImpl usuarioService,
-            OAuth2AuthorizedClientManager authorizedClientManager,
-            OauthTokenServiceImpl oauthTokenService) {
+            UsuarioServiceImpl usuarioService) {
 
         return new AutenticacaoSucessHandler(
                 usuarioRepository,
-                fichaRepository,
                 gerenciadorTokenJwt,
-                usuarioService,
-                authorizedClientManager,
-                oauthTokenService
-        );
-    }
-
-    @Bean
-    public EscopoIncrementalFilter escopoIncrementalFilter(
-            OAuth2AuthorizedClientManager authorizedClientManager,
-            OauthTokenServiceImpl oauthTokenService,
-            UsuarioRepository usuarioRepository) {
-        return new EscopoIncrementalFilter(
-                authorizedClientManager,
-                oauthTokenService,
-                usuarioRepository
+                usuarioService
         );
     }
 

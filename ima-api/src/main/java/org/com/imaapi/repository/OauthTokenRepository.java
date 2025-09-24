@@ -9,8 +9,8 @@ import java.util.Optional;
 @Repository
 public interface OauthTokenRepository extends JpaRepository<OauthToken, Integer> {
     Optional<OauthToken> findByUsuarioIdUsuario(Integer id);
-
+    Optional<OauthToken> findByUsuarioEmail(String email);
     boolean existsByUsuarioIdUsuario(Integer id);
-
     void deleteByUsuarioIdUsuario(Integer id);
+    void deleteByUsuarioEmail(String email);
 }

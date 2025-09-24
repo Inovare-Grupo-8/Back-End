@@ -18,7 +18,7 @@ public class Usuario {    @Id
     @Column(name = "id_usuario")
     private Integer idUsuario;
 
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, cascade =  CascadeType.ALL)
     @JoinColumn(name = "fk_ficha", unique = true, nullable = false)
     private Ficha ficha;
 

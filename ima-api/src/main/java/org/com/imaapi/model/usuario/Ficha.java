@@ -29,7 +29,7 @@ public class Ficha {
     @Column(name = "nome", nullable = false, length = 45)
     private String nome;
 
-    @Column(name = "sobrenome", nullable = false, length = 45)
+    @Column(name = "sobrenome", length = 45)
     private String sobrenome;    @Column(name = "cpf", unique = true, length = 11)
     private String cpf;
 

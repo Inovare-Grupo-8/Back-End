@@ -11,6 +11,7 @@ import org.com.imaapi.model.consulta.output.ConsultaOutput;
 import org.com.imaapi.model.enums.StatusConsulta;
 import org.com.imaapi.model.especialidade.Especialidade;
 import org.com.imaapi.model.usuario.Usuario;
+import org.com.imaapi.model.usuario.UsuarioDetalhes;
 import org.com.imaapi.repository.*;
 import org.com.imaapi.service.ConsultaService;
 import org.slf4j.Logger;
@@ -706,14 +707,12 @@ public class ConsultaServiceImpl implements ConsultaService {
             org.springframework.security.core.Authentication authentication =
                     org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
 
-            if (authentication != null && authentication.getPrincipal() instanceof org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput) {
-                org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput userDetails =
-                        (org.com.imaapi.model.usuario.output.UsuarioDetalhesOutput) authentication.getPrincipal();
+            if (authentication != null && authentication.getPrincipal() instanceof UsuarioDetalhes) {
+                UsuarioDetalhes userDetails =
+                        (UsuarioDetalhes) authentication.getPrincipal();
 
-                Usuario usuario = new Usuario();
-                usuario.setIdUsuario(userDetails.getIdUsuario());
-                usuario.setEmail(userDetails.getEmail());
-                usuario.setTipo(userDetails.getTipo());
+                Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername())
+                        .orElseThrow(() -> new RuntimeException("Usuário não encontrado no banco"));
 
                 logger.debug("Usuário logado recuperado: ID={}, Email={}, Tipo={}",
                         usuario.getIdUsuario(), usuario.getEmail(), usuario.getTipo());
