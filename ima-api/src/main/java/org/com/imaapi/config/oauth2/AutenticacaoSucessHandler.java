@@ -42,10 +42,6 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
         String email = usuarioOauth.getAttribute("email");
         Boolean emailVerificado = usuarioOauth.getAttribute("email_verified");
 
-        if (email == null) {
-            throw new ServletException("Email não encontrado no provedor OAuth2.");
-        }
-
         if (emailVerificado != null && !emailVerificado) {
             throw new ServletException("Email não verificado pelo provedor OAuth2.");
         }
@@ -63,15 +59,12 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
                         null)
         );
 
-        gerarJwt(authentication, response);
+        gerarJwt(SecurityContextHolder.getContext().getAuthentication(), response);
     }
 
     private void gerarJwt(Authentication authentication, HttpServletResponse response) throws IOException {
-        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-        OAuth2User usuarioOauth = oauthToken.getPrincipal();
-        String email = usuarioOauth.getAttribute("email");
-
-        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(
+        UsuarioDetalhes usuarioDetalhes = (UsuarioDetalhes) authentication.getPrincipal();
+        Usuario usuario = usuarioRepository.findByEmail(usuarioDetalhes.getUsername()).orElseThrow(
                 () -> new RuntimeException("Usuário não foi cadastrado")
         );
 

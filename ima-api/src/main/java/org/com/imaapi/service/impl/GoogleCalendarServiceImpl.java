@@ -119,7 +119,8 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                                        String titulo,
                                        String descricao,
                                        LocalDateTime inicio,
-                                       LocalDateTime fim, Authentication authentication) throws GeneralSecurityException, IOException {
+                                       LocalDateTime fim,
+                                       Authentication authentication) throws GeneralSecurityException, IOException {
 
 
         try {
@@ -197,14 +198,12 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
             throw new SecurityException("Usuário não possui permissão para Google Calendar");
         }
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
         HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 
         return new Calendar.Builder(
                 httpTransport,
                 GsonFactory.getDefaultInstance(),
-                new HttpCredentialsAdapter((Credentials) auth.getCredentials())
+                new HttpCredentialsAdapter((Credentials) authentication.getCredentials())
         )
                 .setApplicationName(NOME_APLICACAO)
                 .build();
