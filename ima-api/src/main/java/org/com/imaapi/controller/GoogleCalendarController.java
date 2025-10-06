@@ -6,6 +6,8 @@ import org.com.imaapi.service.impl.GoogleCalendarServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,8 +32,9 @@ public class GoogleCalendarController {
     @PostMapping
     public ResponseEntity<?> criarEvento(@RequestBody @Valid EventoDTO eventoDTO,
                                          Authentication authentication) throws GeneralSecurityException, IOException {
-        String email = authentication.getName();
-        System.out.println(authentication);
+        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+        OAuth2User usuarioOauth = oauthToken.getPrincipal();
+        String email = usuarioOauth.getAttribute("email");
 
         Integer idUsuario = usuarioService.buscarDadosPrimeiraFase(email).getIdUsuario();
 
@@ -49,7 +52,9 @@ public class GoogleCalendarController {
     @PostMapping("/meet")
     public ResponseEntity<?> criarEventoComMeet(@Valid @RequestBody EventoDTO eventoDTO,
                                                 Authentication authentication) throws GeneralSecurityException, IOException {
-        String email = authentication.getName();
+        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+        OAuth2User usuarioOauth = oauthToken.getPrincipal();
+        String email = usuarioOauth.getAttribute("email");
 
 
         Integer idUsuario = usuarioService.buscarDadosPrimeiraFase(email).getIdUsuario();

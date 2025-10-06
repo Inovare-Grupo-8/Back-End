@@ -38,7 +38,7 @@ public class GerenciadorTokenJwt {
                 .map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
 
         return Jwts.builder()
-                .subject(authentication.getName())
+                .subject(getUsername(authentication))
                 .claim("authorities", authorities)
                 .signWith(parseSecret())
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -69,5 +69,13 @@ public class GerenciadorTokenJwt {
 
     private SecretKey parseSecret() {
         return Keys.hmacShaKeyFor(this.secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String getUsername(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
+        }
+        return authentication.getName();
     }
 }
