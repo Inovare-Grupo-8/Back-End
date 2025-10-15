@@ -8,18 +8,24 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.*;
 import com.google.auth.Credentials;
 import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.UserCredentials;
 import org.com.imaapi.model.evento.mapper.GoogleDateTimeMapper;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.GoogleCalendarService;
 import org.com.imaapi.service.GoogleTokenService;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -31,15 +37,13 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     private static final String TIMEZONE_CALENDARIO = "America/Sao_Paulo";
     private static final String NOME_APLICACAO = "IMA API";
     private static final String DESCRICAO_CALENDARIO = "Eventos IMA";
-    private static final String CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.app.created";
 
-    private final GoogleTokenService googleTokenService;
     private final UsuarioRepository usuarioRepository;
+    private final OAuth2AuthorizedClientService authorizedClientService;
 
-    public GoogleCalendarServiceImpl(GoogleTokenService googleTokenService,
-                                     UsuarioRepository usuarioRepository) {
-        this.googleTokenService = googleTokenService;
+    public GoogleCalendarServiceImpl(UsuarioRepository usuarioRepository, OAuth2AuthorizedClientService authorizedClientService) {
         this.usuarioRepository = usuarioRepository;
+        this.authorizedClientService = authorizedClientService;
     }
 
     @Override
@@ -190,33 +194,29 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
 
     @Override
     public Calendar construirCalendarService(Integer idUsuario, Authentication authentication) throws GeneralSecurityException, IOException {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
+        usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // Verificar escopo diretamente nas credenciais
-        if (!usuarioTemEscopoCalendar(idUsuario, authentication)) {
-            throw new SecurityException("Usuário não possui permissão para Google Calendar");
-        }
+        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient("google", authentication.getName());
 
-        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        UserCredentials userCredentials = UserCredentials.newBuilder()
+                .setClientId(client.getClientRegistration().getClientId())
+                .setClientSecret(client.getClientRegistration().getClientSecret())
+                .setAccessToken(
+                        new AccessToken(
+                                client.getAccessToken().getTokenValue(),
+                                Date.from(Objects.requireNonNull(client.getAccessToken().getExpiresAt()))
+                        )
+                )
+                .build();
 
         return new Calendar.Builder(
-                httpTransport,
+                GoogleNetHttpTransport.newTrustedTransport(),
                 GsonFactory.getDefaultInstance(),
-                new HttpCredentialsAdapter((Credentials) authentication.getCredentials())
+                new HttpCredentialsAdapter(userCredentials)
         )
                 .setApplicationName(NOME_APLICACAO)
                 .build();
-    }
-
-    @Override
-    public boolean usuarioTemEscopoCalendar(Integer idUsuario, Authentication authentication) throws GeneralSecurityException, IOException {
-        Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        Set<String> escoposNecessarios = Set.of(CALENDAR_SCOPE);
-
-        return googleTokenService.contemEscoposNecessarios(usuario.getIdUsuario(), escoposNecessarios, authentication);
     }
 }
 

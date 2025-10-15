@@ -1,7 +1,7 @@
 package org.com.imaapi.controller;
 
-import org.com.imaapi.config.oauth2.AppUserAuthenticationToken;
 import org.com.imaapi.repository.UsuarioRepository;
+import org.com.imaapi.service.GoogleTokenService;
 import org.com.imaapi.service.impl.GoogleTokenServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,32 +19,21 @@ import java.util.Set;
 public class Oauth2Controller {
 
     private final GoogleTokenServiceImpl oauthTokenService;
-    private final UsuarioRepository usuarioRepository;
 
-    public Oauth2Controller(UsuarioRepository usuarioRepository,
-                            GoogleTokenServiceImpl oauthTokenService) {
-
-        this.usuarioRepository = usuarioRepository;
+    public Oauth2Controller(GoogleTokenServiceImpl oauthTokenService) {
         this.oauthTokenService = oauthTokenService;
     }
 
     @GetMapping("/authorize/calendar")
     public ResponseEntity<?> authorizeCalendar(Authentication authentication) {
         try {
-            OAuth2AuthorizedClient client = null;
-            if (authentication instanceof AppUserAuthenticationToken appToken) {
-                client = appToken.getAuthorizedClient();
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Usuário não autenticado via Google");
-            }
+            Set<String> escopoAdicional = Set.of(
+                    "https://www.googleapis.com/auth/calendar.app.created",
+                    "https://www.googleapis.com/auth/calendar.calendarlist"
+            );
+            String clientRegistrationId = "google";
 
-            if (client == null) {
-                throw new IllegalStateException("Não foi possível obter o OAuth2AuthorizedClient");
-            }
-
-            Set<String> escopoAdicional = Set.of("https://www.googleapis.com/auth/calendar.app.created");
-            String urlAutorizacao = oauthTokenService.construirUrlIncremental(escopoAdicional, authentication);
+            String urlAutorizacao = oauthTokenService.construirUrlIncremental(escopoAdicional, authentication, clientRegistrationId);
 
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", urlAutorizacao)
@@ -57,9 +46,11 @@ public class Oauth2Controller {
     }
 
     @GetMapping("/googlecallback")
-    public ResponseEntity<?> callback(@RequestParam String code) {
+    public ResponseEntity<?> callback(@RequestParam String code,
+                                      Authentication authentication) {
         try {
-            OAuth2AuthorizedClient client = oauthTokenService.trocarCodePorToken(code);
+            String clientRegistrationId = "google";
+            OAuth2AuthorizedClient client = oauthTokenService.trocarCodePorToken(code, authentication, clientRegistrationId);
             return ResponseEntity.ok("Token salvo com sucesso!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

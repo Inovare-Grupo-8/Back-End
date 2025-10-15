@@ -54,11 +54,9 @@ public class AutenticacaoServiceImpl implements UserDetailsService {
                     .orElseThrow(() -> new UsernameNotFoundException("Ficha não encontrada para o usuário."));
 
 //            LOGGER.info("[AUTENTICAR_SERVICE] Ficha encontrada para o usuário: {}", username);
-            UsuarioDetalhes userDetails = new UsuarioDetalhes(usuario, ficha);
+            return new UsuarioDetalhes(usuario, ficha);
 //            LOGGER.info("[AUTENTICAR_SERVICE] UserDetails criado com sucesso para: {}, autoridades: {}",
 //                    username, userDetails.getAuthorities());
-
-            return userDetails;
         } catch (Exception e) {
             LOGGER.error("[AUTENTICAR_SERVICE] Erro ao carregar ficha do usuário {}: {}",
                     username, e.getMessage(), e);
