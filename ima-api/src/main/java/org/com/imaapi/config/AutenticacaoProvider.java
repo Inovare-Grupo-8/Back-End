@@ -1,6 +1,5 @@
 package org.com.imaapi.config;
 
-import org.com.imaapi.config.oauth2.AppUserAuthenticationToken;
 import org.com.imaapi.model.usuario.UsuarioDetalhes;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -44,12 +42,7 @@ public class AutenticacaoProvider implements AuthenticationProvider {
             
             if (matches) {
                 LOGGER.info("[AUTENTICAR_PROVIDER] Autenticação bem-sucedida para: {}", username);
-                return new AppUserAuthenticationToken(
-                        userDetails,
-                        userDetails.getAuthorities(),
-                        "local",
-                        null
-                );
+                return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             } else {
                 LOGGER.warn("[AUTENTICAR_PROVIDER] Senha inválida para usuário: {}", username);
                 throw new BadCredentialsException("Usuário ou senha inválidos");
@@ -62,6 +55,6 @@ public class AutenticacaoProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return AppUserAuthenticationToken.class.isAssignableFrom(authentication);
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

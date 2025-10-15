@@ -1,10 +1,8 @@
 package org.com.imaapi.config;
 
 import org.com.imaapi.config.oauth2.AutenticacaoSucessHandler;
-import org.com.imaapi.repository.FichaRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.AutenticacaoServiceImpl;
-import org.com.imaapi.service.impl.GoogleTokenServiceImpl;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,11 +19,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.*;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -100,8 +98,7 @@ public class SecurityConfiguracao {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   AutenticacaoSucessHandler autenticacaoSucessHandler,
-                                                   AutenticacaoEntryPoint autenticacaoEntryPoint) throws Exception {
+                                                   AutenticacaoSucessHandler autenticacaoSucessHandler) throws Exception {
         return http
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .cors(Customizer.withDefaults())
@@ -109,9 +106,9 @@ public class SecurityConfiguracao {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(URLS_ADMINISTRADORES).hasRole("ADMINISTRADOR")
                         .requestMatchers(URLS_VOLUNTARIOS).hasRole("VOLUNTARIO")
-                        .requestMatchers(URLS_VALOR_SOCIAL).hasRole("VALOR SOCIAL")
-                        .requestMatchers(URLS_ASSISTIDOS).hasAnyRole("VALOR SOCIAL", "GRATUIDADE")
-                        .requestMatchers(URLS_ASSISTIDOS_E_VOLUNTARIOS).hasAnyRole("VOLUNTARIO", "VALOR SOCIAL", "GRATUIDADE")
+                        .requestMatchers(URLS_VALOR_SOCIAL).hasRole("VALOR_SOCIAL")
+                        .requestMatchers(URLS_ASSISTIDOS).hasAnyRole("VALOR_SOCIAL", "GRATUIDADE")
+                        .requestMatchers(URLS_ASSISTIDOS_E_VOLUNTARIOS).hasAnyRole("VOLUNTARIO", "VALOR_SOCIAL", "GRATUIDADE")
                         .requestMatchers(URLS_PUBLICAS).permitAll()
                         .anyRequest()
                         .authenticated()
@@ -120,7 +117,7 @@ public class SecurityConfiguracao {
                         .successHandler(autenticacaoSucessHandler)
                 )
                 .exceptionHandling(handling -> handling
-                        .authenticationEntryPoint(autenticacaoEntryPoint))
+                        .authenticationEntryPoint(autenticacaoEntryPoint()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtAuthenticationFilterBean(), UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -149,15 +146,24 @@ public class SecurityConfiguracao {
     }
 
     @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
+
+    @Bean
     public AutenticacaoSucessHandler autenticacaoSucessHandler(
             UsuarioRepository usuarioRepository,
             GerenciadorTokenJwt gerenciadorTokenJwt,
-            UsuarioServiceImpl usuarioService) {
+            UsuarioServiceImpl usuarioService,
+            OAuth2AuthorizedClientService authorizedClientService,
+            SecurityContextRepository securityContextRepository) {
 
         return new AutenticacaoSucessHandler(
                 usuarioRepository,
                 gerenciadorTokenJwt,
-                usuarioService
+                usuarioService,
+                authorizedClientService,
+                securityContextRepository
         );
     }
 

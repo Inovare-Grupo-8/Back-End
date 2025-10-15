@@ -8,14 +8,10 @@ import java.util.Date;
 
 public class GoogleDateTimeMapper {
 
-    private  static ZoneId zonaPadrao;
+    private static ZoneId zonaPadrao;
 
-    public GoogleDateTimeMapper() {
+    static {
         zonaPadrao = ZoneId.systemDefault();
-    }
-
-    public GoogleDateTimeMapper(ZoneId defaultZone) {
-        zonaPadrao = defaultZone;
     }
 
     public static DateTime toGoogleDateTime(LocalDateTime localDateTime) {

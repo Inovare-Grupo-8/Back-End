@@ -21,6 +21,4 @@ public interface GoogleCalendarService {
     String criarEventoComMeetParaUsuario(Integer idUsuario, String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim, Authentication authentication) throws GeneralSecurityException, IOException;
     String extrairLinkMeet(Event evento);
     Calendar construirCalendarService(Integer idUsuario, Authentication authentication) throws GeneralSecurityException, IOException;
-
-    boolean usuarioTemEscopoCalendar(Integer idUsuario, Authentication authentication) throws GeneralSecurityException, IOException;
 }

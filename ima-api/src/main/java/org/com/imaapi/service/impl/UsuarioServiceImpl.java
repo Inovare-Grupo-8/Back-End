@@ -1,7 +1,6 @@
 package org.com.imaapi.service.impl;
 
 import org.com.imaapi.config.GerenciadorTokenJwt;
-import org.com.imaapi.config.oauth2.AppUserAuthenticationToken;
 import org.com.imaapi.model.enums.Genero;
 import org.com.imaapi.model.enums.TipoUsuario;
 import org.com.imaapi.model.usuario.*;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -291,7 +291,8 @@ public class UsuarioServiceImpl implements UsuarioService {
             UsuarioDetalhes usuarioDetalhes = UsuarioMapper.ofDetalhes(usuario, ficha);
 //            logger.debug("[AUTENTICAR] Autoridades do usuário: {}", usuarioDetalhes.getAuthorities());
 
-            final AppUserAuthenticationToken credentials = new AppUserAuthenticationToken(usuario.getEmail(), senha);
+            final UsernamePasswordAuthenticationToken credentials = new UsernamePasswordAuthenticationToken(
+                    usuarioDetalhes, senha, usuarioDetalhes.getAuthorities());
 
 //            logger.debug("[AUTENTICAR] Token de autenticação criado com sucesso para: {}", usuario.getEmail());
 

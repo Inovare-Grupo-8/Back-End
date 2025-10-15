@@ -4,10 +4,13 @@ import org.com.imaapi.model.oauth.OauthToken;
 import org.com.imaapi.repository.OauthTokenRepository;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -42,24 +45,36 @@ public class DatabaseOAuth2AuthorizedClientService implements OAuth2AuthorizedCl
 
     @Override
     public void saveAuthorizedClient(OAuth2AuthorizedClient authorizedClient, Authentication principal) {
-        String email = principal.getName();
+        String email = null;
 
-        usuarioRepository.findByEmail(email).ifPresent(usuario -> {
-            OauthToken token = oauthTokenRepository.findByUsuarioIdUsuario(usuario.getIdUsuario())
-                    .orElseGet(() -> {
-                        OauthToken novoToken = new OauthToken();
-                        novoToken.setUsuario(usuario);
-                        return novoToken;
-                    });
-
-            token.atualizarAccessToken(authorizedClient.getAccessToken());
-
-            if (authorizedClient.getRefreshToken() != null) {
-                token.atualizarRefreshToken(authorizedClient.getRefreshToken());
+        if (principal instanceof OAuth2AuthenticationToken token) {
+            if (token.getPrincipal() instanceof OAuth2User user) {
+                email = user.getAttribute("email");
             }
+        }
 
-            oauthTokenRepository.save(token);
-        });
+        if (email == null) {
+            email = principal.getName();
+        }
+
+        if (email != null) {
+            usuarioRepository.findByEmail(email).ifPresent(usuario -> {
+                OauthToken token = oauthTokenRepository.findByUsuarioIdUsuario(usuario.getIdUsuario())
+                        .orElseGet(() -> {
+                            OauthToken novoToken = new OauthToken();
+                            novoToken.setUsuario(usuario);
+                            return novoToken;
+                        });
+
+                token.atualizarAccessToken(authorizedClient.getAccessToken());
+
+                if (authorizedClient.getRefreshToken() != null) {
+                    token.atualizarRefreshToken(authorizedClient.getRefreshToken());
+                }
+
+                oauthTokenRepository.save(token);
+            });
+        }
     }
 
     @Override
