@@ -1,24 +1,18 @@
 package org.com.imaapi.service.impl;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.*;
-import com.google.auth.Credentials;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.UserCredentials;
 import org.com.imaapi.model.evento.mapper.GoogleDateTimeMapper;
-import org.com.imaapi.model.usuario.Usuario;
-import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.GoogleCalendarService;
 import org.com.imaapi.service.GoogleTokenService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -38,12 +32,31 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     private static final String NOME_APLICACAO = "IMA API";
     private static final String DESCRICAO_CALENDARIO = "Eventos IMA";
 
-    private final UsuarioRepository usuarioRepository;
-    private final OAuth2AuthorizedClientService authorizedClientService;
+    private static final Set<String> ESCOPO_CALENDAR = Set.of(
+            "https://www.googleapis.com/auth/calendar",
+            "https://www.googleapis.com/auth/calendar.events"
+    );
+    private final GoogleTokenService googleTokenService;
 
-    public GoogleCalendarServiceImpl(UsuarioRepository usuarioRepository, OAuth2AuthorizedClientService authorizedClientService) {
-        this.usuarioRepository = usuarioRepository;
-        this.authorizedClientService = authorizedClientService;
+    public GoogleCalendarServiceImpl(GoogleTokenService googleTokenService) {
+        this.googleTokenService = googleTokenService;
+    }
+
+    @Override
+    public void criarEventoParaUsuario(String titulo,
+                                       String descricao,
+                                       LocalDateTime inicio,
+                                       LocalDateTime fim,
+                                       Authentication authentication, String state, String redirectUri) throws GeneralSecurityException, IOException {
+        try {
+            Calendar service = construirCalendarService(authentication, state, redirectUri);
+            String idCalendario = buscarOuCriarCalendario(service);
+            Event evento = criarEvento(titulo, descricao, inicio, fim);
+            inserirEvento(service, idCalendario, evento);
+
+        } catch (GeneralSecurityException | IOException e) {
+            throw new RuntimeException("Erro ao criar evento: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -119,26 +132,6 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     }
 
     @Override
-    public void criarEventoParaUsuario(Integer idUsuario,
-                                       String titulo,
-                                       String descricao,
-                                       LocalDateTime inicio,
-                                       LocalDateTime fim,
-                                       Authentication authentication) throws GeneralSecurityException, IOException {
-
-
-        try {
-            Calendar service = construirCalendarService(idUsuario, authentication);
-            String idCalendario = buscarOuCriarCalendario(service);
-            Event evento = criarEvento(titulo, descricao, inicio, fim);
-            inserirEvento(service, idCalendario, evento);
-
-        } catch (GeneralSecurityException | IOException e) {
-            throw new RuntimeException("Erro ao criar evento: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
     public Event criarEventoComMeet(String titulo, String descricao, LocalDateTime inicio, LocalDateTime fim) {
         Event evento = criarEvento(titulo, descricao, inicio, fim);
 
@@ -160,14 +153,13 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     }
 
     @Override
-    public String criarEventoComMeetParaUsuario(Integer idUsuario,
-                                                String titulo,
+    public String criarEventoComMeetParaUsuario(String titulo,
                                                 String descricao,
                                                 LocalDateTime inicio,
-                                                LocalDateTime fim, Authentication authentication) throws GeneralSecurityException, IOException {
+                                                LocalDateTime fim, Authentication authentication, String state, String redirectUri) throws GeneralSecurityException, IOException {
 
         try {
-            Calendar service = construirCalendarService(idUsuario, authentication);
+            Calendar service = construirCalendarService(authentication, state, redirectUri);
             String idCalendario = buscarOuCriarCalendario(service);
             Event evento = criarEventoComMeet(titulo, descricao, inicio, fim);
             Event eventoInserido = inserirEventoComMeet(service, idCalendario, evento);
@@ -193,11 +185,8 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     }
 
     @Override
-    public Calendar construirCalendarService(Integer idUsuario, Authentication authentication) throws GeneralSecurityException, IOException {
-        usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient("google", authentication.getName());
+    public Calendar construirCalendarService(Authentication authentication, String state, String redirectUri) throws GeneralSecurityException, IOException {
+        OAuth2AuthorizedClient client = googleTokenService.obterClienteComEscopos(authentication, ESCOPO_CALENDAR, state, redirectUri);
 
         UserCredentials userCredentials = UserCredentials.newBuilder()
                 .setClientId(client.getClientRegistration().getClientId())

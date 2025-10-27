@@ -2,6 +2,8 @@ package org.com.imaapi.model.oauth;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
@@ -21,6 +23,7 @@ public class Oauth2AuthorizedClientEntity {
     private String accessTokenType;
 
     @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "access_token_value")
     private String accessTokenValue;
 
@@ -30,10 +33,13 @@ public class Oauth2AuthorizedClientEntity {
     @Column(name = "access_token_expires_at")
     private Instant accessTokenExpiresAt;
 
+    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "access_token_scopes")
     private String accessTokenScopes;
 
     @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "refresh_token_value")
     private String refreshTokenValue;
 

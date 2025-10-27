@@ -21,8 +21,11 @@ import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
 
@@ -74,22 +77,34 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, request, response);
 
-        OAuth2AuthorizedClient authorizedClient =
-                authorizedClientService.loadAuthorizedClient(
-                        oauthToken.getAuthorizedClientRegistrationId(),
-                        oauthToken.getName()
-                );
+        OAuth2AuthorizedClient authorizedClient = authorizedClientService.loadAuthorizedClient(
+                oauthToken.getAuthorizedClientRegistrationId(),
+                oauthToken.getName()
+        );
+
+        if (authorizedClient != null) {
+            authorizedClientService.removeAuthorizedClient(
+                    oauthToken.getAuthorizedClientRegistrationId(),
+                    oauthToken.getName()
+            );
+        }
+
+        OAuth2RefreshToken refreshToken = (authorizedClient != null && authorizedClient.getRefreshToken() != null)
+                ? authorizedClient.getRefreshToken()
+                : getRefreshTokenFromDatabase(email, oauthToken.getAuthorizedClientRegistrationId());
 
         OAuth2AuthorizedClient clientComEmail = new OAuth2AuthorizedClient(
-                authorizedClient.getClientRegistration(),
+                authorizedClient != null ? authorizedClient.getClientRegistration() : null,
                 email,
-                authorizedClient.getAccessToken(),
-                authorizedClient.getRefreshToken() != null ? authorizedClient.getRefreshToken() :
-                        getRefreshTokenFromDatabase(email, authorizedClient.getClientRegistration().getRegistrationId())
+                authorizedClient != null ? authorizedClient.getAccessToken() : null,
+                refreshToken
         );
-        authorizedClientService.saveAuthorizedClient(clientComEmail, authenticationToken);
 
-        gerarJwt(SecurityContextHolder.getContext().getAuthentication(), response);
+        if (clientComEmail.getAccessToken() != null) {
+            authorizedClientService.saveAuthorizedClient(clientComEmail, authenticationToken);
+        }
+
+        gerarJwt(authenticationToken, response);
     }
 
     private void gerarJwt(Authentication authentication, HttpServletResponse response) throws IOException {
@@ -100,17 +115,25 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
             email = usuarioDetalhes.getUsername();
         }
 
-        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(
+        usuarioRepository.findByEmail(email).orElseThrow(
                 () -> new RuntimeException("Usuário não foi cadastrado")
         );
 
         String tokenJwt = gerenciadorTokenJwt.generateToken(authentication);
-        UsuarioTokenOutput tokenOutput = UsuarioMapper.of(usuario, tokenJwt);
 
-        response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"token\": \"" + tokenOutput.getToken() + "\"}");
+        HttpServletRequest request =
+                ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+
+        String originalUrl = (String) request.getSession().getAttribute("ORIGINAL_URL");
+
+        String redirectUrl = "http://localhost:5173/oauth/callback?token=" + tokenJwt;
+
+        if (originalUrl != null && originalUrl.contains("/calendar")) {
+            redirectUrl += "&origin=calendar";
+            request.getSession().removeAttribute("ORIGINAL_URL");
+        }
+
+        response.sendRedirect(redirectUrl);
     }
 
     private OAuth2RefreshToken getRefreshTokenFromDatabase(String email, String clientRegistrationId) {
