@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -51,9 +53,11 @@ public class GoogleCalendarController {
             return ResponseEntity.ok("Evento criado com sucesso!");
         } catch (MissingScopeException e) {
             request.getSession().setAttribute("ORIGINAL_URL", request.getRequestURI());
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .header("Location", e.getIncrementalAuthUrl())
-                    .build();
+            Map<String, String> resposta = new HashMap<>();
+            resposta.put("redirectUrl", e.getIncrementalAuthUrl());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(resposta);
         }
     }
 
@@ -81,9 +85,11 @@ public class GoogleCalendarController {
             return ResponseEntity.ok(Collections.singletonMap("linkMeet", linkMeet));
         } catch (MissingScopeException e) {
             request.getSession().setAttribute("ORIGINAL_URL", request.getRequestURI());
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .header("Location", e.getIncrementalAuthUrl())
-                    .build();
+            Map<String, String> resposta = new HashMap<>();
+            resposta.put("redirectUrl", e.getIncrementalAuthUrl());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(resposta);
         }
     }
 }

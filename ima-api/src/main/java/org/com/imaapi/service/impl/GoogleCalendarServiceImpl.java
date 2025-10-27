@@ -53,7 +53,6 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
             String idCalendario = buscarOuCriarCalendario(service);
             Event evento = criarEvento(titulo, descricao, inicio, fim);
             inserirEvento(service, idCalendario, evento);
-
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException("Erro ao criar evento: " + e.getMessage(), e);
         }

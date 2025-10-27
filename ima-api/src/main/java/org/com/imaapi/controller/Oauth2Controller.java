@@ -27,8 +27,9 @@ public class Oauth2Controller {
 
     @GetMapping("/authorize/calendar")
     public void authorizeCalendar(Authentication authentication,
-                                               HttpServletRequest request,
-                                               HttpServletResponse response) throws IOException {
+                                  HttpServletRequest request,
+                                  HttpServletResponse response,
+                                  @RequestParam(required = false) String returnUrl) throws IOException {
         Set<String> escopoAdicional = Set.of(
                 "https://www.googleapis.com/auth/calendar.app.created",
                 "https://www.googleapis.com/auth/calendar.calendarlist"
@@ -36,6 +37,13 @@ public class Oauth2Controller {
 
         String state = "incremental-" + UUID.randomUUID();
         request.getSession().setAttribute("OAUTH2_STATE", state);
+
+        String originalUrl = request.getHeader("Referer");
+        if (originalUrl == null) {
+            originalUrl = "/";
+        }
+        request.getSession().setAttribute("ORIGINAL_URL", returnUrl == null ? originalUrl : returnUrl);
+        System.out.println(returnUrl);
 
         String redirectUri = request.getRequestURL().toString().replace(request.getRequestURI(), "/oauth2/googlecallback");
         String urlAutorizacao = googleTokenService.construirUrlIncremental(escopoAdicional, authentication, state, redirectUri);
@@ -60,9 +68,11 @@ public class Oauth2Controller {
         googleTokenService.trocarCodePorToken(code, authentication, redirectUri);
 
         String redirectUrl = (String) request.getSession().getAttribute("ORIGINAL_URL");
+        System.out.println(redirectUrl);
         if (redirectUrl == null) { redirectUrl = "/"; }
         request.getSession().removeAttribute("ORIGINAL_URL");
 
+        System.out.println("redirecionando para: " + redirectUrl);
         return ResponseEntity.status(HttpStatus.FOUND)
                 .header("Location", redirectUrl)
                 .build();
