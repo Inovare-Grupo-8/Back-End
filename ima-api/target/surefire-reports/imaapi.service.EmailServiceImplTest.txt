@@ -1,0 +1,12 @@
+-------------------------------------------------------------------------------
+Test set: imaapi.service.EmailServiceImplTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.249 s <<< FAILURE! -- in imaapi.service.EmailServiceImplTest
+imaapi.service.EmailServiceImplTest.testEnviarEmailComSucesso -- Time elapsed: 0.009 s <<< ERROR!
+java.lang.ArrayIndexOutOfBoundsException: Index 1 out of bounds for length 1
+	at org.com.imaapi.service.impl.EmailServiceImpl.enviarEmail(EmailServiceImpl.java:49)
+	at imaapi.service.EmailServiceImplTest.testEnviarEmailComSucesso(EmailServiceImplTest.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+

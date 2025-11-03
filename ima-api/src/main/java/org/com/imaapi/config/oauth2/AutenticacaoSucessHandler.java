@@ -7,7 +7,6 @@ import org.com.imaapi.config.GerenciadorTokenJwt;
 import org.com.imaapi.model.usuario.Usuario;
 import org.com.imaapi.model.usuario.UsuarioDetalhes;
 import org.com.imaapi.model.usuario.UsuarioMapper;
-import org.com.imaapi.model.usuario.output.UsuarioTokenOutput;
 import org.com.imaapi.repository.UsuarioRepository;
 import org.com.imaapi.service.impl.UsuarioServiceImpl;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -80,19 +79,38 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
                         oauthToken.getName()
                 );
 
-        OAuth2AuthorizedClient clientComEmail = new OAuth2AuthorizedClient(
-                authorizedClient.getClientRegistration(),
-                email,
-                authorizedClient.getAccessToken(),
-                authorizedClient.getRefreshToken() != null ? authorizedClient.getRefreshToken() :
-                        getRefreshTokenFromDatabase(email, authorizedClient.getClientRegistration().getRegistrationId())
-        );
-        authorizedClientService.saveAuthorizedClient(clientComEmail, authenticationToken);
+        if (authorizedClient != null && authorizedClient.getAccessToken() != null) {
+            authorizedClientService.removeAuthorizedClient(
+                    oauthToken.getAuthorizedClientRegistrationId(),
+                    oauthToken.getName()
+            );
 
-        gerarJwt(SecurityContextHolder.getContext().getAuthentication(), response);
+            OAuth2AuthorizedClient clientComEmail = new OAuth2AuthorizedClient(
+                    authorizedClient.getClientRegistration(),
+                    email,
+                    authorizedClient.getAccessToken(),
+                    authorizedClient.getRefreshToken() != null
+                            ? authorizedClient.getRefreshToken()
+                            : getRefreshTokenFromDatabase(email, oauthToken.getAuthorizedClientRegistrationId())
+            );
+
+            authorizedClientService.saveAuthorizedClient(clientComEmail, authenticationToken);
+        }
+
+        String tokenJwt = gerarJwt(authenticationToken);
+        String redirectUrl = "http://localhost:5173/oauth/callback?token=" + tokenJwt;
+
+        String originalUrl = (String) request.getSession().getAttribute("ORIGINAL_URL");
+
+        if (originalUrl != null && originalUrl.contains("/calendar")) {
+            redirectUrl += "&origin=calendar";
+            request.getSession().removeAttribute("ORIGINAL_URL");
+        }
+
+        response.sendRedirect(redirectUrl);
     }
 
-    private void gerarJwt(Authentication authentication, HttpServletResponse response) throws IOException {
+    private String gerarJwt(Authentication authentication) {
         String email = null;
 
         Object principal = authentication.getPrincipal();
@@ -100,17 +118,11 @@ public class AutenticacaoSucessHandler implements AuthenticationSuccessHandler {
             email = usuarioDetalhes.getUsername();
         }
 
-        Usuario usuario = usuarioRepository.findByEmail(email).orElseThrow(
+        usuarioRepository.findByEmail(email).orElseThrow(
                 () -> new RuntimeException("Usuário não foi cadastrado")
         );
 
-        String tokenJwt = gerenciadorTokenJwt.generateToken(authentication);
-        UsuarioTokenOutput tokenOutput = UsuarioMapper.of(usuario, tokenJwt);
-
-        response.setHeader("Authorization", "Bearer " + tokenOutput.getToken());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"token\": \"" + tokenOutput.getToken() + "\"}");
+        return gerenciadorTokenJwt.generateToken(authentication);
     }
 
     private OAuth2RefreshToken getRefreshTokenFromDatabase(String email, String clientRegistrationId) {

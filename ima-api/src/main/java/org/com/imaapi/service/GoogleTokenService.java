@@ -8,9 +8,10 @@ import java.util.Set;
 
 public interface GoogleTokenService {
     boolean tokenEstaParaExpirar(OAuth2AccessToken token);
-    boolean contemEscoposNecessarios(Set<String> escopos, String clientRegistrationId, Authentication authentication);
-    String construirUrlIncremental(Set<String> escoposAdicionais, Authentication authentication, String clientRegistrationId);
-    OAuth2AuthorizedClient renovarAccessToken(Authentication authentication, String clientRegistrationId);
-
-    OAuth2AuthorizedClient trocarCodePorToken(String code, Authentication authentication, String clientRegistrationId);
+    boolean contemEscoposNecessarios(Set<String> escopos, Authentication authentication);
+    String construirUrlIncremental(Set<String> escoposAdicionais, Authentication authentication, String state,  String redirectUri);
+    String obterAccessToken(Authentication authentication);
+    OAuth2AuthorizedClient obterClienteComEscopos(Authentication authentication, Set<String> escoposAdicinais, String state, String redirectUri);
+    OAuth2AuthorizedClient obterClienteAutorizado(Authentication authentication);
+    void trocarCodePorToken(String code, Authentication authentication, String redirectUri);
 }
