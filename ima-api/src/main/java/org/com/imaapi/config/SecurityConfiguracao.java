@@ -24,7 +24,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,64 +34,64 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguracao {
-    private static final AntPathRequestMatcher[] URLS_PUBLICAS = {
-            new AntPathRequestMatcher("/swagger-ui/**"),
-            new AntPathRequestMatcher("/swagger-ui.html"),
-            new AntPathRequestMatcher("/swagger-resources"),
-            new AntPathRequestMatcher("/swagger-resources/**"),
-            new AntPathRequestMatcher("/configuration/ui"),
-            new AntPathRequestMatcher("/configuration/security"),
-            new AntPathRequestMatcher("/api/public/**"),
-            new AntPathRequestMatcher("/api/public/authenticate"),
-            new AntPathRequestMatcher("/webjars/**"),
-            new AntPathRequestMatcher("/v3/api-docs/**"),
-            new AntPathRequestMatcher("/actuator/**"),
-            new AntPathRequestMatcher("/usuarios/fase1/**"),
-            new AntPathRequestMatcher("/usuarios/fase2/**"),
-            new AntPathRequestMatcher("/usuarios/login/**"),
-            new AntPathRequestMatcher("/h2-console/**"),
-            new AntPathRequestMatcher("/h2-console/**/**"),
-            new AntPathRequestMatcher("/perfil/**"),
-            new AntPathRequestMatcher("/error/**"),
-            new AntPathRequestMatcher("/"),
-            new AntPathRequestMatcher("/oauth2/**"),
-            new AntPathRequestMatcher("/dev/token"),
-            new AntPathRequestMatcher("/uploads/**"),
-            new AntPathRequestMatcher("/usuarios/fase1"),
-            new AntPathRequestMatcher("/usuarios/fase2"),
+    private static final String[] URLS_PUBLICAS = {
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources",
+            "/swagger-resources/**",
+            "/configuration/ui",
+            "/configuration/security",
+            "/api/public/**",
+            "/api/public/authenticate",
+            "/webjars/**",
+            "/v3/api-docs/**",
+            "/actuator/**",
+            "/usuarios/fase1/**",
+            "/usuarios/fase2/**",
+            "/usuarios/login/**",
+            "/h2-console/**",
+            "/h2-console/**/**",
+            "/perfil/**",
+            "/error/**",
+            "/",
+            "/oauth2/**",
+            "/dev/token",
+            "/uploads/**",
+            "/usuarios/fase1",
+            "/usuarios/fase2"
     };
 
-    private static final AntPathRequestMatcher[] URLS_ADMINISTRADORES = {
-            new AntPathRequestMatcher("/{id}/classificar-usuarios"),
-            new AntPathRequestMatcher("/usuarios/classificar-usuarios/**"),
-            new AntPathRequestMatcher("/usuarios/{id}/classificar/**"),
-            new AntPathRequestMatcher("/{id}", "DELETE"),
-            new AntPathRequestMatcher("/usuarios/nao-classificados/**"),
-            new AntPathRequestMatcher("/assistentes-sociais/**"),
-            new AntPathRequestMatcher("/usuarios/voluntario/fase1"),
-            new AntPathRequestMatcher("/usuarios/voluntario/fase2/**"),
-            new AntPathRequestMatcher("/usuarios/verificar-cadastro"),
-            new AntPathRequestMatcher("/consulta/consultas/todas"),
-            new AntPathRequestMatcher("/especialidade/**")
+    private static final String[] URLS_ADMINISTRADORES = {
+            "/{id}/classificar-usuarios",
+            "/usuarios/classificar-usuarios/**",
+            "/usuarios/{id}/classificar/**",
+            "/{id}", "DELETE",
+            "/usuarios/nao-classificados/**",
+            "/assistentes-sociais/**",
+            "/usuarios/voluntario/fase1",
+            "/usuarios/voluntario/fase2/**",
+            "/usuarios/verificar-cadastro",
+            "/consulta/consultas/todas",
+            "/especialidade/**"
     };
 
-    private static final AntPathRequestMatcher[] URLS_VOLUNTARIOS = {
-            new AntPathRequestMatcher("/usuarios/voluntario/**"),
-            new AntPathRequestMatcher("/disponibilidade")
+    private static final String[] URLS_VOLUNTARIOS = {
+            "/usuarios/voluntario/**",
+            "/disponibilidade"
     };
 
-    private static final AntPathRequestMatcher[] URLS_VALOR_SOCIAL = {
-            new AntPathRequestMatcher("/pagamento/**")
+    private static final String[] URLS_VALOR_SOCIAL = {
+            "/pagamento/**"
     };
 
-    private static final AntPathRequestMatcher[] URLS_ASSISTIDOS_E_VOLUNTARIOS = {
-            new AntPathRequestMatcher("/oauth2/authorize/**"),
-            new AntPathRequestMatcher("/agenda/**"),
-            new AntPathRequestMatcher("/calendar/eventos/**")
+    private static final String[] URLS_ASSISTIDOS_E_VOLUNTARIOS = {
+            "/oauth2/authorize/**",
+            "/agenda/**",
+            "/calendar/eventos/**"
     };
 
-    private static final AntPathRequestMatcher[] URLS_ASSISTIDOS = {
-            new AntPathRequestMatcher("/consulta/**")
+    private static final String[] URLS_ASSISTIDOS = {
+            "/consulta/**"
     };
 
 
